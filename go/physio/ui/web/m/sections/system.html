@@ -1,0 +1,385 @@
+<!--
+© 2025 Sharon Aicler (saichler@gmail.com)
+
+Layer 8 Ecosystem is licensed under the Apache License, Version 2.0.
+You may obtain a copy of the License at:
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<div class="section-container" id="system-section">
+    <div class="page-header">
+        <h1 class="page-title">System Administration</h1>
+        <p class="page-subtitle">Health, Security & Module Settings</p>
+    </div>
+
+    <!-- Module Tabs -->
+    <div class="section-tabs">
+        <button class="section-tab active" data-module="health">Health</button>
+        <button class="section-tab" data-module="security">Security</button>
+        <button class="section-tab" data-module="modules">Modules</button>
+        <button class="section-tab" data-module="dataimport">Import</button>
+    </div>
+
+    <!-- Health Content -->
+    <div id="system-health-content">
+        <div id="system-health-table"></div>
+    </div>
+
+    <!-- Modules Content (hidden by default) -->
+    <div id="system-modules-content" style="display:none;">
+        <div id="modules-settings-container"></div>
+    </div>
+
+    <!-- Data Import Content (hidden by default) -->
+    <div id="system-dataimport-content" style="display:none;">
+        <div id="dataimport-container"></div>
+    </div>
+
+    <!-- Security Content (hidden by default) -->
+    <div id="system-security-content" style="display:none;">
+        <div class="section-tabs" id="security-service-tabs">
+            <button class="section-tab active" data-service="users">Users</button>
+            <button class="section-tab" data-service="roles">Roles</button>
+            <button class="section-tab" data-service="credentials">Creds</button>
+            <button class="section-tab" data-service="events">Events</button>
+        </div>
+        <div id="system-security-table"></div>
+    </div>
+</div>
+
+<script>
+var systemHealthTable = null;
+var systemSecurityTable = null;
+var currentSystemModule = 'health';
+var currentSecurityService = 'users';
+var healthRawDataMap = new Map();
+
+// Health column definitions
+var HEALTH_COLUMNS = [
+    { key: 'service', label: 'Service', primary: true, filterKey: 'alias', sortKey: 'alias' },
+    { key: 'cpuPercent', label: 'CPU %', secondary: true, filterKey: 'stats.cpuUsage', sortKey: 'stats.cpuUsage' },
+    { key: 'memory', label: 'Memory', filterKey: 'stats.memoryUsage', sortKey: 'stats.memoryUsage' },
+    { key: 'rx', label: 'RX', filterKey: 'stats.rxMsgCount', sortKey: 'stats.rxMsgCount' },
+    { key: 'tx', label: 'TX', filterKey: 'stats.txMsgCount', sortKey: 'stats.txMsgCount' },
+    { key: 'upTime', label: 'Up Time', filterKey: 'startTime', sortKey: 'startTime' },
+    { key: 'lastPulse', label: 'Last Pulse', filterKey: 'stats.lastMsgTime', sortKey: 'stats.lastMsgTime' }
+];
+
+// Security service definitions
+var SECURITY_SERVICES = {
+    users: {
+        endpoint: Layer8MConfig.resolveEndpoint('/73/users'),
+        modelName: 'L8User',
+        idField: 'userId',
+        columns: [
+            { key: 'userId', label: 'User ID', primary: true, filterKey: 'userId' },
+            { key: 'fullName', label: 'Full Name', secondary: true, filterKey: 'fullName' }
+        ]
+    },
+    roles: {
+        endpoint: Layer8MConfig.resolveEndpoint('/74/roles'),
+        modelName: 'L8Role',
+        idField: 'roleId',
+        columns: [
+            { key: 'roleId', label: 'Role ID', primary: true, filterKey: 'roleId' },
+            { key: 'roleName', label: 'Role Name', secondary: true, filterKey: 'roleName' }
+        ]
+    },
+    credentials: {
+        endpoint: Layer8MConfig.resolveEndpoint('/75/Creds'),
+        modelName: 'L8Credentials',
+        idField: 'id',
+        columns: [
+            { key: 'id', label: 'ID', primary: true, filterKey: 'id' },
+            { key: 'name', label: 'Name', secondary: true, filterKey: 'name' }
+        ]
+    },
+    events: {
+        endpoint: Layer8MConfig.resolveEndpoint('/76/Events'),
+        modelName: 'EventRecord',
+        idField: 'eventId',
+        columns: [
+            { key: 'eventType', label: 'Event Type', primary: true, filterKey: 'eventType' },
+            { key: 'message', label: 'Message', secondary: true, filterKey: 'message' }
+        ],
+        defaultSort: { column: 'occurredAt', direction: 'desc' }
+    }
+};
+
+// Health data formatters
+function formatHealthBytes(bytes) {
+    if (!bytes || bytes === 0) return '0 B';
+    var sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    var i = Math.floor(Math.log(bytes) / Math.log(1024));
+    if (i === 0) return bytes + ' B';
+    return (bytes / Math.pow(1024, i)).toFixed(2) + ' ' + sizes[i];
+}
+
+function formatHealthUptime(startTime) {
+    if (!startTime || startTime === 0 || startTime === '0') return '00:00:00';
+    var startMs = typeof startTime === 'string' ? parseInt(startTime, 10) : startTime;
+    var s = Math.floor((Date.now() - startMs) / 1000);
+    if (s < 0) return '00:00:00';
+    return String(Math.floor(s / 3600)).padStart(2, '0') + ':' +
+           String(Math.floor((s % 3600) / 60)).padStart(2, '0') + ':' +
+           String(s % 60).padStart(2, '0');
+}
+
+function formatHealthLastPulse(lastMsgTime) {
+    if (!lastMsgTime || lastMsgTime === 0 || lastMsgTime === '0') return '00:00:00';
+    var ms = typeof lastMsgTime === 'string' ? parseInt(lastMsgTime, 10) : lastMsgTime;
+    var s = Math.floor((Date.now() - ms) / 1000);
+    if (s < 0) return '00:00:00';
+    return String(Math.floor(s / 3600)).padStart(2, '0') + ':' +
+           String(Math.floor((s % 3600) / 60)).padStart(2, '0') + ':' +
+           String(s % 60).padStart(2, '0');
+}
+
+function transformHealthItem(item) {
+    if (!item.stats) return null;
+    return {
+        service: item.alias || 'Unknown',
+        rx: (item.stats.rxMsgCount || 0).toLocaleString(),
+        tx: (item.stats.txMsgCount || 0).toLocaleString(),
+        memory: formatHealthBytes(item.stats.memoryUsage || 0),
+        cpuPercent: (item.stats.cpuUsage || 0).toFixed(2) + '%',
+        upTime: formatHealthUptime(item.startTime),
+        lastPulse: formatHealthLastPulse(item.stats.lastMsgTime)
+    };
+}
+
+function initMobileSystem() {
+    loadSystemHealth();
+
+    // Module tab switching (Health / Security)
+    document.querySelectorAll('#system-section > .section-tabs .section-tab').forEach(function(tab) {
+        tab.addEventListener('click', function() {
+            document.querySelectorAll('#system-section > .section-tabs .section-tab').forEach(function(t) {
+                t.classList.remove('active');
+            });
+            tab.classList.add('active');
+            switchSystemModule(tab.dataset.module);
+        });
+    });
+
+    // Security service tab switching
+    document.querySelectorAll('#security-service-tabs .section-tab').forEach(function(tab) {
+        tab.addEventListener('click', function() {
+            document.querySelectorAll('#security-service-tabs .section-tab').forEach(function(t) {
+                t.classList.remove('active');
+            });
+            tab.classList.add('active');
+            loadSecurityService(tab.dataset.service);
+        });
+    });
+}
+
+function switchSystemModule(moduleKey) {
+    currentSystemModule = moduleKey;
+    var healthContent = document.getElementById('system-health-content');
+    var securityContent = document.getElementById('system-security-content');
+    var modulesContent = document.getElementById('system-modules-content');
+    var dataimportContent = document.getElementById('system-dataimport-content');
+
+    healthContent.style.display = 'none';
+    securityContent.style.display = 'none';
+    modulesContent.style.display = 'none';
+    if (dataimportContent) dataimportContent.style.display = 'none';
+
+    if (moduleKey === 'health') {
+        healthContent.style.display = '';
+        loadSystemHealth();
+    } else if (moduleKey === 'security') {
+        securityContent.style.display = '';
+        loadSecurityService(currentSecurityService);
+    } else if (moduleKey === 'modules') {
+        modulesContent.style.display = '';
+        if (window.L8SysModules) L8SysModules.initialize();
+    } else if (moduleKey === 'dataimport') {
+        if (dataimportContent) dataimportContent.style.display = '';
+        if (window.L8DataImport) L8DataImport.initialize();
+    }
+}
+
+function loadSystemHealth() {
+    var config = Layer8MConfig.getConfig();
+    var healthPath = (config.app && config.app.healthPath) || '/0/Health';
+
+    systemHealthTable = new Layer8MEditTable('system-health-table', {
+        endpoint: Layer8MConfig.resolveEndpoint(healthPath),
+        modelName: 'L8Health',
+        columns: HEALTH_COLUMNS,
+        rowsPerPage: 15,
+        transformData: transformHealthItem,
+        getItemId: function(item) { return item.service; },
+        onDataLoaded: function(response) {
+            healthRawDataMap.clear();
+            if (response && response.list) {
+                response.list.forEach(function(item) {
+                    if (item.stats) healthRawDataMap.set(item.alias || 'Unknown', item);
+                });
+            }
+        },
+        onRowClick: function(item) { showHealthDetail(item); }
+    });
+}
+
+function loadSecurityService(serviceName) {
+    currentSecurityService = serviceName;
+    var config = SECURITY_SERVICES[serviceName];
+
+    systemSecurityTable = new Layer8MEditTable('system-security-table', {
+        endpoint: config.endpoint,
+        modelName: config.modelName,
+        columns: config.columns,
+        rowsPerPage: 15,
+        getItemId: function(item) { return item[config.idField]; }
+    });
+}
+
+function esc(v) { return Layer8MUtils.escapeHtml(v == null ? '' : String(v)); }
+
+function detailRow(label, value) {
+    return '<div class="health-detail-row"><span class="health-detail-label">' + esc(label) +
+        '</span><span class="health-detail-value">' + esc(value) + '</span></div>';
+}
+
+function detailSection(title, rows, fullWidth) {
+    return '<div class="health-detail-section' + (fullWidth ? ' health-detail-full' : '') + '">' +
+        '<div class="health-detail-section-title">' + esc(title) + '</div>' + rows + '</div>';
+}
+
+function showHealthDetail(rowData) {
+    var raw = healthRawDataMap.get(rowData.service);
+    if (!raw) return;
+    var stats = raw.stats || {};
+    var services = raw.services ? raw.services.serviceToAreas || {} : {};
+
+    // Overview tab
+    var overview = '<div class="health-detail-grid">' +
+        detailSection('Service Information',
+            detailRow('Service Name', rowData.service) +
+            detailRow('Alias', raw.alias || 'N/A') +
+            detailRow('Start Time', raw.startTime ? new Date(parseInt(raw.startTime)).toLocaleString() : 'N/A') +
+            detailRow('Up Time', rowData.upTime)
+        ) +
+        detailSection('Quick Stats',
+            detailRow('Memory Usage', rowData.memory) +
+            detailRow('CPU Usage', rowData.cpuPercent) +
+            detailRow('Last Pulse', rowData.lastPulse)
+        ) +
+        '</div>';
+
+    // Network tab
+    var network = '<div class="health-detail-grid">' +
+        detailSection('Receive Statistics',
+            detailRow('RX Messages', (stats.rxMsgCount || 0).toLocaleString()) +
+            detailRow('RX Data', formatHealthBytes(stats.rxDataCont || 0)) +
+            detailRow('RX Data (bytes)', (stats.rxDataCont || 0).toLocaleString())
+        ) +
+        detailSection('Transmit Statistics',
+            detailRow('TX Messages', (stats.txMsgCount || 0).toLocaleString()) +
+            detailRow('TX Data', formatHealthBytes(stats.txDataCount || 0)) +
+            detailRow('TX Data (bytes)', (stats.txDataCount || 0).toLocaleString())
+        ) +
+        detailSection('Message Timing',
+            detailRow('Last Message', stats.lastMsgTime ? new Date(parseInt(stats.lastMsgTime)).toLocaleString() : 'N/A') +
+            detailRow('Time Since Last Msg', rowData.lastPulse),
+            true
+        ) +
+        '</div>';
+
+    // Resources tab
+    var resources = '<div class="health-detail-grid">' +
+        detailSection('Memory Usage',
+            detailRow('Formatted', rowData.memory) +
+            detailRow('Raw (bytes)', (stats.memoryUsage || 0).toLocaleString())
+        ) +
+        detailSection('CPU Usage',
+            detailRow('Percentage', rowData.cpuPercent) +
+            detailRow('Raw Value', stats.cpuUsage || 0)
+        ) +
+        '</div>';
+
+    // Services tab
+    var svcRows = '';
+    var svcKeys = Object.keys(services);
+    if (svcKeys.length > 0) {
+        svcKeys.forEach(function(name) {
+            var areas = services[name].areas || {};
+            var areaList = Object.keys(areas).filter(function(a) { return areas[a]; }).join(', ');
+            svcRows += detailRow(name, 'Areas: ' + (areaList || 'None'));
+        });
+    } else {
+        svcRows = '<div class="health-detail-row"><span class="health-detail-label">No services registered</span></div>';
+    }
+    var svcTab = '<div class="health-detail-grid">' +
+        detailSection('Registered Services', svcRows, true) +
+        '</div>';
+
+    Layer8MPopup.show({
+        id: 'health-detail',
+        title: 'Service Health - ' + rowData.service,
+        showFooter: false,
+        tabs: [
+            { id: 'overview', label: 'Overview', content: overview },
+            { id: 'network', label: 'Network', content: network },
+            { id: 'resources', label: 'Resources', content: resources },
+            { id: 'services', label: 'Services', content: svcTab }
+        ]
+    });
+}
+</script>
+
+<style>
+    .health-detail-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 8px 0;
+    }
+    .health-detail-section {
+        background: var(--bg-secondary, #f7fafc);
+        border-radius: var(--radius-md, 10px);
+        padding: 12px;
+        border: 1px solid var(--border-color, #e2e8f0);
+    }
+    .health-detail-section-title {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--layer8d-primary, #0ea5e9);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 8px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid var(--border-color, #e2e8f0);
+    }
+    .health-detail-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 0;
+        border-bottom: 1px solid var(--border-color, #e2e8f0);
+    }
+    .health-detail-row:last-child { border-bottom: none; }
+    .health-detail-label {
+        font-size: 11px;
+        color: var(--text-secondary, #718096);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .health-detail-value {
+        font-size: 12px;
+        color: var(--text-primary, #2d3748);
+        font-family: 'Roboto Mono', monospace;
+        font-weight: 500;
+        text-align: right;
+    }
+</style>

@@ -1,0 +1,310 @@
+/*
+© 2025 Sharon Aicler (saichler@gmail.com)
+
+Layer 8 Ecosystem is licensed under the Apache License, Version 2.0.
+You may obtain a copy of the License at:
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+@font-face {
+    font-family: 'Figtree';
+    src: url('../l8ui/font/static/Figtree-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Figtree';
+    src: url('../l8ui/font/static/Figtree-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Figtree';
+    src: url('../l8ui/font/static/Figtree-SemiBold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Figtree';
+    src: url('../l8ui/font/static/Figtree-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+:root {
+    --noc-black: #0f172a;
+    --noc-dark: #111827;
+    --noc-charcoal: #1f2937;
+    --noc-slate: #334155;
+    --noc-gray: #475569;
+
+    --noc-cyan: #0ea5e9;
+    --noc-green: #16a34a;
+    --noc-amber: #d97706;
+    --noc-red: #dc2626;
+    --noc-blue: #2563eb;
+    --noc-indigo: #4f46e5;
+
+    --status-operational: #00c853;
+    --status-warning: #ffc107;
+    --status-critical: #ff3d00;
+    --status-offline: #757575;
+    --status-maintenance: #2196f3;
+
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #64748b;
+    --text-dim: #94a3b8;
+
+    --bg-primary: #f7f6f2;
+    --bg-secondary: #f1eee8;
+    --bg-tertiary: #e3ded6;
+    --bg-card: #fcfbf8;
+    --bg-elevated: #fdfcf9;
+
+    --border-subtle: #ddd7ce;
+    --border-default: #c8c0b4;
+    --border-emphasis: #94a3b8;
+    --border-glow: rgba(14, 165, 233, 0.12);
+
+    --shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
+    --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+    --shadow-lg: 0 12px 28px rgba(15, 23, 42, 0.12);
+    --shadow-glow: 0 0 0 rgba(0, 0, 0, 0);
+
+    --glow-cyan: none;
+    --glow-green: none;
+    --glow-amber: none;
+    --glow-red: none;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Figtree', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-size: 14px;
+    overflow-x: hidden;
+}
+
+.app-container {
+    display: grid;
+    grid-template-areas:
+        "header header"
+        "sidebar content";
+    grid-template-columns: 260px 1fr;
+    grid-template-rows: 60px 1fr;
+    height: 100vh;
+    background: var(--bg-primary);
+}
+
+.app-header {
+    grid-area: header;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border-subtle);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 24px;
+    box-shadow: none;
+    position: relative;
+    z-index: 100;
+}
+
+.header-illustration {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    opacity: 0.12;
+    z-index: 1;
+}
+
+.header-left,
+.header-right {
+    position: relative;
+    z-index: 2;
+}
+
+.app-header::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--border-subtle);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.header-logo {
+    width: 42px;
+    height: 42px;
+    filter: none;
+}
+
+.header-title h1 {
+    font-size: 22px;
+    color: var(--text-primary);
+    font-weight: 700;
+    margin-bottom: 0;
+    letter-spacing: -0.02em;
+    text-transform: none;
+    font-family: 'Figtree', sans-serif;
+}
+
+.header-subtitle {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 500;
+    text-transform: none;
+    letter-spacing: 0;
+    margin-top: 2px;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.powered-by-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.layer8-header-logo {
+    width: 38px;
+    height: 38px;
+    filter: none;
+}
+
+.layer8-header-text {
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.user-menu {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.username {
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 12px;
+}
+
+.logout-btn {
+    padding: 8px 14px;
+    background: var(--bg-card);
+    color: var(--text-primary);
+    border: 1px solid var(--border-default);
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 11px;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    font-family: 'Figtree', sans-serif;
+}
+
+.logout-btn:hover {
+    background: var(--bg-secondary);
+    border-color: var(--noc-cyan);
+    color: var(--noc-cyan);
+}
+
+.sidebar {
+    grid-area: sidebar;
+    background: var(--bg-card);
+    border-right: 1px solid var(--border-subtle);
+    overflow-y: auto;
+    padding: 12px 0;
+}
+
+.nav-menu {
+    list-style: none;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 18px;
+    margin: 2px 10px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    border-radius: 10px;
+    font-weight: 500;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.nav-link:hover {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border-color: var(--border-subtle);
+}
+
+.nav-link.active {
+    background: #f0ede6;
+    color: var(--text-primary);
+    border-color: var(--border-default);
+    box-shadow: none;
+}
+
+.nav-icon {
+    font-size: 16px;
+    width: 20px;
+    text-align: center;
+}
+
+.main-content {
+    grid-area: content;
+    background: var(--bg-primary);
+    overflow: hidden;
+    min-width: 0;
+    min-height: 0;
+}
+
+#content-area {
+    height: 100%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}

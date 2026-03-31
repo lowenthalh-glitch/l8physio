@@ -1,0 +1,233 @@
+/* ── Workout Builder ─────────────────────────────────────────── */
+
+#physio-workout-builder {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+.wb-panel {
+    padding: 20px;
+}
+
+/* Control row */
+.wb-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 16px;
+    padding: 16px 20px;
+    background: var(--layer8d-bg-light);
+    border: 1px solid var(--layer8d-border);
+    border-radius: 8px;
+    margin-bottom: 24px;
+}
+
+.wb-ctrl {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.wb-ctrl-build {
+    padding-bottom: 1px;
+}
+
+.wb-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--layer8d-text-medium);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.wb-select {
+    padding: 6px 10px;
+    border: 1px solid var(--layer8d-border);
+    border-radius: 4px;
+    background: var(--layer8d-bg-white);
+    color: var(--layer8d-text-dark);
+    font-size: 13px;
+    min-width: 170px;
+    cursor: pointer;
+}
+
+.wb-protocol-badge {
+    display: inline-block;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--layer8d-primary);
+    font-family: monospace;
+    letter-spacing: 0.06em;
+    padding: 6px 0 5px;
+    min-width: 90px;
+}
+
+/* Circuit grid */
+.wb-circuits {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+@media (max-width: 1100px) {
+    .wb-circuits { grid-template-columns: 1fr; }
+}
+
+/* Single circuit card */
+.wb-circuit {
+    border: 1px solid var(--layer8d-border);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.wb-circuit-header {
+    background: var(--layer8d-primary);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 10px 14px;
+    letter-spacing: 0.03em;
+}
+
+/* Table inside circuit */
+.wb-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.wb-table thead th {
+    background: var(--layer8d-bg-light);
+    color: var(--layer8d-text-medium);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--layer8d-border);
+    text-align: left;
+}
+
+.wb-table tbody tr {
+    border-bottom: 1px solid var(--layer8d-border);
+}
+
+.wb-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.wb-table tbody tr:hover {
+    background: var(--layer8d-bg-light);
+}
+
+.wb-table tbody td {
+    padding: 9px 10px;
+    color: var(--layer8d-text-dark);
+    vertical-align: middle;
+}
+
+.wb-num        { color: var(--layer8d-text-muted); font-size: 12px; width: 28px; }
+.wb-name       { font-weight: 500; }
+.wb-sets,
+.wb-reps,
+.wb-load       { color: var(--layer8d-text-medium); }
+.wb-empty-row  { opacity: 0.45; }
+.wb-empty-cell { color: var(--layer8d-text-muted); font-style: italic; }
+
+.wb-effort {
+    font-size: 11px;
+    color: var(--layer8d-text-muted);
+    margin-left: 6px;
+}
+
+/* Type badges */
+.wb-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.wb-badge-fixed {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.wb-badge-var {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+/* States */
+.wb-loading,
+.wb-error,
+.wb-empty-state {
+    padding: 48px 24px;
+    text-align: center;
+    color: var(--layer8d-text-medium);
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.wb-error { color: var(--layer8d-error); }
+
+.wb-empty-icon {
+    font-size: 40px;
+    margin-bottom: 12px;
+}
+
+.wb-empty-hint {
+    font-size: 12px;
+    color: var(--layer8d-text-muted);
+    margin-top: 6px;
+}
+
+/* Assign to Client */
+.wb-assign-row {
+    margin-top: 20px;
+    text-align: right;
+}
+
+.wb-assign-form {
+    padding: 8px 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.wb-af-row {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.wb-af-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--layer8d-text-medium);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.wb-required { color: var(--layer8d-error); }
+
+.wb-af-input {
+    padding: 7px 10px;
+    border: 1px solid var(--layer8d-border);
+    border-radius: 4px;
+    background: var(--layer8d-bg-white);
+    color: var(--layer8d-text-dark);
+    font-size: 13px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.wb-af-static {
+    font-size: 13px;
+    color: var(--layer8d-text-dark);
+    font-weight: 500;
+    padding: 4px 0;
+}

@@ -1,0 +1,267 @@
+/* Physio Client Exercise View */
+
+.physio-client-tabs {
+    display: flex;
+    gap: 4px;
+    border-bottom: 2px solid var(--layer8d-border);
+    margin-bottom: 16px;
+}
+
+.physio-client-tab {
+    padding: 8px 20px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--layer8d-text-medium);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: color 0.15s, border-color 0.15s;
+}
+
+.physio-client-tab:hover {
+    color: var(--layer8d-primary);
+}
+
+.physio-client-tab.active {
+    color: var(--layer8d-primary);
+    border-bottom-color: var(--layer8d-primary);
+}
+
+.physio-client-tab-pane {
+    display: none;
+}
+
+.physio-client-tab-pane.active {
+    display: block;
+}
+
+/* Protocol header */
+.physio-protocol-header {
+    margin-bottom: 20px;
+}
+
+.physio-protocol-header h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--layer8d-text-dark);
+    margin: 0 0 6px;
+}
+
+.physio-protocol-desc {
+    color: var(--layer8d-text-medium);
+    font-size: 14px;
+    margin: 0;
+}
+
+/* Exercise grid */
+.physio-exercise-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+}
+
+.physio-exercise-card {
+    background: var(--layer8d-bg-white);
+    border: 1px solid var(--layer8d-border);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+/* Video embed */
+.physio-video-wrapper {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%; /* 16:9 */
+    background: #000;
+}
+
+.physio-video-wrapper iframe {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    border: none;
+}
+
+.physio-no-video {
+    height: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--layer8d-bg-light);
+    color: var(--layer8d-text-muted);
+    font-size: 13px;
+}
+
+/* Exercise info */
+.physio-exercise-info {
+    padding: 12px 14px;
+}
+
+.physio-exercise-name {
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--layer8d-text-dark);
+    margin-bottom: 8px;
+}
+
+.physio-exercise-prescription {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.physio-rx-badge {
+    background: var(--layer8d-primary);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 12px;
+}
+
+.physio-exercise-notes {
+    font-size: 13px;
+    color: var(--layer8d-text-medium);
+    background: var(--layer8d-bg-light);
+    border-radius: 4px;
+    padding: 6px 10px;
+    margin-bottom: 6px;
+}
+
+.physio-exercise-desc,
+.physio-exercise-instructions {
+    font-size: 13px;
+    color: var(--layer8d-text-medium);
+    margin-top: 4px;
+}
+
+/* States */
+.physio-exercises-loading,
+.physio-no-protocol {
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--layer8d-text-muted);
+    font-size: 15px;
+}
+
+/* ── Plan header ─────────────────────────────────────────────────────── */
+.physio-plan-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--layer8d-border);
+}
+
+.physio-plan-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--layer8d-text-dark);
+}
+
+.physio-plan-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.physio-plan-date {
+    font-size: 13px;
+    color: var(--layer8d-text-medium);
+}
+
+.physio-plan-status {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+.physio-plan-status-active { background: #dcfce7; color: #15803d; }
+.physio-plan-status-draft  { background: #fef9c3; color: #854d0e; }
+.physio-plan-status-done   { background: #f1f5f9; color: #64748b; }
+
+/* ── Circuit section ─────────────────────────────────────────────────── */
+.physio-circuit-title {
+    background: var(--layer8d-primary);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 9px 14px;
+    letter-spacing: 0.03em;
+}
+
+.physio-circuit-table-wrap {
+    margin-bottom: 28px;
+}
+
+/* ── Type badges ─────────────────────────────────────────────────────── */
+.physio-type-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.physio-type-fixed    { background: #dcfce7; color: #15803d; }
+.physio-type-variable { background: #fef3c7; color: #b45309; }
+
+/* ── Change button ───────────────────────────────────────────────────── */
+.physio-change-btn {
+    font-size: 11px;
+    padding: 3px 10px;
+}
+
+/* ── Swap popup list ─────────────────────────────────────────────────── */
+.physio-picker-list {
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.physio-picker-item {
+    padding: 10px 16px;
+    font-size: 13px;
+    cursor: pointer;
+    color: var(--layer8d-text-dark);
+    border-bottom: 1px solid var(--layer8d-border);
+}
+.physio-picker-item:last-child { border-bottom: none; }
+.physio-picker-item:hover { background: var(--layer8d-bg-light); color: var(--layer8d-primary); }
+
+.physio-picker-empty {
+    padding: 14px 16px;
+    font-size: 13px;
+    color: var(--layer8d-text-muted);
+    text-align: center;
+}
+
+/* ── Exercise info & videos tab ──────────────────────────────────────── */
+.physio-exercise-meta {
+    font-size: 12px;
+    color: var(--layer8d-text-medium);
+    margin-top: 4px;
+}
+
+.physio-exercise-meta-warn {
+    color: var(--layer8d-error, #dc2626);
+}
+
+.physio-video-link {
+    color: var(--layer8d-primary);
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+}
+.physio-video-link:hover {
+    text-decoration: underline;
+}

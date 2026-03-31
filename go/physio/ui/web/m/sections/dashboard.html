@@ -1,0 +1,94 @@
+<div class="section-container" id="dashboard-section">
+    <!-- Physio KPI Stats -->
+    <div id="nav-stats" class="nav-stats-grid">
+        <div class="nav-stat-card">
+            <div class="nav-stat-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+            </div>
+            <div class="nav-stat-content">
+                <div class="nav-stat-value" id="stat-clients">-</div>
+                <div class="nav-stat-label">Active Clients</div>
+            </div>
+        </div>
+
+        <div class="nav-stat-card">
+            <div class="nav-stat-icon warning">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+            </div>
+            <div class="nav-stat-content">
+                <div class="nav-stat-value" id="stat-appointments">-</div>
+                <div class="nav-stat-label">Scheduled Appts</div>
+            </div>
+        </div>
+
+        <div class="nav-stat-card">
+            <div class="nav-stat-icon success">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                </svg>
+            </div>
+            <div class="nav-stat-content">
+                <div class="nav-stat-value" id="stat-plans">-</div>
+                <div class="nav-stat-label">Active Plans</div>
+            </div>
+        </div>
+
+        <div class="nav-stat-card">
+            <div class="nav-stat-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="20" x2="18" y2="10"></line>
+                    <line x1="12" y1="20" x2="12" y2="4"></line>
+                    <line x1="6" y1="20" x2="6" y2="14"></line>
+                </svg>
+            </div>
+            <div class="nav-stat-content">
+                <div class="nav-stat-value" id="stat-exercises">-</div>
+                <div class="nav-stat-label">Exercises</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dynamic Navigation Content -->
+    <div id="nav-content"></div>
+</div>
+
+<script>
+function initMobileDashboard() {
+    loadPhysioDashboardStats();
+    Layer8MNav.showHome();
+}
+
+async function loadPhysioDashboardStats() {
+    const kpis = [
+        { id: 'stat-clients',      endpoint: '/50/PhyClient',  query: 'select * from PhysioClient where status=1 limit 1 page 0' },
+        { id: 'stat-appointments', endpoint: '/50/PhyAppt',    query: 'select * from Appointment where status=1 limit 1 page 0' },
+        { id: 'stat-plans',        endpoint: '/50/PhyPlan',    query: 'select * from TreatmentPlan where status=2 limit 1 page 0' },
+        { id: 'stat-exercises',    endpoint: '/50/PhyExercis', query: 'select * from PhysioExercise where isActive=true limit 1 page 0' }
+    ];
+
+    await Promise.all(kpis.map(async function(kpi) {
+        try {
+            const body = encodeURIComponent(JSON.stringify({ text: kpi.query }));
+            const response = await Layer8MAuth.get(Layer8MConfig.resolveEndpoint(kpi.endpoint) + '?body=' + body);
+            const el = document.getElementById(kpi.id);
+            if (el) {
+                el.textContent = (response && response.metadata && response.metadata.keyCount && response.metadata.keyCount.counts)
+                    ? (response.metadata.keyCount.counts.Total || 0)
+                    : '0';
+            }
+        } catch (e) {
+            const el = document.getElementById(kpi.id);
+            if (el) el.textContent = '0';
+        }
+    }));
+}
+</script>

@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#ffffff">
+    <title>Physio by Layer 8</title>
+    <link rel="icon" href="../l8ui/images/logo.gif">
+    <link rel="apple-touch-icon" href="../l8ui/images/logo.gif">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../l8ui/shared/layer8d-toggle-tree.css">
+    <link rel="stylesheet" href="../l8ui/sys/modules/l8sys-modules.css">
+    <link rel="stylesheet" href="../l8ui/sys/dataimport/l8dataimport.css">
+    <link rel="stylesheet" href="../l8ui/m/css/layer8m-popup.css">
+    <link rel="stylesheet" href="../l8ui/m/css/layer8m-confirm.css">
+    <link rel="stylesheet" href="../l8ui/m/css/layer8m-table.css">
+    <link rel="stylesheet" href="../l8ui/m/css/layer8m-edit-table.css">
+    <link rel="stylesheet" href="../l8ui/m/css/layer8m-forms.css">
+    <link rel="stylesheet" href="../l8ui/shared/layer8d-form-fields.css">
+    <link rel="stylesheet" href="../l8ui/shared/layer8-file-upload.css">
+    <link rel="stylesheet" href="../l8ui/m/css/layer8m-datepicker.css">
+    <link rel="stylesheet" href="../l8ui/m/css/layer8m-reference-picker.css">
+    <link rel="stylesheet" href="../l8ui/m/css/layer8m-nav-cards.css">
+    <link rel="stylesheet" href="../l8ui/chart/layer8d-chart.css">
+    <link rel="stylesheet" href="../l8ui/kanban/layer8d-kanban.css">
+    <link rel="stylesheet" href="../l8ui/timeline/layer8d-timeline.css">
+    <link rel="stylesheet" href="../l8ui/calendar/layer8d-calendar.css">
+    <link rel="stylesheet" href="../l8ui/tree_grid/layer8d-tree-grid.css">
+    <link rel="stylesheet" href="../l8ui/gantt/layer8d-gantt.css">
+    <link rel="stylesheet" href="../l8ui/wizard/layer8d-wizard.css">
+    <link rel="stylesheet" href="../l8ui/dashboard/layer8d-widget.css">
+    <link rel="stylesheet" href="../l8ui/shared/layer8-markdown.css">
+    <link rel="stylesheet" href="../l8ui/l8agent/m/l8agent-chat-m.css">
+    <link rel="stylesheet" href="../l8ui/shared/layer8-view-switcher.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; }
+        .app-container { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        .mobile-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #ffffff; border-bottom: 1px solid #e5e7eb; position: sticky; top: 0; z-index: 100; }
+        .header-menu-btn, .header-action-btn { background: none; border: none; cursor: pointer; padding: 8px; border-radius: 8px; color: #374151; }
+        .header-menu-btn:hover, .header-action-btn:hover { background: #f3f4f6; }
+        .header-menu-btn svg, .header-action-btn svg { width: 20px; height: 20px; display: block; }
+        .header-logo { display: flex; align-items: center; gap: 8px; }
+        .header-logo img { height: 28px; width: auto; }
+        .header-logo-text { font-weight: 600; font-size: 14px; color: #111827; }
+        .header-actions { display: flex; align-items: center; gap: 4px; }
+        .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; }
+        .sidebar-overlay.visible { display: block; }
+        .mobile-sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100vh; background: #ffffff; border-right: 1px solid #e5e7eb; transition: left 0.25s ease; z-index: 300; display: flex; flex-direction: column; }
+        .mobile-sidebar.open { left: 0; }
+        .sidebar-header { padding: 20px 16px 12px; border-bottom: 1px solid #f3f4f6; }
+        .sidebar-logo { display: flex; align-items: center; gap: 10px; }
+        .sidebar-logo img { height: 32px; width: auto; }
+        .sidebar-logo-text { font-weight: 700; font-size: 15px; color: #111827; }
+        .sidebar-nav { flex: 1; overflow-y: auto; padding: 12px 8px; }
+        .sidebar-section { margin-bottom: 8px; }
+        .sidebar-section-title { font-size: 10px; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.05em; padding: 4px 12px; margin-bottom: 4px; }
+        .sidebar-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 8px; cursor: pointer; text-decoration: none; color: #374151; font-size: 14px; font-weight: 500; transition: background 0.15s; }
+        .sidebar-item:hover { background: #f3f4f6; }
+        .sidebar-item.active { background: #eff6ff; color: #2563eb; }
+        .sidebar-item-icon { width: 20px; height: 20px; flex-shrink: 0; }
+        .sidebar-item-icon svg { width: 20px; height: 20px; }
+        .sidebar-user { padding: 16px; border-top: 1px solid #f3f4f6; display: flex; align-items: center; gap: 10px; }
+        .sidebar-avatar { width: 36px; height: 36px; border-radius: 50%; background: #2563eb; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; flex-shrink: 0; }
+        .sidebar-user-details { flex: 1; min-width: 0; }
+        .sidebar-user-name { font-size: 13px; font-weight: 600; color: #111827; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .sidebar-user-role { font-size: 11px; color: #6b7280; }
+        .sidebar-logout-btn { background: none; border: none; cursor: pointer; padding: 6px; border-radius: 6px; color: #6b7280; display: flex; align-items: center; }
+        .sidebar-logout-btn:hover { background: #fee2e2; color: #dc2626; }
+        .main-content { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+        #content-area { min-height: 100%; }
+        .loading { display: flex; align-items: center; justify-content: center; height: 200px; color: #6b7280; font-size: 14px; }
+        /* Mobile exercise view */
+        .mobile-physio-ex-tabs { display: flex; border-bottom: 2px solid #e5e7eb; margin-bottom: 12px; }
+        .mobile-physio-ex-tab { flex: 1; padding: 10px; background: none; border: none; cursor: pointer; font-size: 14px; font-weight: 500; color: #6b7280; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+        .mobile-physio-ex-tab.active { color: #0ea5e9; border-bottom-color: #0ea5e9; }
+        .mobile-physio-ex-pane { display: none; }
+        .mobile-physio-ex-pane.active { display: block; }
+        .mobile-physio-protocol-name { font-size: 16px; font-weight: 600; color: #111827; margin-bottom: 12px; }
+        .mobile-physio-ex-card { background: #fff; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 16px; overflow: hidden; }
+        .mobile-physio-video { position: relative; width: 100%; padding-bottom: 56.25%; background: #000; }
+        .mobile-physio-video iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+        .mobile-physio-no-video { height: 120px; display: flex; align-items: center; justify-content: center; background: #f3f4f6; color: #9ca3af; font-size: 13px; }
+        .mobile-physio-ex-body { padding: 12px; }
+        .mobile-physio-ex-name { font-weight: 600; font-size: 15px; color: #111827; margin-bottom: 8px; }
+        .mobile-physio-ex-rx { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
+        .mobile-physio-rx-tag { background: #0ea5e9; color: #fff; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 12px; }
+        .mobile-physio-ex-notes { font-size: 13px; color: #6b7280; background: #f9fafb; border-radius: 4px; padding: 6px 8px; }
+        .mobile-physio-no-protocol, .mobile-physio-loading { padding: 32px 16px; text-align: center; color: #6b7280; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="mobile-header">
+            <button class="header-menu-btn" id="menu-toggle">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
+            <div class="header-logo">
+                <img src="../l8ui/images/logo.gif" alt="Physio by Layer 8">
+                <span class="header-logo-text">Physio by Layer 8</span>
+            </div>
+            <div class="header-actions">
+                <button class="header-action-btn" id="refresh-btn" title="Refresh">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M23 4v6h-6"></path>
+                        <path d="M1 20v-6h6"></path>
+                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Sidebar Overlay -->
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+        <!-- Sidebar -->
+        <aside class="mobile-sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <img src="../l8ui/images/logo.gif" alt="Physio by Layer 8">
+                    <span class="sidebar-logo-text">Physio by Layer 8</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="sidebar-section">
+                    <div class="sidebar-section-title">Main</div>
+                    <a href="#dashboard" class="sidebar-item active" data-section="dashboard" data-module="physio">
+                        <span class="sidebar-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                            </svg>
+                        </span>
+                        Physiotherapy
+                    </a>
+                    <a href="#dashboard" class="sidebar-item" data-section="dashboard" data-module="aia">
+                        <span class="sidebar-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1.17A7 7 0 0 1 14 23h-4a7 7 0 0 1-6.83-4H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"></path>
+                            </svg>
+                        </span>
+                        AI Agent
+                    </a>
+                    <a href="#system" class="sidebar-item" data-section="system" data-module="system">
+                        <span class="sidebar-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"></circle>
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                            </svg>
+                        </span>
+                        System
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-user">
+                <div class="sidebar-avatar" id="user-avatar">U</div>
+                <div class="sidebar-user-details">
+                    <div class="sidebar-user-name" id="user-name">User</div>
+                    <div class="sidebar-user-role">Physiotherapist</div>
+                </div>
+                <button class="sidebar-logout-btn" onclick="MobileApp.logout()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div id="content-area">
+                <div class="loading">Loading</div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts - Core -->
+    <script src="../l8ui/m/js/layer8m-config.js"></script>
+    <script src="../l8ui/m/js/layer8m-auth.js"></script>
+    <script src="../l8ui/m/js/layer8m-utils.js"></script>
+    <!-- Shared Desktop Utilities -->
+    <script src="../l8ui/shared/layer8d-config.js"></script>
+    <script src="../l8ui/shared/layer8d-utils.js"></script>
+    <script src="../l8ui/shared/layer8d-renderers.js"></script>
+    <script src="../l8ui/shared/layer8d-reference-registry.js"></script>
+    <!-- Factory Components -->
+    <script src="../l8ui/shared/layer8-enum-factory.js"></script>
+    <script src="../l8ui/shared/layer8-ref-factory.js"></script>
+    <script src="../l8ui/shared/layer8-column-factory.js"></script>
+    <script src="../l8ui/shared/layer8-form-factory.js"></script>
+    <script src="../l8ui/shared/layer8-form-factory-presets.js"></script>
+    <!-- Mobile Module Registry Factory -->
+    <script src="../l8ui/m/js/layer8m-module-registry.js"></script>
+    <!-- Mobile Components -->
+    <script src="../l8ui/m/js/layer8m-popup.js"></script>
+    <script src="../l8ui/m/js/layer8m-confirm.js"></script>
+    <script src="../l8ui/m/js/layer8m-data-source.js"></script>
+    <script src="../l8ui/m/js/layer8m-table.js"></script>
+    <script src="../l8ui/m/js/layer8m-edit-table.js"></script>
+    <script src="../l8ui/shared/layer8-csv-export.js"></script>
+    <script src="../l8ui/shared/layer8-file-upload.js"></script>
+    <!-- View System -->
+    <script src="../l8ui/m/js/layer8m-view-factory.js"></script>
+    <script src="../l8ui/shared/layer8d-view-factory.js"></script>
+    <script src="../l8ui/shared/layer8d-data-source.js"></script>
+    <script src="../l8ui/shared/layer8-view-switcher.js"></script>
+    <script src="../l8ui/chart/layer8d-chart-core.js"></script>
+    <script src="../l8ui/chart/layer8d-chart-bar.js"></script>
+    <script src="../l8ui/chart/layer8d-chart-line.js"></script>
+    <script src="../l8ui/chart/layer8d-chart-pie.js"></script>
+    <script src="../l8ui/m/js/layer8m-chart.js"></script>
+    <script src="../l8ui/kanban/layer8d-kanban-core.js"></script>
+    <script src="../l8ui/kanban/layer8d-kanban-render.js"></script>
+    <script src="../l8ui/kanban/layer8d-kanban-events.js"></script>
+    <script src="../l8ui/m/js/layer8m-kanban.js"></script>
+    <script src="../l8ui/timeline/layer8d-timeline.js"></script>
+    <script src="../l8ui/m/js/layer8m-timeline.js"></script>
+    <script src="../l8ui/calendar/layer8d-calendar-core.js"></script>
+    <script src="../l8ui/calendar/layer8d-calendar-render.js"></script>
+    <script src="../l8ui/calendar/layer8d-calendar-events.js"></script>
+    <script src="../l8ui/m/js/layer8m-calendar.js"></script>
+    <script src="../l8ui/tree_grid/layer8d-tree-grid-core.js"></script>
+    <script src="../l8ui/tree_grid/layer8d-tree-grid-render.js"></script>
+    <script src="../l8ui/tree_grid/layer8d-tree-grid-events.js"></script>
+    <script src="../l8ui/m/js/layer8m-tree-grid.js"></script>
+    <script src="../l8ui/gantt/layer8d-gantt-core.js"></script>
+    <script src="../l8ui/gantt/layer8d-gantt-render.js"></script>
+    <script src="../l8ui/gantt/layer8d-gantt-events.js"></script>
+    <script src="../l8ui/m/js/layer8m-gantt.js"></script>
+    <script src="../l8ui/wizard/layer8d-wizard-core.js"></script>
+    <script src="../l8ui/wizard/layer8d-wizard-render.js"></script>
+    <script src="../l8ui/m/js/layer8m-wizard.js"></script>
+    <script src="../l8ui/dashboard/layer8d-widget.js"></script>
+    <!-- Forms -->
+    <script src="../l8ui/m/js/layer8m-forms-fields.js"></script>
+    <script src="../l8ui/m/js/layer8m-forms-fields-reference.js"></script>
+    <script src="../l8ui/m/js/layer8m-forms-fields-ext.js"></script>
+    <script src="../l8ui/m/js/layer8m-forms.js"></script>
+    <script src="../l8ui/m/js/layer8m-forms-inline.js"></script>
+    <script src="../l8ui/m/js/layer8m-datepicker.js"></script>
+    <!-- Reference Registry -->
+    <script src="../l8ui/m/js/layer8m-reference-registry.js"></script>
+    <script src="js/reference-registry-physio-m.js"></script>
+    <script src="../l8ui/m/js/layer8m-reference-picker.js"></script>
+    <!-- Renderers -->
+    <script src="../l8ui/m/js/layer8m-renderers.js"></script>
+    <!-- Markdown + File Upload -->
+    <script src="../l8ui/shared/layer8-markdown.js"></script>
+    <!-- AI Agent (Mobile) -->
+    <script src="../l8ui/l8agent/l8agent-enums.js"></script>
+    <script src="../l8ui/l8agent/l8agent-columns.js"></script>
+    <script src="../l8ui/l8agent/l8agent-forms.js"></script>
+    <script src="../l8ui/l8agent/m/l8agent-chat-m.js"></script>
+
+    <!-- Physio Mobile Module Data -->
+    <script src="js/physio/clients-enums.js"></script>
+    <script src="js/physio/clients-columns.js"></script>
+    <script src="js/physio/clients-forms.js"></script>
+    <script src="js/physio/clients-exercises.js"></script>
+    <script src="js/physio/exercises-enums.js"></script>
+    <script src="js/physio/exercises-columns.js"></script>
+    <script src="js/physio/exercises-forms.js"></script>
+    <script src="js/physio/plans-enums.js"></script>
+    <script src="js/physio/plans-columns.js"></script>
+    <script src="js/physio/plans-forms.js"></script>
+    <script src="js/physio/appointments-enums.js"></script>
+    <script src="js/physio/appointments-columns.js"></script>
+    <script src="js/physio/appointments-forms.js"></script>
+    <script src="js/physio/progress-enums.js"></script>
+    <script src="js/physio/progress-columns.js"></script>
+    <script src="js/physio/progress-forms.js"></script>
+    <script src="js/physio/protocols-columns.js"></script>
+    <script src="js/physio/protocols-forms.js"></script>
+    <script src="js/physio/physio-index.js"></script>
+
+    <!-- AIA Mobile Module Data -->
+    <script src="js/aia/agent-enums.js"></script>
+    <script src="js/aia/agent-columns.js"></script>
+    <script src="js/aia/agent-forms.js"></script>
+    <script src="js/aia/aia-index.js"></script>
+
+    <!-- Shared Toggle Tree + Module Filter -->
+    <script src="../l8ui/shared/layer8d-toggle-tree.js"></script>
+    <script src="../l8ui/shared/layer8d-module-filter.js"></script>
+    <script src="../l8ui/sys/modules/l8sys-dependency-graph.js"></script>
+    <script src="../l8ui/sys/modules/l8sys-modules-map.js"></script>
+    <script src="../l8ui/sys/modules/l8sys-modules.js"></script>
+    <script src="../l8ui/sys/dataimport/l8dataimport.js"></script>
+    <script src="../l8ui/sys/dataimport/l8dataimport-templates.js"></script>
+    <script src="../l8ui/sys/dataimport/l8dataimport-transfer.js"></script>
+    <script src="../l8ui/sys/dataimport/l8dataimport-execute.js"></script>
+
+    <!-- Navigation Core -->
+    <script src="../l8ui/m/js/layer8m-nav-crud.js"></script>
+    <script src="../l8ui/m/js/layer8m-nav-data.js"></script>
+    <!-- Physio-specific registry patch (adds MobilePhysio + MobileAia to nav lookups) -->
+    <script src="js/physio-nav-data-patch.js"></script>
+    <script src="../l8ui/m/js/layer8m-nav.js"></script>
+
+    <!-- Physio Navigation Config (project-specific) -->
+    <script src="js/nav-config/physio-nav-config.js"></script>
+
+    <!-- App -->
+    <script src="js/app-core.js"></script>
+</body>
+</html>

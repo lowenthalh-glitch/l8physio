@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Physio by Layer 8</title>
+    <link rel="icon" href="l8ui/images/logo.gif" type="image/gif">
+    <!-- Theme -->
+    <link rel="stylesheet" href="l8ui/shared/layer8d-theme.css">
+    <link rel="stylesheet" href="l8ui/shared/layer8d-animations.css">
+    <link rel="stylesheet" href="l8ui/shared/layer8d-scrollbar.css">
+    <!-- App Shell -->
+    <link rel="stylesheet" href="css/base-core.css">
+    <link rel="stylesheet" href="css/components-modals.css">
+    <link rel="stylesheet" href="css/components-misc.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <!-- Section Layout -->
+    <link rel="stylesheet" href="l8ui/shared/layer8-section-layout.css">
+    <link rel="stylesheet" href="l8ui/shared/layer8-section-responsive.css">
+    <!-- Components -->
+    <link rel="stylesheet" href="l8ui/edit_table/layer8d-table.css">
+    <link rel="stylesheet" href="l8ui/chart/layer8d-chart.css">
+    <link rel="stylesheet" href="l8ui/kanban/layer8d-kanban.css">
+    <link rel="stylesheet" href="l8ui/timeline/layer8d-timeline.css">
+    <link rel="stylesheet" href="l8ui/calendar/layer8d-calendar.css">
+    <link rel="stylesheet" href="l8ui/tree_grid/layer8d-tree-grid.css">
+    <link rel="stylesheet" href="l8ui/gantt/layer8d-gantt.css">
+    <link rel="stylesheet" href="l8ui/wizard/layer8d-wizard.css">
+    <link rel="stylesheet" href="l8ui/dashboard/layer8d-widget.css">
+    <link rel="stylesheet" href="l8ui/shared/layer8-view-switcher.css">
+    <link rel="stylesheet" href="l8ui/shared/layer8-markdown.css">
+    <link rel="stylesheet" href="l8ui/shared/layer8-file-upload.css">
+    <!-- AI Agent -->
+    <link rel="stylesheet" href="l8ui/l8agent/l8agent-chat.css">
+    <!-- SYS Module -->
+    <link rel="stylesheet" href="l8ui/sys/l8sys.css">
+    <link rel="stylesheet" href="l8ui/sys/health/l8health.css">
+    <link rel="stylesheet" href="l8ui/sys/modules/l8sys-modules.css">
+    <link rel="stylesheet" href="l8ui/sys/logs/l8logs.css">
+    <link rel="stylesheet" href="l8ui/sys/dataimport/l8dataimport.css">
+    <!-- Toggle Tree + Popup + Forms -->
+    <link rel="stylesheet" href="l8ui/shared/layer8d-toggle-tree.css">
+    <link rel="stylesheet" href="l8ui/popup/layer8d-popup.css">
+    <link rel="stylesheet" href="l8ui/popup/layer8d-popup-forms.css">
+    <link rel="stylesheet" href="l8ui/shared/layer8d-form-fields.css">
+    <link rel="stylesheet" href="l8ui/shared/layer8-file-upload.css">
+    <link rel="stylesheet" href="l8ui/popup/layer8d-popup-inline-table.css">
+    <link rel="stylesheet" href="l8ui/popup/layer8d-popup-content.css">
+    <link rel="stylesheet" href="l8ui/datepicker/layer8d-datepicker.css">
+    <link rel="stylesheet" href="l8ui/reference_picker/layer8d-reference-picker.css">
+    <link rel="stylesheet" href="l8ui/input_formatters/layer8d-input-formatter.css">
+    <link rel="stylesheet" href="l8ui/notification/layer8d-notification.css">
+    <!-- Physio Client Exercise View -->
+    <link rel="stylesheet" href="physio/clients/clients-exercises.css">
+    <!-- Physio Workout Builder -->
+    <link rel="stylesheet" href="physio/builder/workout-builder.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <svg class="header-illustration" viewBox="0 0 1920 60" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="headerNodeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" style="stop-color:#0ea5e9;stop-opacity:0.3" />
+                        <stop offset="100%" style="stop-color:#0284c7;stop-opacity:0.2" />
+                    </linearGradient>
+                </defs>
+                <path d="M 0,30 Q 200,10 400,30 T 800,30" fill="none" stroke="rgba(14, 165, 233, 0.15)" stroke-width="1.5"/>
+                <path d="M 1920,30 Q 1720,50 1520,30 T 1120,30" fill="none" stroke="rgba(14, 165, 233, 0.15)" stroke-width="1.5"/>
+                <circle cx="200" cy="20" r="2" fill="rgba(14, 165, 233, 0.5)">
+                    <animate attributeName="opacity" values="0.3;1;0.3" dur="3s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="600" cy="25" r="2" fill="rgba(14, 165, 233, 0.5)">
+                    <animate attributeName="opacity" values="0.3;1;0.3" dur="4s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="1300" cy="40" r="2" fill="rgba(14, 165, 233, 0.5)">
+                    <animate attributeName="opacity" values="0.3;1;0.3" dur="3.5s" repeatCount="indefinite"/>
+                </circle>
+            </svg>
+            <div class="header-left">
+                <img src="l8ui/images/logo.gif" alt="Physio by Layer 8" class="header-logo">
+                <div class="header-title">
+                    <h1>Physio by Layer 8</h1>
+                    <p class="header-subtitle">Physiotherapy Management</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="powered-by-header">
+                    <span>Powered by</span>
+                    <img src="l8ui/images/Layer8Logo.gif" alt="Layer 8 Ecosystem" class="layer8-header-logo">
+                    <span class="layer8-header-text">Layer 8 Ecosystem</span>
+                </div>
+                <div class="user-menu">
+                    <span class="username">Admin</span>
+                    <button class="logout-btn" onclick="logout()">Logout</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation Sidebar -->
+        <nav class="sidebar">
+            <ul class="nav-menu">
+                <li><a href="#" data-section="physio" class="nav-link active">
+                    <span class="nav-icon">🏥</span>
+                    <span>Physiotherapy</span>
+                </a></li>
+                <li><a href="#" data-section="aia" class="nav-link">
+                    <span class="nav-icon">🤖</span>
+                    <span>AI Agent</span>
+                </a></li>
+                <li><a href="#" data-section="system" class="nav-link">
+                    <span class="nav-icon">⚙️</span>
+                    <span>System</span>
+                </a></li>
+            </ul>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <div id="content-area"></div>
+        </main>
+    </div>
+
+    <div id="layer8d-popup-root"></div>
+
+    <!-- App Shell -->
+    <script src="js/sections.js"></script>
+    <script src="js/app.js"></script>
+
+    <!-- Layer8 Core -->
+    <script src="l8ui/shared/layer8d-config.js"></script>
+    <script src="l8ui/shared/layer8d-utils.js"></script>
+    <script src="l8ui/shared/layer8d-renderers.js"></script>
+    <script src="l8ui/shared/layer8d-reference-registry.js"></script>
+
+    <!-- Factory Components -->
+    <script src="l8ui/shared/layer8-enum-factory.js"></script>
+    <script src="l8ui/shared/layer8-ref-factory.js"></script>
+    <script src="l8ui/shared/layer8-column-factory.js"></script>
+    <script src="l8ui/shared/layer8-form-factory.js"></script>
+    <script src="l8ui/shared/layer8-form-factory-presets.js"></script>
+    <script src="l8ui/shared/layer8-svg-factory.js"></script>
+    <script src="l8ui/shared/layer8d-module-config-factory.js"></script>
+    <script src="l8ui/shared/layer8-section-generator.js"></script>
+
+    <!-- Physio Reference Registry -->
+    <script src="js/reference-registry-physio.js"></script>
+
+    <!-- Notification + Input Formatter -->
+    <script src="l8ui/notification/layer8d-notification.js"></script>
+    <script src="l8ui/input_formatters/layer8d-input-formatter-utils.js"></script>
+    <script src="l8ui/input_formatters/layer8d-input-formatter-masks.js"></script>
+    <script src="l8ui/input_formatters/layer8d-input-formatter-types-validators.js"></script>
+    <script src="l8ui/input_formatters/layer8d-input-formatter-types.js"></script>
+    <script src="l8ui/input_formatters/layer8d-input-formatter-core.js"></script>
+    <script src="l8ui/input_formatters/layer8d-input-formatter.js"></script>
+
+    <!-- Markdown + File Upload + CSV Export -->
+    <script src="l8ui/shared/layer8-markdown.js"></script>
+    <script src="l8ui/shared/layer8-file-upload.js"></script>
+    <script src="l8ui/shared/layer8-csv-export.js"></script>
+
+    <!-- Forms Component -->
+    <script src="l8ui/shared/layer8d-forms-fields.js"></script>
+    <script src="l8ui/shared/layer8d-forms-fields-ext.js"></script>
+    <script src="l8ui/shared/layer8d-forms-data.js"></script>
+    <script src="l8ui/shared/layer8d-forms-pickers.js"></script>
+    <script src="l8ui/shared/layer8d-forms-modal.js"></script>
+    <script src="l8ui/shared/layer8d-forms.js"></script>
+
+    <!-- Popup Component -->
+    <script src="l8ui/popup/layer8d-popup.js"></script>
+
+    <!-- Date Picker -->
+    <script src="l8ui/datepicker/layer8d-datepicker-utils.js"></script>
+    <script src="l8ui/datepicker/layer8d-datepicker-calendar.js"></script>
+    <script src="l8ui/datepicker/layer8d-datepicker-core.js"></script>
+    <script src="l8ui/datepicker/layer8d-datepicker.js"></script>
+
+    <!-- Reference Picker -->
+    <script src="l8ui/reference_picker/layer8d-reference-picker-utils.js"></script>
+    <script src="l8ui/reference_picker/layer8d-reference-picker-data.js"></script>
+    <script src="l8ui/reference_picker/layer8d-reference-picker-render.js"></script>
+    <script src="l8ui/reference_picker/layer8d-reference-picker-events.js"></script>
+    <script src="l8ui/reference_picker/layer8d-reference-picker-core.js"></script>
+    <script src="l8ui/reference_picker/layer8d-reference-picker.js"></script>
+
+    <!-- Table Component -->
+    <script src="l8ui/edit_table/layer8d-table-core.js"></script>
+    <script src="l8ui/edit_table/layer8d-table-data.js"></script>
+    <script src="l8ui/edit_table/layer8d-table-render.js"></script>
+    <script src="l8ui/edit_table/layer8d-table-events.js"></script>
+    <script src="l8ui/edit_table/layer8d-table-filter.js"></script>
+    <script src="l8ui/edit_table/layer8d-table.js"></script>
+
+    <!-- Data Source + View Factory + View Components -->
+    <script src="l8ui/shared/layer8d-data-source.js"></script>
+    <script src="l8ui/shared/layer8d-view-factory.js"></script>
+    <script src="l8ui/shared/layer8-view-switcher.js"></script>
+    <script src="l8ui/chart/layer8d-chart-core.js"></script>
+    <script src="l8ui/chart/layer8d-chart-bar.js"></script>
+    <script src="l8ui/chart/layer8d-chart-line.js"></script>
+    <script src="l8ui/chart/layer8d-chart-pie.js"></script>
+    <script src="l8ui/kanban/layer8d-kanban-core.js"></script>
+    <script src="l8ui/kanban/layer8d-kanban-render.js"></script>
+    <script src="l8ui/kanban/layer8d-kanban-events.js"></script>
+    <script src="l8ui/timeline/layer8d-timeline.js"></script>
+    <script src="l8ui/calendar/layer8d-calendar-core.js"></script>
+    <script src="l8ui/calendar/layer8d-calendar-render.js"></script>
+    <script src="l8ui/calendar/layer8d-calendar-events.js"></script>
+    <script src="l8ui/tree_grid/layer8d-tree-grid-core.js"></script>
+    <script src="l8ui/tree_grid/layer8d-tree-grid-render.js"></script>
+    <script src="l8ui/tree_grid/layer8d-tree-grid-events.js"></script>
+    <script src="l8ui/gantt/layer8d-gantt-core.js"></script>
+    <script src="l8ui/gantt/layer8d-gantt-render.js"></script>
+    <script src="l8ui/gantt/layer8d-gantt-events.js"></script>
+    <script src="l8ui/wizard/layer8d-wizard-core.js"></script>
+    <script src="l8ui/wizard/layer8d-wizard-render.js"></script>
+    <script src="l8ui/dashboard/layer8d-widget.js"></script>
+
+    <!-- Module Abstractions -->
+    <script src="l8ui/shared/layer8d-service-registry.js"></script>
+    <script src="l8ui/shared/layer8d-module-crud.js"></script>
+    <script src="l8ui/shared/layer8d-module-navigation.js"></script>
+    <script src="l8ui/shared/layer8d-toggle-tree.js"></script>
+    <script src="l8ui/shared/layer8d-module-filter.js"></script>
+    <script src="l8ui/shared/layer8d-module-factory.js"></script>
+
+    <!-- Physio Module -->
+    <script src="physio/physio-config.js"></script>
+    <script src="physio/therapists/therapists-columns.js"></script>
+    <script src="physio/therapists/therapists-forms.js"></script>
+    <script src="physio/clients/clients-enums.js"></script>
+    <script src="physio/clients/clients-columns.js"></script>
+    <script src="physio/clients/clients-forms.js"></script>
+    <script src="physio/clients/clients-exercises.js"></script>
+    <script src="physio/exercises/exercises-enums.js"></script>
+    <script src="physio/exercises/exercises-columns.js"></script>
+    <script src="physio/exercises/exercises-forms.js"></script>
+    <script src="physio/protocols/protocols-columns.js"></script>
+    <script src="physio/protocols/protocols-forms.js"></script>
+    <script src="physio/plans/plans-enums.js"></script>
+    <script src="physio/plans/plans-columns.js"></script>
+    <script src="physio/plans/plans-forms.js"></script>
+    <script src="physio/appointments/appointments-enums.js"></script>
+    <script src="physio/appointments/appointments-columns.js"></script>
+    <script src="physio/appointments/appointments-forms.js"></script>
+    <script src="physio/progress/progress-enums.js"></script>
+    <script src="physio/progress/progress-columns.js"></script>
+    <script src="physio/progress/progress-forms.js"></script>
+    <script src="physio/physio-lookups.js"></script>
+    <script src="physio/builder/workout-builder.js"></script>
+    <script src="physio/physio-init.js"></script>
+
+    <!-- AI Agent Module -->
+    <script src="l8ui/l8agent/l8agent-enums.js"></script>
+    <script src="l8ui/l8agent/l8agent-columns.js"></script>
+    <script src="l8ui/l8agent/l8agent-forms.js"></script>
+    <script src="l8ui/l8agent/l8agent-chat.js"></script>
+    <script src="physio/aia/aia-config.js"></script>
+    <script src="physio/aia/aia-init.js"></script>
+    <script src="physio/aia/aia-chat-init.js"></script>
+
+    <!-- SYS Module -->
+    <script src="l8ui/sys/l8sys-config.js"></script>
+    <script src="l8ui/sys/health/l8health.js"></script>
+    <script src="l8ui/sys/security/l8security-enums.js"></script>
+    <script src="l8ui/sys/security/l8security-columns.js"></script>
+    <script src="l8ui/sys/security/l8security-forms.js"></script>
+    <script src="l8ui/sys/security/l8security.js"></script>
+    <script src="l8ui/sys/security/l8security-users-crud.js"></script>
+    <script src="l8ui/sys/security/l8security-roles-crud.js"></script>
+    <script src="l8ui/sys/security/l8security-credentials-crud.js"></script>
+    <script src="l8ui/sys/security/l8security-events-enums.js"></script>
+    <script src="l8ui/sys/security/l8security-events-columns.js"></script>
+    <script src="l8ui/sys/modules/l8sys-dependency-graph.js"></script>
+    <script src="l8ui/sys/modules/l8sys-modules-map.js"></script>
+    <script src="l8ui/sys/modules/l8sys-modules.js"></script>
+    <script src="l8ui/sys/logs/l8logs.js"></script>
+    <script src="l8ui/sys/dataimport/l8dataimport.js"></script>
+    <script src="l8ui/sys/dataimport/l8dataimport-templates.js"></script>
+    <script src="l8ui/sys/dataimport/l8dataimport-transfer.js"></script>
+    <script src="l8ui/sys/dataimport/l8dataimport-execute.js"></script>
+    <script src="l8ui/sys/l8sys-init.js"></script>
+</body>
+</html>

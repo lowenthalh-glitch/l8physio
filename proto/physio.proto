@@ -1,0 +1,385 @@
+syntax = "proto3";
+
+package physio;
+
+option go_package = "./types/physio";
+
+import "erp-common.proto";
+import "api.proto";
+
+// ──────────────────────────────────────────────
+// Enums
+// ──────────────────────────────────────────────
+
+enum PhysioClientStatus {
+  PHYSIO_CLIENT_STATUS_UNSPECIFIED = 0;
+  PHYSIO_CLIENT_STATUS_ACTIVE      = 1;
+  PHYSIO_CLIENT_STATUS_INACTIVE    = 2;
+  PHYSIO_CLIENT_STATUS_DISCHARGED  = 3;
+}
+
+enum PhysioPlanStatus {
+  PHYSIO_PLAN_STATUS_UNSPECIFIED = 0;
+  PHYSIO_PLAN_STATUS_DRAFT       = 1;
+  PHYSIO_PLAN_STATUS_ACTIVE      = 2;
+  PHYSIO_PLAN_STATUS_COMPLETED   = 3;
+  PHYSIO_PLAN_STATUS_SUSPENDED   = 4;
+}
+
+enum PhysioExerciseCategory {
+  PHYSIO_EXERCISE_CATEGORY_UNSPECIFIED = 0;
+  PHYSIO_EXERCISE_CATEGORY_MOBILITY    = 1;
+  PHYSIO_EXERCISE_CATEGORY_REHAB       = 2;
+  PHYSIO_EXERCISE_CATEGORY_STRENGTH    = 3;
+  PHYSIO_EXERCISE_CATEGORY_FUNCTIONAL  = 4;
+  PHYSIO_EXERCISE_CATEGORY_FLEXIBILITY = 5;
+  PHYSIO_EXERCISE_CATEGORY_BALANCE     = 6;
+  PHYSIO_EXERCISE_CATEGORY_CARDIO      = 7;
+  PHYSIO_EXERCISE_CATEGORY_BREATHING   = 8;
+}
+
+enum PhysioFrequency {
+  PHYSIO_FREQUENCY_UNSPECIFIED  = 0;
+  PHYSIO_FREQUENCY_DAILY        = 1;
+  PHYSIO_FREQUENCY_TWICE_DAILY  = 2;
+  PHYSIO_FREQUENCY_3X_WEEK      = 3;
+  PHYSIO_FREQUENCY_WEEKLY       = 4;
+  PHYSIO_FREQUENCY_AS_NEEDED    = 5;
+}
+
+enum PhysioApptStatus {
+  PHYSIO_APPT_STATUS_UNSPECIFIED = 0;
+  PHYSIO_APPT_STATUS_SCHEDULED   = 1;
+  PHYSIO_APPT_STATUS_CONFIRMED   = 2;
+  PHYSIO_APPT_STATUS_COMPLETED   = 3;
+  PHYSIO_APPT_STATUS_CANCELLED   = 4;
+  PHYSIO_APPT_STATUS_NO_SHOW     = 5;
+}
+
+enum PhysioBodyRegion {
+  PHYSIO_BODY_REGION_UNSPECIFIED = 0;
+  PHYSIO_BODY_REGION_NECK        = 1;
+  PHYSIO_BODY_REGION_SHOULDER    = 2;
+  PHYSIO_BODY_REGION_UPPER_BACK  = 3;
+  PHYSIO_BODY_REGION_LOWER_BACK  = 4;
+  PHYSIO_BODY_REGION_HIP         = 5;
+  PHYSIO_BODY_REGION_KNEE        = 6;
+  PHYSIO_BODY_REGION_ANKLE       = 7;
+  PHYSIO_BODY_REGION_FOOT        = 8;
+  PHYSIO_BODY_REGION_ELBOW       = 9;
+  PHYSIO_BODY_REGION_WRIST       = 10;
+  PHYSIO_BODY_REGION_HAND        = 11;
+  PHYSIO_BODY_REGION_CORE        = 12;
+  PHYSIO_BODY_REGION_FULL_BODY   = 13;
+}
+
+// Rehabilitation phase (1=early ROM/control, 2=strength, 3=functional)
+enum PhysioPhase {
+  PHYSIO_PHASE_UNSPECIFIED = 0;
+  PHYSIO_PHASE_1           = 1;
+  PHYSIO_PHASE_2           = 2;
+  PHYSIO_PHASE_3           = 3;
+}
+
+// Whether exercise is Fixed (always in protocol) or Variable (rotated)
+enum PhysioExerciseType {
+  PHYSIO_EXERCISE_TYPE_UNSPECIFIED = 0;
+  PHYSIO_EXERCISE_TYPE_FIXED       = 1;
+  PHYSIO_EXERCISE_TYPE_VARIABLE    = 2;
+}
+
+// Load/equipment type
+enum PhysioLoadType {
+  PHYSIO_LOAD_TYPE_UNSPECIFIED    = 0;
+  PHYSIO_LOAD_TYPE_BODYWEIGHT     = 1;
+  PHYSIO_LOAD_TYPE_BAND_LIGHT     = 2;
+  PHYSIO_LOAD_TYPE_BAND_MEDIUM    = 3;
+  PHYSIO_LOAD_TYPE_BAND_HEAVY     = 4;
+  PHYSIO_LOAD_TYPE_DUMBBELL_LIGHT = 5;
+  PHYSIO_LOAD_TYPE_DUMBBELL_MED   = 6;
+  PHYSIO_LOAD_TYPE_DUMBBELL_HEAVY = 7;
+  PHYSIO_LOAD_TYPE_ISO_HOLD       = 8;
+  PHYSIO_LOAD_TYPE_CONTROL        = 9;
+}
+
+// Postural pattern the exercise addresses
+enum PhysioPosture {
+  PHYSIO_POSTURE_UNSPECIFIED       = 0;
+  PHYSIO_POSTURE_KYPHOSIS          = 1;
+  PHYSIO_POSTURE_LORDOSIS          = 2;
+  PHYSIO_POSTURE_UPPER_THORACIC_FLAT = 3;
+  PHYSIO_POSTURE_LUMBAR_FLAT       = 4;
+  PHYSIO_POSTURE_VALGUS            = 5;
+  PHYSIO_POSTURE_PRONATION         = 6;
+  PHYSIO_POSTURE_GENERAL           = 7;
+}
+
+// ──────────────────────────────────────────────
+// Child Types (no service, no List type)
+// ──────────────────────────────────────────────
+
+// Embedded in TreatmentPlan
+message PlanExercise {
+  string          plan_exercise_id = 1;
+  string          exercise_id      = 2;
+  int32           sets             = 3;
+  int32           reps             = 4;
+  int32           hold_seconds     = 5;
+  PhysioFrequency frequency        = 6;
+  string          notes            = 7;
+  int32           order_index      = 8;
+}
+
+// Embedded in ProgressLog
+message ProgressEntry {
+  string          progress_entry_id    = 1;
+  string          exercise_id          = 2;
+  bool            completed            = 3;
+  int32           sets_done            = 4;
+  int32           reps_done            = 5;
+  int32           pain_level           = 6;
+  string          client_notes         = 7;
+  // Snapshots — populated by PhyLogServiceCallback on POST, never modified after.
+  // Preserves prescribed context even if TreatmentPlan is later edited.
+  string          exercise_name        = 8;
+  int32           sets_prescribed      = 9;
+  int32           reps_prescribed      = 10;
+  int32           hold_prescribed      = 11;
+  PhysioFrequency frequency_prescribed = 12;
+}
+
+// Embedded in PhysioProtocol — an exercise slot in a reusable protocol template
+message ProtocolExercise {
+  string          protocol_exercise_id = 1;
+  string          exercise_id          = 2;
+  string          exercise_name        = 3;
+  int32           sets                 = 4;
+  string          reps                 = 5;
+  string          load_notes           = 6;
+  int32           order_index          = 7;
+  PhysioLoadType  load_type            = 8;
+  string          effort               = 9;
+}
+
+// ──────────────────────────────────────────────
+// Prime Objects
+// ──────────────────────────────────────────────
+
+message PhysioTherapist {
+  string        therapist_id   = 1;
+  string        first_name     = 2;
+  string        last_name      = 3;
+  string        email          = 4;
+  string        phone          = 5;
+  string        specialization = 6;
+  string        license_number = 7;
+  bool          is_active      = 8;
+  erp.AuditInfo audit_info     = 30;
+}
+
+message PhysioTherapistList {
+  repeated PhysioTherapist list     = 1;
+  l8api.L8MetaData          metadata = 2;
+}
+
+message PhysioClient {
+  string             client_id         = 1;
+  string             first_name        = 2;
+  string             last_name         = 3;
+  string             email             = 4;
+  string             phone             = 5;
+  int64              date_of_birth     = 6;
+  PhysioClientStatus status            = 7;
+  string             referral_source   = 8;
+  string             diagnosis         = 9;
+  string             medical_history   = 10;
+  string             emergency_contact = 11;
+  string             user_id           = 12;
+  string             protocol_id       = 13;
+  string             therapist_id      = 14;
+  erp.AuditInfo      audit_info        = 30;
+}
+
+message PhysioClientList {
+  repeated PhysioClient list     = 1;
+  l8api.L8MetaData      metadata = 2;
+}
+
+message PhysioExercise {
+  string                 exercise_id          = 1;
+  string                 name                 = 2;
+  string                 description          = 3;
+  PhysioExerciseCategory category             = 4;
+  PhysioBodyRegion       body_region          = 5;
+  string                 image_storage_path   = 6;
+  string                 video_storage_path   = 7;
+  string                 instructions         = 8;
+  string                 contraindications    = 9;
+  int32                  default_sets         = 10;
+  int32                  default_reps         = 11;
+  int32                  default_hold_seconds = 12;
+  bool                   is_active            = 13;
+  // Classification fields for protocol builder
+  PhysioJoint            joint                = 14;
+  PhysioPosture          posture              = 15;
+  PhysioPhase            phase                = 16;
+  PhysioExerciseType     exercise_type        = 17;
+  PhysioLoadType         load_type            = 18;
+  string                 effort               = 19;
+  string                 load_notes           = 20;
+  string                 exercise_aim         = 21;
+  string                 equipment            = 22;
+  string                 muscle_group         = 23;
+  string                 default_reps_display = 24;
+  string                 movement_direction   = 25;
+  erp.AuditInfo          audit_info           = 30;
+}
+
+message PhysioExerciseList {
+  repeated PhysioExercise list     = 1;
+  l8api.L8MetaData        metadata = 2;
+}
+
+// Joint code enum (matches client's SHO/KNE/ANK/LBP/ELB/GEN codes)
+enum PhysioJoint {
+  PHYSIO_JOINT_UNSPECIFIED = 0;
+  PHYSIO_JOINT_SHOULDER    = 1;
+  PHYSIO_JOINT_KNEE        = 2;
+  PHYSIO_JOINT_ANKLE       = 3;
+  PHYSIO_JOINT_LOWER_BACK  = 4;
+  PHYSIO_JOINT_ELBOW       = 5;
+  PHYSIO_JOINT_GENERAL     = 6;
+  PHYSIO_JOINT_HIP         = 7;
+  PHYSIO_JOINT_CORE        = 8;
+  PHYSIO_JOINT_SIJ         = 9;
+}
+
+// PhysioProtocol — a reusable template of exercises for a given condition/posture
+message PhysioProtocol {
+  string          protocol_id   = 1;
+  string          name          = 2;
+  string          description   = 3;
+  PhysioJoint     joint         = 4;
+  PhysioPosture   posture       = 5;
+  string          protocol_code = 6;
+  string          user_id       = 7;
+  bool            is_active     = 8;
+  repeated ProtocolExercise exercises = 20;
+  erp.AuditInfo   audit_info    = 30;
+}
+
+message PhysioProtocolList {
+  repeated PhysioProtocol list     = 1;
+  l8api.L8MetaData        metadata = 2;
+}
+
+message TreatmentPlan {
+  string           plan_id          = 1;
+  string           client_id        = 2;
+  string           user_id          = 3;
+  string           title            = 4;
+  string           description      = 5;
+  PhysioPlanStatus status           = 6;
+  int64            start_date       = 7;
+  int64            end_date         = 8;
+  string           goals            = 9;
+  string           therapist_notes  = 10;
+  string           therapist_id     = 11;
+  string           protocol_id      = 12;
+  int32            volume           = 13;
+  repeated PlanExercise exercises   = 20;
+  erp.AuditInfo    audit_info       = 30;
+}
+
+message TreatmentPlanList {
+  repeated TreatmentPlan list     = 1;
+  l8api.L8MetaData       metadata = 2;
+}
+
+message Appointment {
+  string           appt_id         = 1;
+  string           client_id       = 2;
+  string           user_id         = 3;
+  string           plan_id         = 4;
+  string           therapist_id    = 5;
+  int64            start_time      = 6;
+  int64            end_time        = 7;
+  PhysioApptStatus status          = 8;
+  string           location        = 9;
+  string           therapist_notes = 10;
+  string           client_notes    = 11;
+  erp.AuditInfo    audit_info      = 30;
+}
+
+message AppointmentList {
+  repeated Appointment     list     = 1;
+  l8api.L8MetaData         metadata = 2;
+}
+
+message ProgressLog {
+  string           log_id             = 1;
+  string           client_id          = 2;
+  string           user_id            = 3;
+  string           plan_id            = 4;
+  string           appt_id            = 5;
+  int64            log_date           = 6;
+  int32            overall_pain_level = 7;
+  string           general_notes      = 8;
+  repeated ProgressEntry entries      = 20;
+  erp.AuditInfo    audit_info         = 30;
+}
+
+message ProgressLogList {
+  repeated ProgressLog list     = 1;
+  l8api.L8MetaData     metadata = 2;
+}
+
+// ──────────────────────────────────────────────
+// Workout Builder
+// ──────────────────────────────────────────────
+
+// Request to auto-generate a workout program
+message WorkoutBuildRequest {
+  string        request_id   = 1;
+  string        client_id    = 2;
+  string        user_id      = 3;
+  PhysioPosture posture      = 4;
+  PhysioJoint   joint        = 5;
+  PhysioPhase   phase        = 6;
+  int32         volume       = 7;  // number of variable exercise slots per circuit
+}
+
+// A single exercise slot within a generated circuit
+message WorkoutCircuitExercise {
+  string         exercise_id   = 1;
+  string         name          = 2;
+  int32          sets          = 3;
+  string         reps          = 4;   // range string e.g. "8-10"
+  PhysioLoadType load_type     = 5;
+  string         effort        = 6;
+  string         load_notes    = 7;
+  bool           is_fixed      = 8;
+}
+
+// One circuit (Mobility / Rehab / Strength / Functional)
+message WorkoutCircuit {
+  PhysioExerciseCategory category  = 1;
+  repeated WorkoutCircuitExercise exercises = 2;
+}
+
+// The generated workout returned by the builder
+message GeneratedWorkout {
+  string          workout_id    = 1;
+  string          client_id     = 2;
+  PhysioPosture   posture       = 3;
+  PhysioJoint     joint         = 4;
+  PhysioPhase     phase         = 5;
+  int32           volume        = 6;
+  repeated WorkoutCircuit circuits = 7;
+  erp.AuditInfo   audit_info    = 30;
+}
+
+message GeneratedWorkoutList {
+  repeated GeneratedWorkout list     = 1;
+  l8api.L8MetaData          metadata = 2;
+}

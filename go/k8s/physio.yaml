@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: physio
+  labels:
+    name: physio
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  namespace: physio
+  name: physio
+  labels:
+    app: physio
+spec:
+  selector:
+    matchLabels:
+      app: physio
+  template:
+    metadata:
+      labels:
+        app: physio
+    spec:
+      containers:
+        - name: physio
+          image: saichler/physio:latest
+          imagePullPolicy: Always
+          env:
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+          volumeMounts:
+            - name: hdata
+              mountPath: /data
+      volumes:
+        - name: hdata
+          hostPath:
+            path: /data
+            type: DirectoryOrCreate

@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: physio-vnet
+  labels:
+    name: physio-vnet
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  namespace: physio-vnet
+  name: physio-vnet
+  labels:
+    app: physio-vnet
+spec:
+  selector:
+    matchLabels:
+      app: physio-vnet
+  template:
+    metadata:
+      labels:
+        app: physio-vnet
+    spec:
+      hostNetwork: true
+      containers:
+        - name: physio-vnet
+          image: saichler/physio-vnet:latest
+          imagePullPolicy: Always
+          env:
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+          volumeMounts:
+            - name: hdata
+              mountPath: /data
+      volumes:
+        - name: hdata
+          hostPath:
+            path: /data
+            type: DirectoryOrCreate

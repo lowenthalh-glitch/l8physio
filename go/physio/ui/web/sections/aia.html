@@ -1,0 +1,30 @@
+<div class="section-container l8-section">
+    <div class="page-header">
+        <h1>AI Agent</h1>
+    </div>
+
+    <div class="l8-module-tabs">
+        <button class="l8-module-tab active" data-module="agent">
+            <span class="tab-icon">&#129302;</span>
+            <span class="tab-label">AI Agent</span>
+        </button>
+    </div>
+
+    <div class="l8-module-content active" data-module="agent">
+        <div class="l8-subnav">
+            <a class="l8-subnav-item active" data-service="chat">Chat</a>
+        </div>
+
+        <div class="l8-service-view active" data-service="chat">
+            <div id="aia-chat-container" style="height: calc(100vh - 220px); min-height: 400px;"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    if (typeof initAiaChatSection === 'function') {
+        initAiaChatSection();
+    }
+})();
+</script>
