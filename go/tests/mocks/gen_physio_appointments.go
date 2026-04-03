@@ -3,6 +3,7 @@ package mocks
 import (
 	"math/rand"
 
+	lm "github.com/saichler/l8common/go/mocks"
 	"github.com/saichler/l8physio/go/types/physio"
 )
 
@@ -12,8 +13,8 @@ func generateAppointments(store *MockDataStore) []*physio.Appointment {
 	appointments := make([]*physio.Appointment, 40)
 
 	for i := 0; i < 40; i++ {
-		clientID := pickRef(store.PhysioClientIDs, i)
-		planID := pickRef(store.TreatmentPlanIDs, i)
+		clientID := lm.PickRef(store.PhysioClientIDs, i)
+		planID := lm.PickRef(store.TreatmentPlanIDs, i)
 
 		var status physio.PhysioApptStatus
 		switch {
@@ -33,18 +34,18 @@ func generateAppointments(store *MockDataStore) []*physio.Appointment {
 		var startTime int64
 		if status == physio.PhysioApptStatus_PHYSIO_APPT_STATUS_SCHEDULED ||
 			status == physio.PhysioApptStatus_PHYSIO_APPT_STATUS_CONFIRMED {
-			startTime = randomFutureDate(2)
+			startTime = lm.RandomFutureDate(2, 28)
 		} else {
-			startTime = randomPastDate(3)
+			startTime = lm.RandomPastDate(3, 28)
 		}
 		// 45-60 minute sessions
 		duration := int64(rand.Intn(2)+1) * 15 * 60 // 15 or 30 minutes granularity
 		endTime := startTime + 45*60 + duration
 
-		therapistID := pickRef(store.PhysioTherapistIDs, i)
+		therapistID := lm.PickRef(store.PhysioTherapistIDs, i)
 
 		appointments[i] = &physio.Appointment{
-			ApptId:         genID("appt", i),
+			ApptId:         lm.GenID("appt", i),
 			ClientId:       clientID,
 			UserId:         "admin",
 			PlanId:         planID,
@@ -54,7 +55,7 @@ func generateAppointments(store *MockDataStore) []*physio.Appointment {
 			Status:         status,
 			Location:       appointmentLocations[i%len(appointmentLocations)],
 			TherapistNotes: "Session notes to be completed post-appointment.",
-			AuditInfo:      createAuditInfo(),
+			AuditInfo:      lm.CreateAuditInfo(),
 		}
 	}
 

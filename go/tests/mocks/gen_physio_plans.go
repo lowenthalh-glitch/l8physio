@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 
+	lm "github.com/saichler/l8common/go/mocks"
 	"github.com/saichler/l8physio/go/types/physio"
 )
 
@@ -13,7 +14,7 @@ func generateTreatmentPlans(store *MockDataStore) []*physio.TreatmentPlan {
 	plans := make([]*physio.TreatmentPlan, 20)
 
 	for i := 0; i < 20; i++ {
-		clientID := pickRef(store.PhysioClientIDs, i)
+		clientID := lm.PickRef(store.PhysioClientIDs, i)
 
 		var status physio.PhysioPlanStatus
 		switch {
@@ -27,12 +28,12 @@ func generateTreatmentPlans(store *MockDataStore) []*physio.TreatmentPlan {
 			status = physio.PhysioPlanStatus_PHYSIO_PLAN_STATUS_SUSPENDED
 		}
 
-		startDate := randomPastDate(6)
+		startDate := lm.RandomPastDate(6, 28)
 		var endDate int64
 		if status == physio.PhysioPlanStatus_PHYSIO_PLAN_STATUS_COMPLETED {
 			endDate = startDate + int64(rand.Intn(60)+30)*86400 // 30-90 days after start
 		} else {
-			endDate = randomFutureDate(3)
+			endDate = lm.RandomFutureDate(3, 28)
 		}
 
 		// Attach 3-5 exercises per plan
@@ -42,7 +43,7 @@ func generateTreatmentPlans(store *MockDataStore) []*physio.TreatmentPlan {
 			exIdx := (i*7 + j) % len(store.PhysioExerciseIDs)
 			exercises[j] = &physio.PlanExercise{
 				PlanExerciseId: fmt.Sprintf("pe-%03d-%02d", i+1, j+1),
-				ExerciseId:     pickRef(store.PhysioExerciseIDs, exIdx),
+				ExerciseId:     lm.PickRef(store.PhysioExerciseIDs, exIdx),
 				Sets:           int32(rand.Intn(3) + 2),
 				Reps:           int32(rand.Intn(10) + 10),
 				HoldSeconds:    int32(rand.Intn(3)) * 10,
@@ -52,7 +53,7 @@ func generateTreatmentPlans(store *MockDataStore) []*physio.TreatmentPlan {
 		}
 
 		plans[i] = &physio.TreatmentPlan{
-			PlanId:         genID("plan", i),
+			PlanId:         lm.GenID("plan", i),
 			ClientId:       clientID,
 			UserId:         "admin",
 			Title:          planTitles[i%len(planTitles)],
@@ -63,7 +64,7 @@ func generateTreatmentPlans(store *MockDataStore) []*physio.TreatmentPlan {
 			Goals:          fmt.Sprintf("Reduce pain to 2/10. Restore full functional range of motion. Return to normal daily activities within %d weeks.", rand.Intn(6)+6),
 			TherapistNotes: fmt.Sprintf("Initial assessment completed. Plan tailored to client presentation of %s.", diagnoses[i%len(diagnoses)]),
 			Exercises:      exercises,
-			AuditInfo:      createAuditInfo(),
+			AuditInfo:      lm.CreateAuditInfo(),
 		}
 	}
 

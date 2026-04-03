@@ -1,6 +1,7 @@
 package mocks
 
 import (
+	lm "github.com/saichler/l8common/go/mocks"
 	"github.com/saichler/l8physio/go/types/physio"
 )
 
@@ -121,7 +122,7 @@ func generateRehabBankExercises() []*physio.PhysioExercise {
 	result := make([]*physio.PhysioExercise, len(defs))
 	for i, d := range defs {
 		result[i] = &physio.PhysioExercise{
-			ExerciseId:         genID("rbex", i),
+			ExerciseId:         lm.GenID("rbex", i),
 			Name:               d.name,
 			Category:           d.cat,
 			Joint:              d.joint,
@@ -133,7 +134,7 @@ func generateRehabBankExercises() []*physio.PhysioExercise {
 			DefaultRepsDisplay: d.repsDisplay,
 			LoadNotes:          d.loadNotes,
 			IsActive:           true,
-			AuditInfo:          createAuditInfo(),
+			AuditInfo:          lm.CreateAuditInfo(),
 		}
 	}
 	return result
@@ -142,8 +143,8 @@ func generateRehabBankExercises() []*physio.PhysioExercise {
 // pe builds a ProtocolExercise entry with a direct cex-index reference.
 func pe(orderIndex, cexIndex int, name string, sets int32, reps, effort string, loadType physio.PhysioLoadType) *physio.ProtocolExercise {
 	return &physio.ProtocolExercise{
-		ProtocolExerciseId: genID("pe", orderIndex*100+cexIndex),
-		ExerciseId:         genID("cex", cexIndex),
+		ProtocolExerciseId: lm.GenID("pe", orderIndex*100+cexIndex),
+		ExerciseId:         lm.GenID("cex", cexIndex),
 		ExerciseName:       name,
 		OrderIndex:         int32(orderIndex),
 		Sets:               sets,
@@ -163,7 +164,7 @@ func generateClientProtocols() []*physio.PhysioProtocol {
 	return []*physio.PhysioProtocol{
 		// ── 1. KNEE ──────────────────────────────────────────────────────────────
 		{
-			ProtocolId:   genID("prt", 0),
+			ProtocolId:   lm.GenID("prt", 0),
 			Name:         "Knee",
 			ProtocolCode: "KNE",
 			Description:  "Comprehensive knee rehabilitation protocol targeting VMO, glutes, and dynamic stability.",
@@ -171,7 +172,7 @@ func generateClientProtocols() []*physio.PhysioProtocol {
 			Posture:      physio.PhysioPosture_PHYSIO_POSTURE_VALGUS,
 			UserId:       "admin",
 			IsActive:     true,
-			AuditInfo:    createAuditInfo(),
+			AuditInfo:    lm.CreateAuditInfo(),
 			Exercises: []*physio.ProtocolExercise{
 				pe(1, 20, "Knee Extension – Seated on Box", 3, "12", "6-7", bw),
 				pe(2, 15, "Hamstring Curls with Band", 3, "12", "6-7", bandL),
@@ -185,7 +186,7 @@ func generateClientProtocols() []*physio.PhysioProtocol {
 		},
 		// ── 2. SHOULDER AND THORACIC ─────────────────────────────────────────────
 		{
-			ProtocolId:   genID("prt", 1),
+			ProtocolId:   lm.GenID("prt", 1),
 			Name:         "Shoulder and Thoracic",
 			ProtocolCode: "KYPH-SHO",
 			Description:  "Protocol addressing kyphotic posture: thoracic mobility, scapular stability, and shoulder strength.",
@@ -193,7 +194,7 @@ func generateClientProtocols() []*physio.PhysioProtocol {
 			Posture:      physio.PhysioPosture_PHYSIO_POSTURE_KYPHOSIS,
 			UserId:       "admin",
 			IsActive:     true,
-			AuditInfo:    createAuditInfo(),
+			AuditInfo:    lm.CreateAuditInfo(),
 			Exercises: []*physio.ProtocolExercise{
 				pe(1, 34, "Thoracic Extension on Foam Roller", 2, "10", "5-6", bw),
 				pe(2, 35, "Chest Opening on Swiss Ball", 2, "30s", "5-6", bw),
@@ -214,7 +215,7 @@ func generateClientProtocols() []*physio.PhysioProtocol {
 		},
 		// ── 3. MOBILITY GENERAL ─────────────────────────────────────────────────
 		{
-			ProtocolId:   genID("prt", 2),
+			ProtocolId:   lm.GenID("prt", 2),
 			Name:         "Mobility General",
 			ProtocolCode: "MOB-GEN",
 			Description:  "Full-body warm-up and mobility routine covering all major joints and movement planes.",
@@ -222,7 +223,7 @@ func generateClientProtocols() []*physio.PhysioProtocol {
 			Posture:      physio.PhysioPosture_PHYSIO_POSTURE_GENERAL,
 			UserId:       "admin",
 			IsActive:     true,
-			AuditInfo:    createAuditInfo(),
+			AuditInfo:    lm.CreateAuditInfo(),
 			Exercises: []*physio.ProtocolExercise{
 				pe(1, 54, "Banded Shoulder Circles", 2, "10", "5-6", bw),
 				pe(2, 55, "Full Body Circles", 2, "10", "5-6", bw),
@@ -235,7 +236,7 @@ func generateClientProtocols() []*physio.PhysioProtocol {
 		},
 		// ── 4. SIJ ──────────────────────────────────────────────────────────────
 		{
-			ProtocolId:   genID("prt", 3),
+			ProtocolId:   lm.GenID("prt", 3),
 			Name:         "SIJ",
 			ProtocolCode: "SIJ",
 			Description:  "Sacroiliac joint stabilisation protocol: lateral hip, core, and lumbar stability.",
@@ -243,7 +244,7 @@ func generateClientProtocols() []*physio.PhysioProtocol {
 			Posture:      physio.PhysioPosture_PHYSIO_POSTURE_GENERAL,
 			UserId:       "admin",
 			IsActive:     true,
-			AuditInfo:    createAuditInfo(),
+			AuditInfo:    lm.CreateAuditInfo(),
 			Exercises: []*physio.ProtocolExercise{
 				pe(1, 18, "Side Walk with Band", 3, "15", "6-7", bandM),
 				pe(2, 49, "Calf Stretch / Down Dog", 2, "30s", "5-6", bw),
@@ -253,7 +254,7 @@ func generateClientProtocols() []*physio.PhysioProtocol {
 		},
 		// ── 5. SHOULDER ROCK WOOD ────────────────────────────────────────────────
 		{
-			ProtocolId:   genID("prt", 4),
+			ProtocolId:   lm.GenID("prt", 4),
 			Name:         "Shoulder Rock Wood",
 			ProtocolCode: "SHO-RW",
 			Description:  "Rotator cuff and shoulder girdle strengthening using banded resistance in all planes.",
@@ -261,7 +262,7 @@ func generateClientProtocols() []*physio.PhysioProtocol {
 			Posture:      physio.PhysioPosture_PHYSIO_POSTURE_KYPHOSIS,
 			UserId:       "admin",
 			IsActive:     true,
-			AuditInfo:    createAuditInfo(),
+			AuditInfo:    lm.CreateAuditInfo(),
 			Exercises: []*physio.ProtocolExercise{
 				pe(1, 50, "One Arm Banded Internal Rotation", 3, "12", "6-7", bandL),
 				pe(2, 51, "One Arm Banded External Rotation", 3, "12", "6-7", bandL),
@@ -271,7 +272,7 @@ func generateClientProtocols() []*physio.PhysioProtocol {
 		},
 		// ── 6. HIP AND LOWER BACK ────────────────────────────────────────────────
 		{
-			ProtocolId:   genID("prt", 5),
+			ProtocolId:   lm.GenID("prt", 5),
 			Name:         "Hip and Lower Back",
 			ProtocolCode: "HIP-LBP",
 			Description:  "Comprehensive hip and lumbar protocol: mobility, core control, and glute strengthening.",
@@ -279,7 +280,7 @@ func generateClientProtocols() []*physio.PhysioProtocol {
 			Posture:      physio.PhysioPosture_PHYSIO_POSTURE_LORDOSIS,
 			UserId:       "admin",
 			IsActive:     true,
-			AuditInfo:    createAuditInfo(),
+			AuditInfo:    lm.CreateAuditInfo(),
 			Exercises: []*physio.ProtocolExercise{
 				pe(1, 59, "Single-Leg Middle Split Stretch", 2, "30s", "5-6", bw),
 				pe(2, 44, "90/90 Hip Rotations", 2, "10", "5-6", bw),
@@ -299,7 +300,7 @@ func generateClientProtocols() []*physio.PhysioProtocol {
 		},
 		// ── 7. BALANCE ──────────────────────────────────────────────────────────
 		{
-			ProtocolId:   genID("prt", 6),
+			ProtocolId:   lm.GenID("prt", 6),
 			Name:         "Balance",
 			ProtocolCode: "BAL",
 			Description:  "Progressive balance and proprioception protocol from foot activation to dynamic single-leg tasks.",
@@ -307,7 +308,7 @@ func generateClientProtocols() []*physio.PhysioProtocol {
 			Posture:      physio.PhysioPosture_PHYSIO_POSTURE_PRONATION,
 			UserId:       "admin",
 			IsActive:     true,
-			AuditInfo:    createAuditInfo(),
+			AuditInfo:    lm.CreateAuditInfo(),
 			Exercises: []*physio.ProtocolExercise{
 				pe(1, 11, "Toe Taps", 3, "15", "5-6", bw),
 				pe(2, 8, "Calf Raises", 3, "15", "6-7", bw),
@@ -316,7 +317,7 @@ func generateClientProtocols() []*physio.PhysioProtocol {
 		},
 		// ── 8. CORE ─────────────────────────────────────────────────────────────
 		{
-			ProtocolId:   genID("prt", 7),
+			ProtocolId:   lm.GenID("prt", 7),
 			Name:         "Core",
 			ProtocolCode: "CORE",
 			Description:  "Core stability series progressing from posterior pelvic tilt activation to dynamic loading.",
@@ -324,7 +325,7 @@ func generateClientProtocols() []*physio.PhysioProtocol {
 			Posture:      physio.PhysioPosture_PHYSIO_POSTURE_LORDOSIS,
 			UserId:       "admin",
 			IsActive:     true,
-			AuditInfo:    createAuditInfo(),
+			AuditInfo:    lm.CreateAuditInfo(),
 			Exercises: []*physio.ProtocolExercise{
 				pe(1, 0, "PPT with Ball Squeeze", 3, "15", "5-6", bw),
 				pe(2, 1, "PPT Crunches with Ball Squeeze", 3, "12", "5-6", bw),
@@ -335,7 +336,7 @@ func generateClientProtocols() []*physio.PhysioProtocol {
 		},
 		// ── 9. BACK ─────────────────────────────────────────────────────────────
 		{
-			ProtocolId:   genID("prt", 8),
+			ProtocolId:   lm.GenID("prt", 8),
 			Name:         "Back",
 			ProtocolCode: "BACK",
 			Description:  "Posterior chain activation targeting erector spinae and scapular retractors.",
@@ -343,7 +344,7 @@ func generateClientProtocols() []*physio.PhysioProtocol {
 			Posture:      physio.PhysioPosture_PHYSIO_POSTURE_KYPHOSIS,
 			UserId:       "admin",
 			IsActive:     true,
-			AuditInfo:    createAuditInfo(),
+			AuditInfo:    lm.CreateAuditInfo(),
 			Exercises: []*physio.ProtocolExercise{
 				pe(1, 31, "All-Fours Crossed Extension", 3, "10", "5-6", bandL),
 				pe(2, 3, "Scapular Setting – V", 3, "12", "5-6", bw),

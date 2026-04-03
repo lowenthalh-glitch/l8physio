@@ -1,28 +1,31 @@
 package therapists
 
 import (
-	erpc "github.com/saichler/l8erp/go/erp/common"
+	l8c "github.com/saichler/l8common/go/common"
 	"github.com/saichler/l8physio/go/types/physio"
 	"github.com/saichler/l8types/go/ifs"
 )
 
 func newPhyTherapistServiceCallback() ifs.IServiceCallback {
-	return erpc.NewServiceCallback[physio.PhysioTherapist](
+	return l8c.NewServiceCallback(
 		"PhysioTherapist",
+		func(e interface{}) bool { _, ok := e.(*physio.PhysioTherapist); return ok },
 		setPhyTherapistID,
 		validatePhyTherapist,
 	)
 }
 
-func setPhyTherapistID(entity *physio.PhysioTherapist) {
-	erpc.GenerateID(&entity.TherapistId)
+func setPhyTherapistID(e interface{}) {
+	entity := e.(*physio.PhysioTherapist)
+	l8c.GenerateID(&entity.TherapistId)
 }
 
-func validatePhyTherapist(entity *physio.PhysioTherapist, vnic ifs.IVNic) error {
-	if err := erpc.ValidateRequired(entity.FirstName, "FirstName"); err != nil {
+func validatePhyTherapist(e interface{}, vnic ifs.IVNic) error {
+	entity := e.(*physio.PhysioTherapist)
+	if err := l8c.ValidateRequired(entity.FirstName, "FirstName"); err != nil {
 		return err
 	}
-	if err := erpc.ValidateRequired(entity.LastName, "LastName"); err != nil {
+	if err := l8c.ValidateRequired(entity.LastName, "LastName"); err != nil {
 		return err
 	}
 	return nil

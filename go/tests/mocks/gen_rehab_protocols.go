@@ -1,14 +1,15 @@
 package mocks
 
 import (
+	lm "github.com/saichler/l8common/go/mocks"
 	"github.com/saichler/l8physio/go/types/physio"
 )
 
 // per builds a ProtocolExercise entry referencing a rehab-bank exercise (rbex-xxx ID).
 func per(orderIndex, rbexIndex int, name string, sets int32, reps, effort string, loadType physio.PhysioLoadType) *physio.ProtocolExercise {
 	return &physio.ProtocolExercise{
-		ProtocolExerciseId: genID("per", orderIndex*100+rbexIndex),
-		ExerciseId:         genID("rbex", rbexIndex),
+		ProtocolExerciseId: lm.GenID("per", orderIndex*100+rbexIndex),
+		ExerciseId:         lm.GenID("rbex", rbexIndex),
 		ExerciseName:       name,
 		OrderIndex:         int32(orderIndex),
 		Sets:               sets,
@@ -35,7 +36,7 @@ func generateRehabProtocols() []*physio.PhysioProtocol {
 
 		// ── 1. KYPH-SHO: Shoulder / Kyphosis ────────────────────────────────────
 		{
-			ProtocolId:   genID("prt", 9),
+			ProtocolId:   lm.GenID("prt", 9),
 			Name:         "Shoulder Posture – KYPH-SHO",
 			ProtocolCode: "KYPH-SHO",
 			Description:  "Systematic shoulder and thoracic protocol for kyphosis. All phases: mobility, rehab, strength, functional.",
@@ -43,7 +44,7 @@ func generateRehabProtocols() []*physio.PhysioProtocol {
 			Posture:      physio.PhysioPosture_PHYSIO_POSTURE_KYPHOSIS,
 			UserId:       "admin",
 			IsActive:     true,
-			AuditInfo:    createAuditInfo(),
+			AuditInfo:    lm.CreateAuditInfo(),
 			Exercises: []*physio.ProtocolExercise{
 				// Mobility – Phase 1 (Fixed)
 				per(1, 0, "Thoracic Extension Foam Roller", 3, "10", "5-6", ctrl),
@@ -82,7 +83,7 @@ func generateRehabProtocols() []*physio.PhysioProtocol {
 
 		// ── 2. VALG-KNE: Knee / Valgus ──────────────────────────────────────────
 		{
-			ProtocolId:   genID("prt", 10),
+			ProtocolId:   lm.GenID("prt", 10),
 			Name:         "Knee Posture – VALG-KNE",
 			ProtocolCode: "VALG-KNE",
 			Description:  "Systematic knee valgus protocol. All phases: mobility, rehab, strength, functional.",
@@ -90,7 +91,7 @@ func generateRehabProtocols() []*physio.PhysioProtocol {
 			Posture:      physio.PhysioPosture_PHYSIO_POSTURE_VALGUS,
 			UserId:       "admin",
 			IsActive:     true,
-			AuditInfo:    createAuditInfo(),
+			AuditInfo:    lm.CreateAuditInfo(),
 			Exercises: []*physio.ProtocolExercise{
 				// Mobility – Phase 1 (Fixed)
 				per(1, 20, "Adductor Stretch", 3, "10", "5-6", ctrl),
@@ -129,7 +130,7 @@ func generateRehabProtocols() []*physio.PhysioProtocol {
 
 		// ── 3. KYPH-GEN: General / Kyphosis ─────────────────────────────────────
 		{
-			ProtocolId:   genID("prt", 11),
+			ProtocolId:   lm.GenID("prt", 11),
 			Name:         "General Posture Kyphosis – KYPH-GEN",
 			ProtocolCode: "KYPH-GEN",
 			Description:  "General postural kyphosis protocol: thoracic opening, upper back activation, and functional carry.",
@@ -137,7 +138,7 @@ func generateRehabProtocols() []*physio.PhysioProtocol {
 			Posture:      physio.PhysioPosture_PHYSIO_POSTURE_KYPHOSIS,
 			UserId:       "admin",
 			IsActive:     true,
-			AuditInfo:    createAuditInfo(),
+			AuditInfo:    lm.CreateAuditInfo(),
 			Exercises: []*physio.ProtocolExercise{
 				// Mobility – Phase 1 (Fixed)
 				per(1, 40, "Thoracic Breathing Opener", 3, "10", "5-6", ctrl),
@@ -159,7 +160,7 @@ func generateRehabProtocols() []*physio.PhysioProtocol {
 
 		// ── 4. LORD-GEN: General / Lordosis ──────────────────────────────────────
 		{
-			ProtocolId:   genID("prt", 12),
+			ProtocolId:   lm.GenID("prt", 12),
 			Name:         "General Posture Lordosis – LORD-GEN",
 			ProtocolCode: "LORD-GEN",
 			Description:  "General postural lordosis protocol: pelvic reset, core activation, glute bridge, and loaded carry.",
@@ -167,7 +168,7 @@ func generateRehabProtocols() []*physio.PhysioProtocol {
 			Posture:      physio.PhysioPosture_PHYSIO_POSTURE_LORDOSIS,
 			UserId:       "admin",
 			IsActive:     true,
-			AuditInfo:    createAuditInfo(),
+			AuditInfo:    lm.CreateAuditInfo(),
 			Exercises: []*physio.ProtocolExercise{
 				// Mobility – Phase 1 (Fixed)
 				per(1, 48, "90/90 Pelvic Reset", 3, "10", "5-6", ctrl),
@@ -187,7 +188,7 @@ func generateRehabProtocols() []*physio.PhysioProtocol {
 
 		// ── 5. PRON-GEN: General / Pronation ─────────────────────────────────────
 		{
-			ProtocolId:   genID("prt", 13),
+			ProtocolId:   lm.GenID("prt", 13),
 			Name:         "General Posture Pronation – PRON-GEN",
 			ProtocolCode: "PRON-GEN",
 			Description:  "General postural foot pronation protocol: arch activation, balance, calf strength, and reactive balance.",
@@ -195,7 +196,7 @@ func generateRehabProtocols() []*physio.PhysioProtocol {
 			Posture:      physio.PhysioPosture_PHYSIO_POSTURE_PRONATION,
 			UserId:       "admin",
 			IsActive:     true,
-			AuditInfo:    createAuditInfo(),
+			AuditInfo:    lm.CreateAuditInfo(),
 			Exercises: []*physio.ProtocolExercise{
 				// Mobility – Phase 1 (Fixed)
 				per(1, 55, "Foot Tripod Drill", 3, "10", "5-6", ctrl),

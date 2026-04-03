@@ -1,7 +1,7 @@
 package progress
 
 import (
-	erpc "github.com/saichler/l8erp/go/erp/common"
+	l8c "github.com/saichler/l8common/go/common"
 	"github.com/saichler/l8physio/go/physio/exercises"
 	"github.com/saichler/l8physio/go/physio/plans"
 	"github.com/saichler/l8physio/go/types/physio"
@@ -9,32 +9,35 @@ import (
 )
 
 func newPhyLogServiceCallback() ifs.IServiceCallback {
-	return erpc.NewServiceCallback[physio.ProgressLog](
+	return l8c.NewServiceCallback(
 		"ProgressLog",
+		func(e interface{}) bool { _, ok := e.(*physio.ProgressLog); return ok },
 		setPhyLogID,
 		validatePhyLog,
 		snapshotExerciseDataOnPost,
 	)
 }
 
-func setPhyLogID(entity *physio.ProgressLog) {
-	erpc.GenerateID(&entity.LogId)
+func setPhyLogID(e interface{}) {
+	entity := e.(*physio.ProgressLog)
+	l8c.GenerateID(&entity.LogId)
 	for _, entry := range entity.Entries {
-		erpc.GenerateID(&entry.ProgressEntryId)
+		l8c.GenerateID(&entry.ProgressEntryId)
 	}
 }
 
-func validatePhyLog(entity *physio.ProgressLog, vnic ifs.IVNic) error {
-	if err := erpc.ValidateRequired(entity.ClientId, "ClientId"); err != nil {
+func validatePhyLog(e interface{}, vnic ifs.IVNic) error {
+	entity := e.(*physio.ProgressLog)
+	if err := l8c.ValidateRequired(entity.ClientId, "ClientId"); err != nil {
 		return err
 	}
-	if err := erpc.ValidateRequired(entity.UserId, "UserId"); err != nil {
+	if err := l8c.ValidateRequired(entity.UserId, "UserId"); err != nil {
 		return err
 	}
-	if err := erpc.ValidateRequired(entity.PlanId, "PlanId"); err != nil {
+	if err := l8c.ValidateRequired(entity.PlanId, "PlanId"); err != nil {
 		return err
 	}
-	if err := erpc.ValidateDateNotZero(entity.LogDate, "LogDate"); err != nil {
+	if err := l8c.ValidateDateNotZero(entity.LogDate, "LogDate"); err != nil {
 		return err
 	}
 	return nil
@@ -43,10 +46,11 @@ func validatePhyLog(entity *physio.ProgressLog, vnic ifs.IVNic) error {
 // snapshotExerciseDataOnPost runs on POST only to capture the prescribed exercise
 // parameters from the TreatmentPlan and PhysioExercise into each ProgressEntry.
 // This preserves the historical context even if the plan is later modified.
-func snapshotExerciseDataOnPost(entity *physio.ProgressLog, action ifs.Action, vnic ifs.IVNic) error {
+func snapshotExerciseDataOnPost(e interface{}, action ifs.Action, vnic ifs.IVNic) error {
 	if action != ifs.POST {
 		return nil
 	}
+	entity := e.(*physio.ProgressLog)
 	if len(entity.Entries) == 0 {
 		return nil
 	}

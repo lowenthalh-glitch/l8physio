@@ -3,46 +3,57 @@ package workout
 import (
 	"math/rand"
 
-	erpc "github.com/saichler/l8erp/go/erp/common"
+	l8c "github.com/saichler/l8common/go/common"
 	"github.com/saichler/l8physio/go/physio/exercises"
 	"github.com/saichler/l8physio/go/types/physio"
 	"github.com/saichler/l8types/go/ifs"
 )
 
 func newPhyWorkoutServiceCallback() ifs.IServiceCallback {
-	return erpc.NewServiceCallback[physio.GeneratedWorkout](
+	return l8c.NewServiceCallback(
 		"GeneratedWorkout",
+		func(e interface{}) bool { _, ok := e.(*physio.GeneratedWorkout); return ok },
 		setWorkoutID,
 		nil,
 		buildWorkoutOnPost,
 	)
 }
 
-func setWorkoutID(entity *physio.GeneratedWorkout) {
-	erpc.GenerateID(&entity.WorkoutId)
+func setWorkoutID(e interface{}) {
+	entity := e.(*physio.GeneratedWorkout)
+	l8c.GenerateID(&entity.WorkoutId)
 }
 
 // buildWorkoutOnPost is an action validator that runs on POST to auto-populate circuits.
-func buildWorkoutOnPost(entity *physio.GeneratedWorkout, action ifs.Action, vnic ifs.IVNic) error {
+func buildWorkoutOnPost(e interface{}, action ifs.Action, vnic ifs.IVNic) error {
 	if action != ifs.POST {
 		return nil
 	}
+	entity := e.(*physio.GeneratedWorkout)
 	// Fetch all exercises matching joint + posture + phase
 	filter := &physio.PhysioExercise{
 		Joint:   entity.Joint,
 		Posture: entity.Posture,
 		Phase:   entity.Phase,
 	}
-	all, err := erpc.GetEntities(exercises.ServiceName, exercises.ServiceArea, filter, vnic)
-	if err != nil || len(all) == 0 {
+	allRaw, err := l8c.GetEntities(exercises.ServiceName, exercises.ServiceArea, filter, vnic)
+	if err != nil || len(allRaw) == 0 {
 		// Try without posture filter — fall back to joint + phase only
 		filter2 := &physio.PhysioExercise{
 			Joint: entity.Joint,
 			Phase: entity.Phase,
 		}
-		all, err = erpc.GetEntities(exercises.ServiceName, exercises.ServiceArea, filter2, vnic)
+		allRaw, err = l8c.GetEntities(exercises.ServiceName, exercises.ServiceArea, filter2, vnic)
 		if err != nil {
 			return err
+		}
+	}
+
+	// Convert to typed slice
+	var all []*physio.PhysioExercise
+	for _, raw := range allRaw {
+		if ex, ok := raw.(*physio.PhysioExercise); ok {
+			all = append(all, ex)
 		}
 	}
 

@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/saichler/l8bus/go/overlay/vnic"
-	erpc "github.com/saichler/l8erp/go/erp/common"
+	l8c "github.com/saichler/l8common/go/common"
 	"github.com/saichler/l8physio/go/physio/aia"
 	"github.com/saichler/l8physio/go/physio/common"
 	"github.com/saichler/l8physio/go/types/physio"
@@ -55,12 +55,12 @@ func startWebServer(port int, cert string) {
 }
 
 func registerPhysioTypes(resources ifs.IResources) {
-	erpc.RegisterType[physio.PhysioTherapist, physio.PhysioTherapistList](resources, "TherapistId")
-	erpc.RegisterType[physio.PhysioClient, physio.PhysioClientList](resources, "ClientId")
-	erpc.RegisterType[physio.PhysioExercise, physio.PhysioExerciseList](resources, "ExerciseId")
-	erpc.RegisterType[physio.TreatmentPlan, physio.TreatmentPlanList](resources, "PlanId")
-	erpc.RegisterType[physio.Appointment, physio.AppointmentList](resources, "ApptId")
-	erpc.RegisterType[physio.ProgressLog, physio.ProgressLogList](resources, "LogId")
-	erpc.RegisterType[physio.PhysioProtocol, physio.PhysioProtocolList](resources, "ProtocolId")
-	erpc.RegisterType[physio.GeneratedWorkout, physio.GeneratedWorkoutList](resources, "WorkoutId")
+	l8c.RegisterType(resources, &physio.PhysioTherapist{}, &physio.PhysioTherapistList{}, "TherapistId")
+	l8c.RegisterType(resources, &physio.PhysioClient{}, &physio.PhysioClientList{}, "ClientId")
+	l8c.RegisterType(resources, &physio.PhysioExercise{}, &physio.PhysioExerciseList{}, "ExerciseId")
+	l8c.RegisterType(resources, &physio.TreatmentPlan{}, &physio.TreatmentPlanList{}, "PlanId")
+	l8c.RegisterType(resources, &physio.Appointment{}, &physio.AppointmentList{}, "ApptId")
+	l8c.RegisterType(resources, &physio.ProgressLog{}, &physio.ProgressLogList{}, "LogId")
+	l8c.RegisterType(resources, &physio.PhysioProtocol{}, &physio.PhysioProtocolList{}, "ProtocolId")
+	l8c.RegisterType(resources, &physio.GeneratedWorkout{}, &physio.GeneratedWorkoutList{}, "WorkoutId")
 }

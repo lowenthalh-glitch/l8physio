@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 
+	lm "github.com/saichler/l8common/go/mocks"
 	"github.com/saichler/l8physio/go/types/physio"
 )
 
@@ -15,7 +16,7 @@ func generatePhysioClients() []*physio.PhysioClient {
 	for i := 0; i < count; i++ {
 		firstName := patientFirstNames[i%len(patientFirstNames)]
 		lastName := patientLastNames[i%len(patientLastNames)]
-		email := fmt.Sprintf("%s.%s%d@example.com", sanitizeEmail(firstName), sanitizeEmail(lastName), i+1)
+		email := fmt.Sprintf("%s.%s%d@example.com", lm.SanitizeEmail(firstName), lm.SanitizeEmail(lastName), i+1)
 
 		// Status: 80% Active, 20% Inactive
 		var status physio.PhysioClientStatus
@@ -26,18 +27,18 @@ func generatePhysioClients() []*physio.PhysioClient {
 		}
 
 		clients[i] = &physio.PhysioClient{
-			ClientId:         genID("cli", i),
+			ClientId:         lm.GenID("cli", i),
 			FirstName:        firstName,
 			LastName:         lastName,
 			Email:            email,
-			Phone:            randomPhone(),
-			DateOfBirth:      randomBirthDate(),
+			Phone:            lm.RandomPhone(),
+			DateOfBirth:      lm.RandomBirthDate(),
 			Status:           status,
 			ReferralSource:   referralSources[i%len(referralSources)],
 			Diagnosis:        diagnoses[i%len(diagnoses)],
 			MedicalHistory:   fmt.Sprintf("No significant prior medical history. Presenting with %s.", diagnoses[i%len(diagnoses)]),
-			EmergencyContact: fmt.Sprintf("%s %s - %s", patientFirstNames[rand.Intn(len(patientFirstNames))], patientLastNames[rand.Intn(len(patientLastNames))], randomPhone()),
-			AuditInfo:        createAuditInfo(),
+			EmergencyContact: fmt.Sprintf("%s %s - %s", patientFirstNames[rand.Intn(len(patientFirstNames))], patientLastNames[rand.Intn(len(patientLastNames))], lm.RandomPhone()),
+			AuditInfo:        lm.CreateAuditInfo(),
 		}
 	}
 

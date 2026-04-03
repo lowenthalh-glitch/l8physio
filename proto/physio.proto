@@ -4,7 +4,7 @@ package physio;
 
 option go_package = "./types/physio";
 
-import "erp-common.proto";
+import "l8common.proto";
 import "api.proto";
 
 // ──────────────────────────────────────────────
@@ -176,7 +176,7 @@ message PhysioTherapist {
   string        specialization = 6;
   string        license_number = 7;
   bool          is_active      = 8;
-  erp.AuditInfo audit_info     = 30;
+  l8common.AuditInfo audit_info     = 30;
 }
 
 message PhysioTherapistList {
@@ -199,7 +199,7 @@ message PhysioClient {
   string             user_id           = 12;
   string             protocol_id       = 13;
   string             therapist_id      = 14;
-  erp.AuditInfo      audit_info        = 30;
+  l8common.AuditInfo      audit_info        = 30;
 }
 
 message PhysioClientList {
@@ -234,7 +234,7 @@ message PhysioExercise {
   string                 muscle_group         = 23;
   string                 default_reps_display = 24;
   string                 movement_direction   = 25;
-  erp.AuditInfo          audit_info           = 30;
+  l8common.AuditInfo          audit_info           = 30;
 }
 
 message PhysioExerciseList {
@@ -267,7 +267,7 @@ message PhysioProtocol {
   string          user_id       = 7;
   bool            is_active     = 8;
   repeated ProtocolExercise exercises = 20;
-  erp.AuditInfo   audit_info    = 30;
+  l8common.AuditInfo   audit_info    = 30;
 }
 
 message PhysioProtocolList {
@@ -290,7 +290,7 @@ message TreatmentPlan {
   string           protocol_id      = 12;
   int32            volume           = 13;
   repeated PlanExercise exercises   = 20;
-  erp.AuditInfo    audit_info       = 30;
+  l8common.AuditInfo    audit_info       = 30;
 }
 
 message TreatmentPlanList {
@@ -310,7 +310,7 @@ message Appointment {
   string           location        = 9;
   string           therapist_notes = 10;
   string           client_notes    = 11;
-  erp.AuditInfo    audit_info      = 30;
+  l8common.AuditInfo    audit_info      = 30;
 }
 
 message AppointmentList {
@@ -328,7 +328,7 @@ message ProgressLog {
   int32            overall_pain_level = 7;
   string           general_notes      = 8;
   repeated ProgressEntry entries      = 20;
-  erp.AuditInfo    audit_info         = 30;
+  l8common.AuditInfo    audit_info         = 30;
 }
 
 message ProgressLogList {
@@ -378,7 +378,7 @@ message GeneratedWorkout {
   PhysioPhase     phase         = 5;
   int32           volume        = 6;
   repeated WorkoutCircuit circuits = 7;
-  erp.AuditInfo   audit_info    = 30;
+  l8common.AuditInfo   audit_info    = 30;
 }
 
 message GeneratedWorkoutList {

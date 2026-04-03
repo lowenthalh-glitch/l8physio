@@ -1,7 +1,7 @@
 package therapists
 
 import (
-	erpc "github.com/saichler/l8erp/go/erp/common"
+	l8c "github.com/saichler/l8common/go/common"
 	"github.com/saichler/l8physio/go/types/physio"
 	"github.com/saichler/l8types/go/ifs"
 )
@@ -12,8 +12,8 @@ const (
 )
 
 func Activate(creds, dbname string, vnic ifs.IVNic) {
-	erpc.ActivateService[physio.PhysioTherapist, physio.PhysioTherapistList](erpc.ServiceConfig{
+	l8c.ActivateService(l8c.ServiceConfig{
 		ServiceName: ServiceName, ServiceArea: ServiceArea,
 		PrimaryKey: "TherapistId", Callback: newPhyTherapistServiceCallback(),
-	}, creds, dbname, vnic)
+	}, &physio.PhysioTherapist{}, &physio.PhysioTherapistList{}, creds, dbname, vnic)
 }

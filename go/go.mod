@@ -5,7 +5,7 @@ go 1.26.1
 require (
 	github.com/saichler/l8agent v0.0.0-20260327104032-03223fdf7dc2
 	github.com/saichler/l8bus v0.0.0-20260326134657-42f845bc01f6
-	github.com/saichler/l8erp/go v0.0.0-20260402165433-eb90e512a658
+	github.com/saichler/l8common v0.0.0-20260403203939-ef5e359c0a0e
 	github.com/saichler/l8reflect v0.0.0-20260327101437-6da0c1cef4c9
 	github.com/saichler/l8services v0.0.0-20260324202357-03d40602ca59
 	github.com/saichler/l8srlz v0.0.0-20260322124809-505a0d08f95d
@@ -17,7 +17,7 @@ require (
 
 require (
 	github.com/google/uuid v1.6.0 // indirect
-	github.com/lib/pq v1.12.2 // indirect
+	github.com/lib/pq v1.12.3 // indirect
 	github.com/saichler/l8orm v0.0.0-20260327104648-5205c04539f2 // indirect
 	github.com/saichler/l8ql v0.0.0-20260322130921-a31581a0ab5f // indirect
 	golang.org/x/sys v0.42.0 // indirect

@@ -1,6 +1,7 @@
 package mocks
 
 import (
+	lm "github.com/saichler/l8common/go/mocks"
 	"github.com/saichler/l8physio/go/types/physio"
 )
 
@@ -308,7 +309,7 @@ func generateClientExercises() []*physio.PhysioExercise {
 	result := make([]*physio.PhysioExercise, len(defs))
 	for i, d := range defs {
 		result[i] = &physio.PhysioExercise{
-			ExerciseId:       genID("cex", i),
+			ExerciseId:       lm.GenID("cex", i),
 			Name:             d.name,
 			Description:      d.description,
 			ExerciseAim:      d.aim,
@@ -324,7 +325,7 @@ func generateClientExercises() []*physio.PhysioExercise {
 			DefaultReps:      d.reps,
 			VideoStoragePath: pickVideoURL(i),
 			IsActive:         true,
-			AuditInfo:        createAuditInfo(),
+			AuditInfo:        lm.CreateAuditInfo(),
 		}
 	}
 	return result

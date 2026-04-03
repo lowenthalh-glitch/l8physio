@@ -1,7 +1,7 @@
 package plans
 
 import (
-	erpc "github.com/saichler/l8erp/go/erp/common"
+	l8c "github.com/saichler/l8common/go/common"
 	"github.com/saichler/l8physio/go/types/physio"
 	"github.com/saichler/l8types/go/ifs"
 )
@@ -12,16 +12,20 @@ const (
 )
 
 func Activate(creds, dbname string, vnic ifs.IVNic) {
-	erpc.ActivateService[physio.TreatmentPlan, physio.TreatmentPlanList](erpc.ServiceConfig{
+	l8c.ActivateService(l8c.ServiceConfig{
 		ServiceName: ServiceName, ServiceArea: ServiceArea,
 		PrimaryKey: "PlanId", Callback: newPhyPlanServiceCallback(),
-	}, creds, dbname, vnic)
+	}, &physio.TreatmentPlan{}, &physio.TreatmentPlanList{}, creds, dbname, vnic)
 }
 
 func Plans(vnic ifs.IVNic) (ifs.IServiceHandler, bool) {
-	return erpc.ServiceHandler(ServiceName, ServiceArea, vnic)
+	return l8c.ServiceHandler(ServiceName, ServiceArea, vnic)
 }
 
 func Plan(planId string, vnic ifs.IVNic) (*physio.TreatmentPlan, error) {
-	return erpc.GetEntity(ServiceName, ServiceArea, &physio.TreatmentPlan{PlanId: planId}, vnic)
+	result, err := l8c.GetEntity(ServiceName, ServiceArea, &physio.TreatmentPlan{PlanId: planId}, vnic)
+	if err != nil {
+		return nil, err
+	}
+	return result.(*physio.TreatmentPlan), nil
 }

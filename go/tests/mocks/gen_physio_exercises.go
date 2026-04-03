@@ -3,6 +3,7 @@ package mocks
 import (
 	"fmt"
 
+	lm "github.com/saichler/l8common/go/mocks"
 	"github.com/saichler/l8physio/go/types/physio"
 )
 
@@ -88,7 +89,7 @@ func generatePhysioExercises() []*physio.PhysioExercise {
 
 	for i, def := range allExerciseDefs {
 		exercises[i] = &physio.PhysioExercise{
-			ExerciseId:         genID("ex", i),
+			ExerciseId:         lm.GenID("ex", i),
 			Name:               def.name,
 			Description:        fmt.Sprintf("A %s exercise targeting the %s region.", def.category.String(), def.region.String()),
 			Category:           def.category,
@@ -100,7 +101,7 @@ func generatePhysioExercises() []*physio.PhysioExercise {
 			Contraindications:  "Do not perform if experiencing acute pain. Consult therapist before proceeding.",
 			VideoStoragePath:   pickVideoURL(i),
 			IsActive:           true,
-			AuditInfo:          createAuditInfo(),
+			AuditInfo:          lm.CreateAuditInfo(),
 		}
 	}
 

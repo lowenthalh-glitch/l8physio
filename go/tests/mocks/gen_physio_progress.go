@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 
+	lm "github.com/saichler/l8common/go/mocks"
 	"github.com/saichler/l8physio/go/types/physio"
 )
 
@@ -12,9 +13,9 @@ func generateProgressLogs(store *MockDataStore) []*physio.ProgressLog {
 	logs := make([]*physio.ProgressLog, 50)
 
 	for i := 0; i < 50; i++ {
-		clientID := pickRef(store.PhysioClientIDs, i)
-		planID := pickRef(store.TreatmentPlanIDs, i)
-		apptID := pickRef(store.AppointmentIDs, i)
+		clientID := lm.PickRef(store.PhysioClientIDs, i)
+		planID := lm.PickRef(store.TreatmentPlanIDs, i)
+		apptID := lm.PickRef(store.AppointmentIDs, i)
 
 		// Pain level improves over time (later logs have lower pain)
 		painLevel := int32(rand.Intn(5) + 1) // 1-5 initially
@@ -27,7 +28,7 @@ func generateProgressLogs(store *MockDataStore) []*physio.ProgressLog {
 		entries := make([]*physio.ProgressEntry, numEntries)
 		for j := 0; j < numEntries; j++ {
 			exIdx := (i*5 + j) % len(store.PhysioExerciseIDs)
-			exerciseID := pickRef(store.PhysioExerciseIDs, exIdx)
+			exerciseID := lm.PickRef(store.PhysioExerciseIDs, exIdx)
 			setsPrescribed := int32(rand.Intn(2) + 3)
 			repsPrescribed := int32(rand.Intn(5) + 10)
 			completed := rand.Float32() > 0.2 // 80% completion rate
@@ -55,16 +56,16 @@ func generateProgressLogs(store *MockDataStore) []*physio.ProgressLog {
 		}
 
 		logs[i] = &physio.ProgressLog{
-			LogId:            genID("log", i),
+			LogId:            lm.GenID("log", i),
 			ClientId:         clientID,
 			UserId:           "admin",
 			PlanId:           planID,
 			ApptId:           apptID,
-			LogDate:          randomPastDate(3),
+			LogDate:          lm.RandomPastDate(3, 28),
 			OverallPainLevel: painLevel,
 			GeneralNotes:     progressNotes[i%len(progressNotes)],
 			Entries:          entries,
-			AuditInfo:        createAuditInfo(),
+			AuditInfo:        lm.CreateAuditInfo(),
 		}
 	}
 

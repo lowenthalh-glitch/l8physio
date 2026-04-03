@@ -73,32 +73,36 @@
         CLIENT_STATUS:        CLIENT_STATUS.enum,
         CLIENT_STATUS_VALUES: CLIENT_STATUS.values,
         CLIENT_STATUS_CLASSES:CLIENT_STATUS.classes,
-        EXERCISE_CATEGORY:    EXERCISE_CATEGORY,
-        BODY_REGION:          BODY_REGION,
+        EXERCISE_CATEGORY:    EXERCISE_CATEGORY.enum,
+        BODY_REGION:          BODY_REGION.enum,
         PLAN_STATUS:          PLAN_STATUS.enum,
         PLAN_STATUS_VALUES:   PLAN_STATUS.values,
         PLAN_STATUS_CLASSES:  PLAN_STATUS.classes,
         APPT_STATUS:          APPT_STATUS.enum,
         APPT_STATUS_VALUES:   APPT_STATUS.values,
         APPT_STATUS_CLASSES:  APPT_STATUS.classes,
-        LOAD_TYPE:            LOAD_TYPE,
-        JOINT:                JOINT,
-        POSTURE:              POSTURE,
-        PHYSIO_PHASE:         PHYSIO_PHASE,
-        EXERCISE_TYPE:        EXERCISE_TYPE
+        LOAD_TYPE:            LOAD_TYPE.enum,
+        JOINT:                JOINT.enum,
+        POSTURE:              POSTURE.enum,
+        PHYSIO_PHASE:         PHYSIO_PHASE.enum,
+        PHYSIO_PHASE_VALUES:  PHYSIO_PHASE.values,
+        PHYSIO_PHASE_CLASSES: PHYSIO_PHASE.classes,
+        EXERCISE_TYPE:        EXERCISE_TYPE.enum,
+        EXERCISE_TYPE_VALUES: EXERCISE_TYPE.values,
+        EXERCISE_TYPE_CLASSES:EXERCISE_TYPE.classes
     };
 
     const { renderEnum } = Layer8MRenderers;
 
     MobilePhysioManagement.render = {
         clientStatus:     createStatusRenderer(CLIENT_STATUS.enum, CLIENT_STATUS.classes),
-        exerciseCategory: (v) => renderEnum(v, EXERCISE_CATEGORY),
-        bodyRegion:       (v) => renderEnum(v, BODY_REGION),
+        exerciseCategory: (v) => renderEnum(v, EXERCISE_CATEGORY.enum),
+        bodyRegion:       (v) => renderEnum(v, BODY_REGION.enum),
         planStatus:       createStatusRenderer(PLAN_STATUS.enum, PLAN_STATUS.classes),
         apptStatus:       createStatusRenderer(APPT_STATUS.enum, APPT_STATUS.classes),
-        loadType:         (v) => renderEnum(v, LOAD_TYPE),
-        joint:            (v) => renderEnum(v, JOINT),
-        posture:          (v) => renderEnum(v, POSTURE),
+        loadType:         (v) => renderEnum(v, LOAD_TYPE.enum),
+        joint:            (v) => renderEnum(v, JOINT.enum),
+        posture:          (v) => renderEnum(v, POSTURE.enum),
         phase:            createStatusRenderer(PHYSIO_PHASE.enum, PHYSIO_PHASE.classes),
         exerciseType:     createStatusRenderer(EXERCISE_TYPE.enum, EXERCISE_TYPE.classes)
     };
