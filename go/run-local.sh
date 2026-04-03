@@ -11,12 +11,12 @@ GOPROXY=direct GOPRIVATE=github.com go mod tidy
 go mod vendor
 
 # Start postgres (use /bin/sh entrypoint + tail -f /dev/null to keep container alive)
-#docker rm -f unsecure-postgres 2>/dev/null || true
-#sudo mkdir -p /data/postgres && sudo chmod 777 /data /data/postgres 2>/dev/null || true
-#docker run -d --name unsecure-postgres -p 5432:5432 -v /data/:/data/ \
-#  --entrypoint /bin/sh \
-#  saichler/unsecure-postgres:latest \
-#  -c "/start-postgres.sh admin admin admin 5432 && tail -f /dev/null"
+docker rm -f unsecure-postgres 2>/dev/null || true
+sudo mkdir -p /data/postgres && sudo chmod 777 /data /data/postgres 2>/dev/null || true
+docker run -d --name unsecure-postgres -p 5432:5432 -v /data/:/data/ \
+  --entrypoint /bin/sh \
+  saichler/unsecure-postgres:latest \
+  -c "/start-postgres.sh admin admin admin 5432 && tail -f /dev/null"
 sleep 10
 
 # Build demo binaries

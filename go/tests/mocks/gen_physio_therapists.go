@@ -11,16 +11,9 @@ type therapistDef struct {
 }
 
 var therapistDefs = []therapistDef{
-	{"Sarah",   "Cohen",     "Orthopedic Physiotherapy"},
-	{"David",   "Levy",      "Sports Rehabilitation"},
-	{"Maya",    "Shapiro",   "Neurological Physiotherapy"},
-	{"Eitan",   "Mizrahi",   "Pediatric Physiotherapy"},
-	{"Noa",     "Ben-David", "Post-Surgical Rehabilitation"},
-	{"Oren",    "Katz",      "Manual Therapy"},
-	{"Liora",   "Friedman",  "Chronic Pain Management"},
-	{"Amir",    "Stern",     "Geriatric Physiotherapy"},
-	{"Tal",     "Goldberg",  "Women's Health Physiotherapy"},
-	{"Roni",    "Peretz",    "Vestibular Rehabilitation"},
+	{"Sarah", "Cohen", "Orthopedic Physiotherapy"},
+	{"David", "Levy", "Sports Rehabilitation"},
+	{"Maya", "Shapiro", "Neurological Physiotherapy"},
 }
 
 func generatePhysioTherapists() []*physio.PhysioTherapist {

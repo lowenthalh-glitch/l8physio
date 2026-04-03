@@ -7,24 +7,22 @@ import (
 	"github.com/saichler/l8physio/go/types/physio"
 )
 
-// generatePhysioClients creates 30 physio client records with realistic distributions
+// generatePhysioClients creates 10 physio client records
 func generatePhysioClients() []*physio.PhysioClient {
-	clients := make([]*physio.PhysioClient, 30)
+	count := 10
+	clients := make([]*physio.PhysioClient, count)
 
-	for i := 0; i < 30; i++ {
-		firstName := patientFirstNames[rand.Intn(len(patientFirstNames))]
-		lastName := patientLastNames[rand.Intn(len(patientLastNames))]
+	for i := 0; i < count; i++ {
+		firstName := patientFirstNames[i%len(patientFirstNames)]
+		lastName := patientLastNames[i%len(patientLastNames)]
 		email := fmt.Sprintf("%s.%s%d@example.com", sanitizeEmail(firstName), sanitizeEmail(lastName), i+1)
 
-		// Status distribution: 70% Active, 15% Inactive, 15% Discharged
+		// Status: 80% Active, 20% Inactive
 		var status physio.PhysioClientStatus
-		switch {
-		case i < 21:
+		if i < 8 {
 			status = physio.PhysioClientStatus_PHYSIO_CLIENT_STATUS_ACTIVE
-		case i < 25:
+		} else {
 			status = physio.PhysioClientStatus_PHYSIO_CLIENT_STATUS_INACTIVE
-		default:
-			status = physio.PhysioClientStatus_PHYSIO_CLIENT_STATUS_DISCHARGED
 		}
 
 		clients[i] = &physio.PhysioClient{
@@ -53,6 +51,7 @@ func assignClientProtocols(clients []*physio.PhysioClient, store *MockDataStore)
 			c.ProtocolId = store.PhysioProtocolIDs[i%len(store.PhysioProtocolIDs)]
 		}
 	}
+	// Distribute 10 clients across 3 therapists: 4, 3, 3
 	if len(store.PhysioTherapistIDs) > 0 {
 		for i, c := range clients {
 			c.TherapistId = store.PhysioTherapistIDs[i%len(store.PhysioTherapistIDs)]

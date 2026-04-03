@@ -2,7 +2,6 @@
     'use strict';
 
     var CATEGORY_LABELS = { 1: 'Mobility', 2: 'Rehab', 3: 'Strength', 4: 'Functional' };
-    var CIRCUIT_ORDER   = [1, 2, 3, 4];
 
     function _apiPrefix() {
         return Layer8DConfig.getApiPrefix();
@@ -91,7 +90,12 @@
                   '<button class="physio-client-tab" data-tab="details">Details</button>',
                 '</div>',
                 '<div class="physio-client-tab-pane active" id="physio-exercises-pane">',
-                  '<div class="physio-exercises-loading">Loading workout plan\u2026</div>',
+                  '<div class="physio-wb-toolbar">',
+                    '<button class="layer8d-btn layer8d-btn-secondary layer8d-btn-small" id="physio-wb-open-btn">\uD83D\uDD28 Workout Builder</button>',
+                  '</div>',
+                  '<div id="physio-exercises-pane-content">',
+                    '<div class="physio-exercises-loading">Loading workout plan\u2026</div>',
+                  '</div>',
                 '</div>',
                 '<div class="physio-client-tab-pane" id="physio-info-pane">',
                   '<div class="physio-exercises-loading">Loading exercise info\u2026</div>',
@@ -117,7 +121,12 @@
                         });
                     });
 
-                    self._loadPlan(client, body.querySelector('#physio-exercises-pane'), body.querySelector('#physio-info-pane'));
+                    var exercisesPane  = body.querySelector('#physio-exercises-pane');
+                    var contentPane    = body.querySelector('#physio-exercises-pane-content');
+                    var infoPane       = body.querySelector('#physio-info-pane');
+
+                    self._wireWbButton(exercisesPane, contentPane, client, infoPane);
+                    self._loadPlan(client, contentPane, infoPane);
                     self._renderDetails(client, body.querySelector('#physio-details-pane .physio-details-content'));
                 }
             });
@@ -183,14 +192,15 @@
             });
         },
 
-        // ── Build merged row data grouped by circuit category ──────────────────
         _buildCircuitRows: function(planExercises, exerciseMap) {
             var map = {};
+            var labels = {};
             planExercises.forEach(function(pe) {
                 var fullEx = exerciseMap[pe.exerciseId] || {};
-                var cat = fullEx.category || 0;
-                if (!map[cat]) map[cat] = [];
-                map[cat].push({
+                var cNum = pe.circuitNumber || 0;
+                if (!map[cNum]) map[cNum] = [];
+                if (pe.circuitLabel) labels[cNum] = pe.circuitLabel;
+                map[cNum].push({
                     planExerciseId: pe.planExerciseId,
                     exerciseId:     pe.exerciseId,
                     name:           fullEx.name || pe.exerciseId || '\u2014',
@@ -198,23 +208,19 @@
                     reps:           pe.reps  || fullEx.defaultRepsDisplay || String(fullEx.defaultReps || '') || '\u2014',
                     notes:          pe.notes || '',
                     exerciseType:   fullEx.exerciseType || 0,
-                    _category:      fullEx.category || 0,
+                    _circuitNumber: cNum,
                     _orderIndex:    pe.orderIndex || 0
                 });
             });
-
-            // Sort within each category: Fixed (1) first, then Variable (2), then by orderIndex
-            Object.keys(map).forEach(function(cat) {
-                map[cat].sort(function(a, b) {
+            Object.keys(map).forEach(function(k) {
+                map[k].sort(function(a, b) {
                     if (a.exerciseType !== b.exerciseType) return a.exerciseType - b.exerciseType;
                     return a._orderIndex - b._orderIndex;
                 });
             });
-
-            return map;
+            return { rows: map, labels: labels };
         },
 
-        // ── Render four Layer8DTable instances (one per circuit) ───────────────
         _renderPlanTable: function(plan, planExercises, exerciseMap, container) {
             var self = this;
 
@@ -224,12 +230,9 @@
             var st = plan.status || 0;
             var startStr = plan.startDate ? Layer8DUtils.formatDate(plan.startDate) : '';
 
-            var headerHtml = '<div class="physio-plan-header">';
-            headerHtml += '<div class="physio-plan-title">' + Layer8DUtils.escapeHtml(plan.title || 'Workout Plan') + '</div>';
-            headerHtml += '<div class="physio-plan-meta">';
-            if (st) headerHtml += '<span class="physio-plan-status ' + (statusCls[st] || '') + '">' + (statusLabels[st] || '') + '</span>';
-            if (startStr) headerHtml += '<span class="physio-plan-date">Start: ' + startStr + '</span>';
-            headerHtml += '</div></div>';
+            var headerHtml = '<div class="physio-plan-header"><div class="physio-plan-title">' + Layer8DUtils.escapeHtml(plan.title || 'Workout Plan') + '</div><div class="physio-plan-meta">'
+                + (st ? '<span class="physio-plan-status ' + (statusCls[st] || '') + '">' + (statusLabels[st] || '') + '</span>' : '')
+                + (startStr ? '<span class="physio-plan-date">Start: ' + startStr + '</span>' : '') + '</div></div>';
 
             container.innerHTML = headerHtml;
 
@@ -250,47 +253,48 @@
                 ...col.custom('_change', '', function(item) {
                     if (item.exerciseType !== 2) return '';
                     return '<button class="physio-change-btn layer8d-btn layer8d-btn-secondary layer8d-btn-small"'
-                         + ' data-id="' + Layer8DUtils.escapeHtml(item.planExerciseId) + '"'
-                         + ' data-category="' + item._category + '">Change</button>';
+                         + ' data-id="' + Layer8DUtils.escapeHtml(item.planExerciseId) + '">Change</button>';
                 }, { sortKey: false })
             ];
 
-            var circuitRowsMap = self._buildCircuitRows(planExercises, exerciseMap);
+            var result = self._buildCircuitRows(planExercises, exerciseMap);
+            var circuitRowsMap = result.rows;
+            var circuitLabels  = result.labels;
+            var circuitKeys = Object.keys(circuitRowsMap).map(Number).sort(function(a, b) { return a - b; });
 
-            CIRCUIT_ORDER.forEach(function(cat) {
-                var rows = circuitRowsMap[cat];
+            circuitKeys.forEach(function(cNum) {
+                var rows = circuitRowsMap[cNum];
                 if (!rows || rows.length === 0) return;
+                var label = circuitLabels[cNum] || (CATEGORY_LABELS[cNum] || ('Circuit ' + cNum));
 
-                var label = CATEGORY_LABELS[cat];
-
-                // Circuit header
                 var header = document.createElement('div');
                 header.className = 'physio-circuit-title';
-                header.textContent = 'Circuit \u2014 ' + label;
+                header.textContent = 'Circuit ' + cNum + ' \u2014 ' + label;
                 container.appendChild(header);
 
-                // Table wrapper
                 var wrap = document.createElement('div');
-                wrap.id = 'physio-circuit-table-' + cat;
+                wrap.id = 'physio-circuit-table-' + cNum;
                 wrap.className = 'physio-circuit-table-wrap';
                 container.appendChild(wrap);
 
                 var table = new Layer8DTable({
-                    containerId:  'physio-circuit-table-' + cat,
+                    containerId:  'physio-circuit-table-' + cNum,
                     columns:      planColumns,
                     primaryKey:   'planExerciseId',
                     pageSize:     50,
                     serverSide:   false,
                     sortable:     true,
                     filterable:   false,
-                    showActions:  false,
+                    showActions:  true,
+                    onEdit:       function(id) { self._editExercise(id); },
+                    onDelete:     function(id) { self._deleteExercise(id); },
                     emptyMessage: 'No exercises.',
                     onDataLoaded: (function(w) {
                         return function() {
                             w.querySelectorAll('.physio-change-btn').forEach(function(btn) {
                                 btn.addEventListener('click', function(e) {
                                     e.stopPropagation();
-                                    self._showSwapPopup(btn.dataset.id, parseInt(btn.dataset.category, 10));
+                                    self._showSwapPopup(btn.dataset.id);
                                 });
                             });
                         };
@@ -298,13 +302,11 @@
                 });
                 table.init();
                 table.setData(rows);
-
-                self._circuitTables[cat] = table;
+                self._circuitTables[cNum] = table;
             });
         },
 
-        // ── Swap picker popup ──────────────────────────────────────────────────
-        _showSwapPopup: function(planExerciseId, category) {
+        _showSwapPopup: function(planExerciseId) {
             var self = this;
             var pe = (self._currentPlan.exercises || []).filter(function(e) {
                 return e.planExerciseId === planExerciseId;
@@ -312,7 +314,7 @@
             if (!pe) return;
 
             var pool = (self._allVariableExercises || []).filter(function(ex) {
-                return ex.category === category && ex.exerciseId !== pe.exerciseId;
+                return ex.exerciseId !== pe.exerciseId;
             });
 
             var listHtml = pool.length === 0
@@ -342,51 +344,75 @@
             });
         },
 
-        // ── Swap a variable exercise and save the plan ─────────────────────────
-        _swapExercise: function(planExIdx, newEx) {
+        _savePlan: function() {
             var self = this;
-            var plan = self._currentPlan;
-            if (!plan || !plan.exercises[planExIdx]) return;
-
-            plan.exercises[planExIdx].exerciseId = newEx.exerciseId;
-            plan.exercises[planExIdx].sets = newEx.defaultSets || plan.exercises[planExIdx].sets;
-            plan.exercises[planExIdx].reps = newEx.defaultReps || plan.exercises[planExIdx].reps;
-            plan.exercises[planExIdx].notes = newEx.loadNotes  || plan.exercises[planExIdx].notes;
-
-            // Update exerciseMap with the new exercise data
-            if (self._exerciseMap) {
-                self._exerciseMap[newEx.exerciseId] = newEx;
-            }
-
-            var url = _apiPrefix() + '/50/PhyPlan';
-            fetch(url, {
+            fetch(_apiPrefix() + '/50/PhyPlan', {
                 method: 'PUT',
                 headers: Object.assign({}, _headers(), { 'Content-Type': 'application/json' }),
-                body: JSON.stringify(plan)
+                body: JSON.stringify(self._currentPlan)
             })
             .then(function(r) {
                 if (!r.ok) throw new Error('HTTP ' + r.status);
-                Layer8DNotification.success('Exercise updated.');
-
-                // Rebuild circuit rows and refresh each table in place (no re-fetch)
-                var circuitRowsMap = self._buildCircuitRows(self._currentPlan.exercises, self._exerciseMap || {});
-                Object.keys(self._circuitTables).forEach(function(cat) {
-                    var rows = circuitRowsMap[parseInt(cat, 10)] || [];
-                    self._circuitTables[cat].setData(rows);
+                Layer8DNotification.success('Plan saved.');
+                var result = self._buildCircuitRows(self._currentPlan.exercises, self._exerciseMap || {});
+                Object.keys(self._circuitTables).forEach(function(key) {
+                    self._circuitTables[key].setData(result.rows[parseInt(key, 10)] || []);
                 });
-
-                // Refresh info pane directly
-                var infoPane = document.getElementById('physio-info-pane');
-                if (infoPane && self._exerciseMap) {
-                    self._renderExerciseInfo(
-                        self._currentPlan, self._currentPlan.exercises, self._exerciseMap, infoPane
-                    );
+                var info = document.getElementById('physio-info-pane');
+                if (info && self._exerciseMap) {
+                    self._renderExerciseInfo(self._currentPlan, self._currentPlan.exercises, self._exerciseMap, info);
                 }
             })
             .catch(function(e) { Layer8DNotification.error('Failed to save: ' + e.message); });
         },
 
-        // ── Exercise Info & Videos tab ─────────────────────────────────────────
+        _swapExercise: function(planExIdx, newEx) {
+            var self = this;
+            var plan = self._currentPlan;
+            if (!plan || !plan.exercises[planExIdx]) return;
+            var pe = plan.exercises[planExIdx];
+            pe.exerciseId = newEx.exerciseId;
+            pe.sets  = newEx.defaultSets || pe.sets;
+            pe.reps  = newEx.defaultReps || pe.reps;
+            pe.notes = newEx.loadNotes   || pe.notes;
+            if (self._exerciseMap) self._exerciseMap[newEx.exerciseId] = newEx;
+            self._savePlan();
+        },
+
+        _editExercise: function(planExerciseId) {
+            var self = this;
+            var pe = ((self._currentPlan && self._currentPlan.exercises) || []).filter(function(e) { return e.planExerciseId === planExerciseId; })[0];
+            if (!pe) return;
+            var exName = ((self._exerciseMap || {})[pe.exerciseId] || {}).name || pe.exerciseId;
+            var r = function(l, h) { return '<div class="wb-af-row"><label class="wb-af-label">' + l + '</label>' + h + '</div>'; };
+            var html = '<div class="wb-assign-form">'
+                + r('Exercise', '<div class="wb-af-static">' + Layer8DUtils.escapeHtml(exName) + '</div>')
+                + r('Sets', '<input type="number" id="pe-edit-sets" class="wb-af-input" min="1" max="20" value="' + (pe.sets || '') + '">')
+                + r('Reps', '<input type="number" id="pe-edit-reps" class="wb-af-input" min="1" max="100" value="' + (pe.reps || '') + '">')
+                + r('Notes', '<input type="text" id="pe-edit-notes" class="wb-af-input" value="' + Layer8DUtils.escapeHtml(pe.notes || '') + '">') + '</div>';
+            Layer8DPopup.show({
+                title: 'Edit Exercise', content: html, size: 'small', showFooter: true, saveButtonText: 'Save',
+                onSave: function() {
+                    var b = Layer8DPopup.getBody();
+                    var q = function(id) { return b ? b.querySelector('#' + id) : document.getElementById(id); };
+                    pe.sets = parseInt(q('pe-edit-sets').value, 10) || 0;
+                    pe.reps = parseInt(q('pe-edit-reps').value, 10) || 0;
+                    pe.notes = q('pe-edit-notes').value.trim();
+                    Layer8DPopup.close();
+                    self._savePlan();
+                }
+            });
+        },
+
+        _deleteExercise: function(planExerciseId) {
+            var self = this;
+            if (!self._currentPlan) return;
+            self._currentPlan.exercises = self._currentPlan.exercises.filter(function(e) {
+                return e.planExerciseId !== planExerciseId;
+            });
+            self._savePlan();
+        },
+
         _renderExerciseInfo: function(plan, planExercises, exerciseMap, container) {
             var ordered = planExercises.slice().sort(function(a, b) {
                 return (a.orderIndex || 0) - (b.orderIndex || 0);
@@ -436,6 +462,23 @@
             html += '</div>'; // physio-exercise-grid
 
             container.innerHTML = html;
+        },
+
+        _wireWbButton: function(exercisesPane, contentPane, client, infoPane) {
+            var self = this;
+            var wbBtn = exercisesPane.querySelector('#physio-wb-open-btn');
+            if (!wbBtn || !contentPane || !window.PhysioWorkoutBuilder) return;
+            wbBtn.addEventListener('click', function() {
+                var savedHtml = contentPane.innerHTML;
+                contentPane.innerHTML = '<div id="physio-wb-container"></div>';
+                PhysioWorkoutBuilder.setupInContainer(contentPane.querySelector('#physio-wb-container'), {
+                    mode:      self._currentPlan ? 'edit' : 'new',
+                    planId:    self._currentPlan ? self._currentPlan.planId : null,
+                    clientId:  client.clientId,
+                    onRefresh: function() { self._loadPlan(client, contentPane, infoPane); },
+                    onCancel:  function() { contentPane.innerHTML = savedHtml; }
+                });
+            });
         },
 
         // ── Client details form (read-only) ────────────────────────────────────

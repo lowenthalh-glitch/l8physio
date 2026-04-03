@@ -128,6 +128,8 @@ message PlanExercise {
   PhysioFrequency frequency        = 6;
   string          notes            = 7;
   int32           order_index      = 8;
+  int32           circuit_number   = 9;
+  string          circuit_label    = 10;
 }
 
 // Embedded in ProgressLog

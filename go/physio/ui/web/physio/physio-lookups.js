@@ -4,6 +4,7 @@
     PhysioManagement.lookups = {
         _therapists: {},
         _clients:    {},
+        _exercises:  {},
         _loaded:     false,
 
         load: async function() {
@@ -42,6 +43,16 @@
                 }
             } catch(e) {}
 
+            try {
+                const r = await fetch(prefix + '/50/PhyExercis' + buildQuery('PhysioExercise'), { headers: authHeaders() });
+                if (r.ok) {
+                    const data = await r.json();
+                    (data.list || []).forEach(function(ex) {
+                        self._exercises[ex.exerciseId] = ex.name || ex.exerciseId;
+                    });
+                }
+            } catch(e) {}
+
             self._loaded = true;
         },
 
@@ -51,6 +62,10 @@
 
         clientName: function(id) {
             return this._clients[id] || id || '-';
+        },
+
+        exerciseName: function(id) {
+            return this._exercises[id] || id || '-';
         }
     };
 })();

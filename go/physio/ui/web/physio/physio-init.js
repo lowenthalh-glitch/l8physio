@@ -3,7 +3,7 @@
     Layer8DModuleFactory.create({
         namespace:         'Physio',
         defaultModule:     'management',
-        defaultService:    'clients',
+        defaultService:    'therapists',
         sectionSelector:   'management',
         initializerName:   'initializePhysio',
         requiredNamespaces: ['PhysioManagement']
@@ -39,18 +39,35 @@
         }
 
         var origShowDetails = window.Physio && window.Physio._showDetailsModal;
+        console.log('[physio-init] origShowDetails type:', typeof origShowDetails, '| PhysioPlanEditor:', !!window.PhysioPlanEditor);
         if (typeof origShowDetails === 'function') {
             window.Physio._showDetailsModal = function(service, item, itemId) {
+                console.log('[physio-init] _showDetailsModal called for model:', service.model);
                 if (service.model === 'PhysioClient' && window.PhysioClientExercises) {
                     PhysioClientExercises.open(itemId || (item && item.clientId));
                 } else if (service.model === 'PhysioTherapist') {
                     _showTherapistClients(item, itemId);
+                } else if (service.model === 'TreatmentPlan' && window.PhysioPlanEditor) {
+                    _showTreatmentPlan(item, itemId);
                 } else {
+                    console.log('[physio-init] falling back to origShowDetails for model:', service.model);
                     origShowDetails.call(this, service, item, itemId);
                 }
             };
+        } else {
+            console.warn('[physio-init] origShowDetails is not a function — override not installed');
         }
     };
+
+    function _showTreatmentPlan(item, planId) {
+        var id = planId || (item && item.planId);
+        if (!id) return;
+        PhysioPlanEditor.open(item, function() {
+            if (window.Physio && window.Physio.loadServiceView) {
+                window.Physio.loadServiceView('management', 'plans');
+            }
+        });
+    }
 
     function _showTherapistClients(item, therapistId) {
         var tid = therapistId || (item && item.therapistId);

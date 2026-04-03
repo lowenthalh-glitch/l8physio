@@ -20,7 +20,7 @@
     background: var(--layer8d-bg-light);
     border: 1px solid var(--layer8d-border);
     border-radius: 8px;
-    margin-bottom: 24px;
+    margin-bottom: 16px;
 }
 
 .wb-ctrl {
@@ -30,6 +30,9 @@
 }
 
 .wb-ctrl-build {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
     padding-bottom: 1px;
 }
 
@@ -61,6 +64,44 @@
     letter-spacing: 0.06em;
     padding: 6px 0 5px;
     min-width: 90px;
+}
+
+/* Extra protocol rows */
+#wb-extra-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.wb-extra-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    background: var(--layer8d-bg-light);
+    border: 1px solid var(--layer8d-border);
+    border-radius: 6px;
+}
+
+.wb-extra-row-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--layer8d-text-muted);
+    min-width: 12px;
+}
+
+.wb-row-badge {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--layer8d-primary);
+    font-family: monospace;
+    letter-spacing: 0.05em;
+    min-width: 90px;
+}
+
+.wb-row-remove {
+    margin-left: auto;
 }
 
 /* Circuit grid */
@@ -129,6 +170,7 @@
 
 .wb-num        { color: var(--layer8d-text-muted); font-size: 12px; width: 28px; }
 .wb-name       { font-weight: 500; }
+.wb-proto      { font-family: monospace; font-size: 11px; font-weight: 700; color: var(--layer8d-primary); white-space: nowrap; }
 .wb-sets,
 .wb-reps,
 .wb-load       { color: var(--layer8d-text-medium); }
@@ -173,6 +215,38 @@
 }
 
 .wb-error { color: var(--layer8d-error); }
+
+/* Move buttons column */
+.wb-move-btns {
+    white-space: nowrap;
+    width: 44px;
+    text-align: center;
+    padding: 4px 6px;
+}
+
+.wb-move-up,
+.wb-move-down {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--layer8d-text-muted);
+    padding: 2px 3px;
+    font-size: 10px;
+    line-height: 1;
+    border-radius: 3px;
+    display: inline-block;
+}
+
+.wb-move-up:hover,
+.wb-move-down:hover {
+    background: var(--layer8d-bg-light);
+    color: var(--layer8d-primary);
+}
+
+.wb-move-ph {
+    display: inline-block;
+    width: 18px;
+}
 
 .wb-empty-icon {
     font-size: 40px;
@@ -230,4 +304,162 @@
     color: var(--layer8d-text-dark);
     font-weight: 500;
     padding: 4px 0;
+}
+
+/* Edit mode phase note */
+.wb-phase-note {
+    background: var(--layer8d-bg-light);
+    border: 1px solid var(--layer8d-primary);
+    border-radius: 6px;
+    color: var(--layer8d-text-medium);
+    font-size: 12px;
+    padding: 8px 14px;
+    margin-bottom: 12px;
+}
+
+/* Plan detail popup fields */
+.pe-detail {
+    padding: 4px 0;
+}
+
+.pe-fields {
+    margin-bottom: 16px;
+}
+
+.pe-field-row {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--layer8d-border);
+}
+
+.pe-field-row:last-child {
+    border-bottom: none;
+}
+
+.pe-field-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--layer8d-text-medium);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    min-width: 90px;
+    flex-shrink: 0;
+}
+
+.pe-field-value {
+    font-size: 13px;
+    color: var(--layer8d-text-dark);
+    flex: 1;
+}
+
+.pe-exercises-header {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--layer8d-text-medium);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 8px 0 4px;
+}
+
+.pe-actions {
+    margin-top: 16px;
+    text-align: right;
+}
+
+/* ── Workout Builder toolbar (client popup) ─────────────────── */
+.physio-wb-toolbar {
+    padding: 10px 0 8px;
+    border-bottom: 1px solid var(--layer8d-border);
+    margin-bottom: 12px;
+}
+
+/* Back button inside builder */
+.wb-back-btn {
+    margin-bottom: 12px;
+}
+
+/* Circuits-per-protocol control */
+.wb-circuits-per-proto .wb-select {
+    min-width: 80px;
+}
+
+/* Action column (edit / delete buttons) */
+.wb-action-col {
+    white-space: nowrap;
+    width: 56px;
+    text-align: center;
+    padding: 4px 4px;
+}
+
+.wb-action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    padding: 3px 4px;
+    border-radius: 3px;
+    color: var(--layer8d-text-muted);
+    display: inline-block;
+    width: 24px;
+    text-align: center;
+}
+
+.wb-action-btn:hover {
+    background: var(--layer8d-bg-light);
+    color: var(--layer8d-primary);
+}
+
+/* Inline edit row */
+.wb-edit-row {
+    background: var(--layer8d-bg-light);
+}
+
+.wb-edit-row td {
+    padding: 6px 6px;
+}
+
+.wb-edit-input {
+    padding: 4px 6px;
+    border: 1px solid var(--layer8d-border);
+    border-radius: 4px;
+    background: var(--layer8d-bg-white);
+    color: var(--layer8d-text-dark);
+    font-size: 12px;
+    box-sizing: border-box;
+}
+
+.wb-edit-exercise {
+    width: 100%;
+    min-width: 140px;
+}
+
+/* Save / Cancel buttons in edit row — larger click target, colored */
+.wb-edit-row .wb-edit-save,
+.wb-edit-row .wb-edit-cancel {
+    font-size: 16px;
+    width: 28px;
+    height: 28px;
+    line-height: 28px;
+    padding: 0;
+}
+
+.wb-edit-row .wb-edit-save {
+    color: var(--layer8d-success, #22c55e);
+    font-weight: 700;
+}
+
+.wb-edit-row .wb-edit-cancel {
+    color: var(--layer8d-error, #ef4444);
+}
+
+/* Add row bar at circuit bottom */
+.wb-add-row-bar {
+    display: flex;
+    gap: 8px;
+    padding: 8px 10px;
+    background: var(--layer8d-bg-light);
+    border-top: 1px solid var(--layer8d-border);
 }

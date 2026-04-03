@@ -8,7 +8,14 @@
     PhysioManagement.columns.TreatmentPlan = [
         ...col.id('planId',      'Plan ID'),
         ...col.col('title',      'Title'),
-        ...col.col('clientId',   'Client ID'),
+        {
+            key: 'clientId', label: 'Client', sortKey: 'clientId', filterKey: 'clientId',
+            render: function(item) {
+                var lookup = window.PhysioManagement && window.PhysioManagement.lookups;
+                var name   = lookup && lookup.clientName ? lookup.clientName(item.clientId) : null;
+                return Layer8DUtils.escapeHtml(name || item.clientId || '\u2014');
+            }
+        },
         ...col.status('status',  'Status', enums.PLAN_STATUS_VALUES, render.planStatus),
         ...col.date('startDate', 'Start Date'),
         ...col.date('endDate',   'End Date'),

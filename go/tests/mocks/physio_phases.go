@@ -173,46 +173,43 @@ func runPhysioPhase5(client *PhysioClient, store *MockDataStore) {
 	}
 }
 
-// runPhysioPhase6 creates login accounts for all clients
+// runPhysioPhase6 creates login accounts for all clients and therapists
 func runPhysioPhase6(client *PhysioClient, store *MockDataStore) {
-	fmt.Printf("=== Phase 6: Client Logins ===\n")
+	fmt.Printf("=== Phase 6: User Logins ===\n")
 
-	if len(store.PhysioClientIDs) == 0 {
-		fmt.Printf("  SKIPPED: no clients available\n")
-		return
-	}
+	registerFromService(client, "/physio/50/PhyClient", "PhysioClient", "client")
+	registerFromService(client, "/physio/50/PhyTherapt", "PhysioTherapist", "therapist")
+}
 
-	// Fetch all clients to get their emails
-	body, err := client.Get("/physio/50/PhyClient", `{"text":"select * from PhysioClient"}`)
+func registerFromService(client *PhysioClient, endpoint, model, label string) {
+	query := fmt.Sprintf(`{"text":"select * from %s"}`, model)
+	body, err := client.Get(endpoint, query)
 	if err != nil {
-		fmt.Printf("  ERROR fetching clients: %v\n", err)
+		fmt.Printf("  ERROR fetching %ss: %v\n", label, err)
 		return
 	}
-
 	var result map[string]interface{}
 	if err := json.Unmarshal([]byte(body), &result); err != nil {
-		fmt.Printf("  ERROR parsing clients response: %v\n", err)
+		fmt.Printf("  ERROR parsing %s response: %v\n", label, err)
 		return
 	}
-
 	list, _ := result["list"].([]interface{})
-	success := 0
-	failed := 0
+	success, failed := 0, 0
 	for _, item := range list {
-		c, ok := item.(map[string]interface{})
+		rec, ok := item.(map[string]interface{})
 		if !ok {
 			continue
 		}
-		email, _ := c["email"].(string)
+		email, _ := rec["email"].(string)
 		if email == "" {
 			continue
 		}
 		if err := client.Register(email, "1234"); err != nil {
-			fmt.Printf("  FAIL: %s -> %v\n", email, err)
+			fmt.Printf("  FAIL %s: %s -> %v\n", label, email, err)
 			failed++
 		} else {
 			success++
 		}
 	}
-	fmt.Printf("  Registered %d client logins (%d failed)\n", success, failed)
+	fmt.Printf("  Registered %d %s logins (%d failed)\n", success, label, failed)
 }
