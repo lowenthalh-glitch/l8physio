@@ -20,7 +20,7 @@ func main() {
 	nic.WaitForConnection()
 
 	// Start postgres if running locally (no extra args = k8s, "local" arg = local dev)
-	if len(os.Args) > 1 && os.Args[1] == "local" {
+	if len(os.Args) <= 1 {
 		startDb(nic)
 	}
 

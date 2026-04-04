@@ -168,8 +168,11 @@
                     }
                     var joint = seed.joint;
                     var posture = seed.posture;
-                    // Fetch all exercises for this joint (filter posture client-side)
-                    var q2 = encodeURIComponent(JSON.stringify({ text: 'select * from PhysioExercise where joint=' + joint + ' limit 500' }));
+                    // Fetch exercises — filter by joint if available, otherwise fetch all
+                    var queryText = joint
+                        ? 'select * from PhysioExercise where joint=' + joint + ' limit 500'
+                        : 'select * from PhysioExercise limit 500';
+                    var q2 = encodeURIComponent(JSON.stringify({ text: queryText }));
                     return _fetch(_apiPrefix() + '/50/PhyExercis?body=' + q2)
                     .then(function(d2) {
                         var exerciseMap = {};
