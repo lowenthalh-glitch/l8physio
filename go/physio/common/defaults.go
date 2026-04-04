@@ -13,7 +13,7 @@ const (
 	PREFIX      = "/physio/"
 )
 
-var DB_CREDS = "admin"
+var DB_CREDS = "postgres"
 var DB_NAME = "admin"
 
 func CreateResources(alias string) ifs.IResources {
