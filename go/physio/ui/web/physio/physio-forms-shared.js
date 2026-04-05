@@ -54,7 +54,7 @@
                     f.section('Instructions & Media', [
                         ...f.textarea('instructions',     'Instructions'),
                         ...f.textarea('contraindications','Contraindications'),
-                        ...f.text('imageStoragePath',     'Image Path'),
+                        ...f.file('imageStoragePath',     'Exercise Image'),
                         ...f.text('videoStoragePath',     'Video Path')
                     ])
                 ]),

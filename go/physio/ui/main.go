@@ -63,4 +63,6 @@ func registerPhysioTypes(resources ifs.IResources) {
 	l8c.RegisterType(resources, &physio.ProgressLog{}, &physio.ProgressLogList{}, "LogId")
 	l8c.RegisterType(resources, &physio.PhysioProtocol{}, &physio.PhysioProtocolList{}, "ProtocolId")
 	l8c.RegisterType(resources, &physio.GeneratedWorkout{}, &physio.GeneratedWorkoutList{}, "WorkoutId")
+	l8c.RegisterType(resources, &physio.SessionReport{}, &physio.SessionReportList{}, "ReportId")
+	l8c.RegisterType(resources, &physio.HomeFeedback{}, &physio.HomeFeedbackList{}, "FeedbackId")
 }

@@ -8,6 +8,8 @@ import (
 	"github.com/saichler/l8physio/go/types/physio"
 )
 
+var categoryLabels = map[int32]string{1: "Mobility", 2: "Rehab", 3: "Strength", 4: "Functional"}
+
 // generateTreatmentPlans creates 20 treatment plans distributed across clients
 // Status distribution: 60% Active, 20% Completed, 10% Draft, 10% Suspended
 func generateTreatmentPlans(store *MockDataStore) []*physio.TreatmentPlan {
@@ -41,14 +43,21 @@ func generateTreatmentPlans(store *MockDataStore) []*physio.TreatmentPlan {
 		exercises := make([]*physio.PlanExercise, numExercises)
 		for j := 0; j < numExercises; j++ {
 			exIdx := (i*7 + j) % len(store.PhysioExerciseIDs)
+			exId := lm.PickRef(store.PhysioExerciseIDs, exIdx)
+			cat := store.PhysioExerciseCategories[exId]
+			if cat == 0 {
+				cat = int32((j % 4) + 1) // fallback: distribute across categories
+			}
 			exercises[j] = &physio.PlanExercise{
 				PlanExerciseId: fmt.Sprintf("pe-%03d-%02d", i+1, j+1),
-				ExerciseId:     lm.PickRef(store.PhysioExerciseIDs, exIdx),
+				ExerciseId:     exId,
 				Sets:           int32(rand.Intn(3) + 2),
 				Reps:           int32(rand.Intn(10) + 10),
 				HoldSeconds:    int32(rand.Intn(3)) * 10,
 				Frequency:      physio.PhysioFrequency(rand.Intn(4) + 1),
 				OrderIndex:     int32(j + 1),
+				CircuitNumber:  cat,
+				CircuitLabel:   categoryLabels[cat],
 			}
 		}
 

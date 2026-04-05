@@ -38,6 +38,55 @@
             };
         }
 
+        // Override _openAddModal for PhysioClient/PhysioTherapist to auto-create user accounts
+        var origOpenAdd = window.Physio && window.Physio._openAddModal;
+        if (typeof origOpenAdd === 'function') {
+            window.Physio._openAddModal = function(service) {
+                if ((service.model === 'PhysioClient' || service.model === 'PhysioTherapist') && window.PhysioUserProvisioning) {
+                    var formDef = Layer8DServiceRegistry.getFormDef('Physio', service.model);
+                    if (!formDef) { origOpenAdd.call(this, service); return; }
+                    var svcConfig = {
+                        endpoint: Layer8DConfig.resolveEndpoint(service.endpoint),
+                        primaryKey: Layer8DServiceRegistry.getPrimaryKey('Physio', service.model),
+                        modelName: service.model
+                    };
+                    Layer8DPopup.show({
+                        title: 'Add ' + formDef.title,
+                        content: Layer8DForms.generateFormHtml(formDef, {}),
+                        size: 'large',
+                        showFooter: true,
+                        saveButtonText: 'Save',
+                        onSave: async function() {
+                            var data = Layer8DForms.collectFormData(formDef);
+                            var errors = Layer8DForms.validateFormData(formDef, data);
+                            if (errors.length > 0) {
+                                Layer8DNotification.error('Validation failed', errors.map(function(e) { return e.message; }));
+                                return;
+                            }
+                            try {
+                                var result = await Layer8DForms.saveRecord(svcConfig.endpoint, data, false);
+                                Layer8DPopup.close();
+                                if (window.Physio.refreshCurrentTable) window.Physio.refreshCurrentTable();
+                                var entity = result && result.list ? result.list[0] : result;
+                                if (entity) {
+                                    if (service.model === 'PhysioClient') PhysioUserProvisioning.createClientUser(entity);
+                                    else PhysioUserProvisioning.createTherapistUser(entity);
+                                }
+                            } catch (err) {
+                                Layer8DNotification.error('Error saving', [err.message]);
+                            }
+                        },
+                        onShow: function(body) {
+                            Layer8DForms.setFormContext(formDef, svcConfig);
+                            setTimeout(function() { Layer8DForms.attachDatePickers(body); }, 50);
+                        }
+                    });
+                } else {
+                    origOpenAdd.call(this, service);
+                }
+            };
+        }
+
         var origShowDetails = window.Physio && window.Physio._showDetailsModal;
         console.log('[physio-init] origShowDetails type:', typeof origShowDetails, '| PhysioPlanEditor:', !!window.PhysioPlanEditor);
         if (typeof origShowDetails === 'function') {

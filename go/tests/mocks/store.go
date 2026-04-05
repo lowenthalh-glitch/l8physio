@@ -3,10 +3,11 @@ package mocks
 // MockDataStore holds generated IDs for all physio entities
 type MockDataStore struct {
 	// Phase 1: Clients, Exercises, Protocols, and Therapists (no dependencies)
-	PhysioClientIDs    []string
-	PhysioExerciseIDs  []string
-	PhysioProtocolIDs  []string
-	PhysioTherapistIDs []string
+	PhysioClientIDs       []string
+	PhysioExerciseIDs     []string
+	PhysioExerciseCategories map[string]int32 // exerciseId -> category (1=Mobility,2=Rehab,3=Strength,4=Functional)
+	PhysioProtocolIDs     []string
+	PhysioTherapistIDs    []string
 
 	// Phase 2: Treatment Plans (depends on PhysioClientIDs)
 	TreatmentPlanIDs []string

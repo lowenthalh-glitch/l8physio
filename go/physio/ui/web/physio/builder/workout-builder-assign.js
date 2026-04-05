@@ -37,18 +37,24 @@
     function _showAssignPopup(ds) {
         var phase   = ds.phase;
         var volume  = ds.volume;
+        var presetClientId = window.PhysioWorkoutBuilder._clientId || '';
         var allProtocols = window.PhysioWorkoutBuilder._lastProtocols || [{ posture: ds.posture, joint: ds.joint }];
         var protoCodes   = allProtocols.map(function(p) { return _protocolCode(p.posture, p.joint); });
         var code         = protoCodes.join(' + ');
         var phaseLabels  = { '1': 'Phase 1', '2': 'Phase 2', '3': 'Phase 3' };
         var defaultTitle = code + ' \u2014 ' + (phaseLabels[phase] || 'Phase ' + phase) + ' Program';
 
+        // If opened from a client popup, skip client selection
+        var clientRow = presetClientId
+            ? ''
+            : '<div class="wb-af-row">' +
+                '<label class="wb-af-label">Client <span class="wb-required">*</span></label>' +
+                '<select id="wb-af-client" class="wb-af-input">' + _clientOptions() + '</select>' +
+              '</div>';
+
         var content = [
             '<div class="wb-assign-form">',
-              '<div class="wb-af-row">',
-                '<label class="wb-af-label">Client <span class="wb-required">*</span></label>',
-                '<select id="wb-af-client" class="wb-af-input">' + _clientOptions() + '</select>',
-              '</div>',
+              clientRow,
               '<div class="wb-af-row">',
                 '<label class="wb-af-label">Plan Title</label>',
                 '<input type="text" id="wb-af-title" class="wb-af-input" value="' + Layer8DUtils.escapeHtml(defaultTitle) + '">',
@@ -69,16 +75,17 @@
         ].join('');
 
         Layer8DPopup.show({
-            title: 'Assign Workout to Client',
+            title: presetClientId ? 'Assign Workout' : 'Assign Workout to Client',
             content: content,
             size: 'small',
             showFooter: true,
             saveButtonText: 'Assign',
             onSave: function() {
                 var body     = Layer8DPopup.getBody();
-                var clientId = body ? body.querySelector('#wb-af-client').value          : document.getElementById('wb-af-client').value;
-                var titleEl  = body ? body.querySelector('#wb-af-title')                 : document.getElementById('wb-af-title');
-                var dateEl   = body ? body.querySelector('#wb-af-date')                  : document.getElementById('wb-af-date');
+                var clientEl = body ? body.querySelector('#wb-af-client') : document.getElementById('wb-af-client');
+                var clientId = presetClientId || (clientEl ? clientEl.value : '');
+                var titleEl  = body ? body.querySelector('#wb-af-title')  : document.getElementById('wb-af-title');
+                var dateEl   = body ? body.querySelector('#wb-af-date')   : document.getElementById('wb-af-date');
                 var title    = titleEl.value.trim();
                 var dateVal  = dateEl.value;
 
@@ -125,6 +132,12 @@
             if (!resp.ok) throw new Error('HTTP ' + resp.status);
             Layer8DPopup.close();
             Layer8DNotification.success('Workout assigned to client successfully.');
+
+            var cb = window.PhysioWorkoutBuilder._onRefresh;
+            if (cb) {
+                window.PhysioWorkoutBuilder._onRefresh = null;
+                cb();
+            }
         } catch(e) {
             Layer8DNotification.error('Failed to assign: ' + e.message);
         }
@@ -184,12 +197,10 @@
             });
             if (!putResp.ok) throw new Error('Update plan HTTP ' + putResp.status);
 
-            Layer8DPopup.closeAll();
             Layer8DNotification.success('Treatment plan updated successfully.');
 
             var cb = window.PhysioWorkoutBuilder._onRefresh;
             if (cb) {
-                window.PhysioWorkoutBuilder._onRefresh = null;
                 cb();
             }
         } catch(e) {

@@ -114,6 +114,52 @@ enum PhysioPosture {
   PHYSIO_POSTURE_GENERAL           = 7;
 }
 
+enum SessionStatus {
+  SESSION_STATUS_UNSPECIFIED = 0;
+  SESSION_STATUS_GREEN       = 1;
+  SESSION_STATUS_YELLOW      = 2;
+  SESSION_STATUS_RED         = 3;
+}
+
+enum AdjustmentLevel {
+  ADJUSTMENT_LEVEL_UNSPECIFIED = 0;
+  ADJUSTMENT_LEVEL_NONE        = 1;
+  ADJUSTMENT_LEVEL_LOCAL       = 2;
+  ADJUSTMENT_LEVEL_MAJOR       = 3;
+}
+
+enum DifficultyType {
+  DIFFICULTY_TYPE_UNSPECIFIED  = 0;
+  DIFFICULTY_TYPE_PAIN         = 1;
+  DIFFICULTY_TYPE_ROM          = 2;
+  DIFFICULTY_TYPE_LOAD         = 3;
+  DIFFICULTY_TYPE_COORDINATION = 4;
+  DIFFICULTY_TYPE_FATIGUE      = 5;
+  DIFFICULTY_TYPE_OTHER        = 6;
+}
+
+enum ComplianceLevel {
+  COMPLIANCE_LEVEL_UNSPECIFIED = 0;
+  COMPLIANCE_LEVEL_FULL        = 1;
+  COMPLIANCE_LEVEL_PARTIAL     = 2;
+  COMPLIANCE_LEVEL_SKIPPED     = 3;
+}
+
+enum DifficultyLevel {
+  DIFFICULTY_LEVEL_UNSPECIFIED = 0;
+  DIFFICULTY_LEVEL_EASY        = 1;
+  DIFFICULTY_LEVEL_MODERATE    = 2;
+  DIFFICULTY_LEVEL_HARD        = 3;
+  DIFFICULTY_LEVEL_COULD_NOT   = 4;
+}
+
+enum MoodLevel {
+  MOOD_LEVEL_UNSPECIFIED = 0;
+  MOOD_LEVEL_GOOD        = 1;
+  MOOD_LEVEL_NEUTRAL     = 2;
+  MOOD_LEVEL_LOW         = 3;
+}
+
 // ──────────────────────────────────────────────
 // Child Types (no service, no List type)
 // ──────────────────────────────────────────────
@@ -384,4 +430,56 @@ message GeneratedWorkout {
 message GeneratedWorkoutList {
   repeated GeneratedWorkout list     = 1;
   l8api.L8MetaData          metadata = 2;
+}
+
+message SessionReport {
+  string              report_id              = 1;
+  string              client_id              = 2;
+  string              therapist_id           = 3;
+  int64               session_date           = 4;
+  string              protocol_id            = 5;
+  PhysioPhase         current_phase          = 6;
+  int32               pain_before            = 7;
+  int32               pain_during            = 8;
+  int32               pain_after             = 9;
+  bool                had_difficulty         = 10;
+  string              difficulty_exercise_id = 11;
+  DifficultyType      difficulty_type        = 12;
+  bool                adjustment_made        = 13;
+  string              adjustment_details     = 14;
+  AdjustmentLevel     adjustment_level       = 15;
+  bool                followup_required      = 16;
+  bool                phase_change_needed    = 17;
+  SessionStatus       status                 = 18;
+  string              notes                  = 19;
+  l8common.AuditInfo  audit_info             = 30;
+}
+
+message SessionReportList {
+  repeated SessionReport list     = 1;
+  l8api.L8MetaData       metadata = 2;
+}
+
+message HomeFeedback {
+  string              feedback_id      = 1;
+  string              client_id        = 2;
+  string              therapist_id     = 3;
+  int64               feedback_date    = 4;
+  string              plan_id          = 5;
+  string              exercises_done   = 6;
+  ComplianceLevel     compliance       = 7;
+  int32               pain_before      = 8;
+  int32               pain_during      = 9;
+  int32               pain_after       = 10;
+  DifficultyLevel     difficulty       = 11;
+  MoodLevel           mood             = 12;
+  SessionStatus       status           = 13;
+  string              notes            = 14;
+  string              additional_data  = 15;
+  l8common.AuditInfo  audit_info       = 30;
+}
+
+message HomeFeedbackList {
+  repeated HomeFeedback list     = 1;
+  l8api.L8MetaData      metadata = 2;
 }

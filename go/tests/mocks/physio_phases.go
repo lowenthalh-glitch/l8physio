@@ -12,13 +12,24 @@ func RunAllPhases(client *PhysioClient, store *MockDataStore) {
 	runPhysioPhase1(client, store) // Therapists & Exercises (no dependencies)
 	runPhysioPhase5(client, store) // Protocols (needs exercises) — moved before clients
 	runPhysioPhase1b(client, store) // Clients with protocolId assigned at creation
-	runPhysioPhase2(client, store) // Treatment Plans (needs clients, exercises)
-	runPhysioPhase3(client, store) // Appointments (needs clients, plans)
-	runPhysioPhase4(client, store) // Progress Logs (needs clients, plans, appointments)
+	// Treatment plans are created via the Workout Builder UI, not mock data
+	// runPhysioPhase2(client, store)
+	runPhysioPhase3(client, store) // Appointments (needs clients)
+	runPhysioPhase4(client, store) // Progress Logs (needs clients, appointments)
 	runPhysioPhase6(client, store) // Register client logins (username=email, password=1234)
 }
 
 // runPhysioPhase1 generates therapists and exercises — no cross-entity dependencies
+func storeExercises(exercises []*physio.PhysioExercise, store *MockDataStore) {
+	if store.PhysioExerciseCategories == nil {
+		store.PhysioExerciseCategories = make(map[string]int32)
+	}
+	for _, e := range exercises {
+		store.PhysioExerciseIDs = append(store.PhysioExerciseIDs, e.ExerciseId)
+		store.PhysioExerciseCategories[e.ExerciseId] = int32(e.Category)
+	}
+}
+
 func runPhysioPhase1(client *PhysioClient, store *MockDataStore) {
 	fmt.Printf("=== Phase 1: Therapists & Exercises ===\n")
 
@@ -40,9 +51,7 @@ func runPhysioPhase1(client *PhysioClient, store *MockDataStore) {
 	if err != nil {
 		fmt.Printf("  ERROR creating PhysioExercises: %v\n", err)
 	} else {
-		for _, e := range exercises {
-			store.PhysioExerciseIDs = append(store.PhysioExerciseIDs, e.ExerciseId)
-		}
+		storeExercises(exercises, store)
 		fmt.Printf("  Created %d PhysioExercises\n", len(exercises))
 	}
 
@@ -52,9 +61,7 @@ func runPhysioPhase1(client *PhysioClient, store *MockDataStore) {
 	if err != nil {
 		fmt.Printf("  ERROR creating rehab bank exercises: %v\n", err)
 	} else {
-		for _, e := range rehabExercises {
-			store.PhysioExerciseIDs = append(store.PhysioExerciseIDs, e.ExerciseId)
-		}
+		storeExercises(rehabExercises, store)
 		fmt.Printf("  Created %d rehab bank exercises\n", len(rehabExercises))
 	}
 
@@ -64,9 +71,7 @@ func runPhysioPhase1(client *PhysioClient, store *MockDataStore) {
 	if err != nil {
 		fmt.Printf("  ERROR creating client exercises: %v\n", err)
 	} else {
-		for _, e := range clientExercises {
-			store.PhysioExerciseIDs = append(store.PhysioExerciseIDs, e.ExerciseId)
-		}
+		storeExercises(clientExercises, store)
 		fmt.Printf("  Created %d client exercises\n", len(clientExercises))
 	}
 }

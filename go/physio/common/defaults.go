@@ -17,7 +17,7 @@ var DB_CREDS = "postgres"
 var DB_NAME = "admin"
 
 func CreateResources(alias string) ifs.IResources {
-	return l8c.CreateResources(alias, "/data/logs/phy", uint32(PHYSIO_VNET))
+	return l8c.CreateResources(alias, "", uint32(PHYSIO_VNET))
 }
 
 func WaitForSignal(resources ifs.IResources) {

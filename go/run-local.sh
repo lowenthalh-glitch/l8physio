@@ -44,7 +44,7 @@ cd "$SCRIPT_DIR/demo"
 cat > kill_demo.sh << 'EOF'
 #!/usr/bin/env bash
 pkill -f vnet_demo 2>/dev/null || true
-pkill -f physio_demo local 2>/dev/null || true
+pkill -f physio_demo 2>/dev/null || true
 pkill -f web_demo 2>/dev/null || true
 docker rm -f unsecure-postgres 2>/dev/null || true
 rm -rf /data/physio
