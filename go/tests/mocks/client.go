@@ -73,27 +73,6 @@ func (c *PhysioClient) Get(endpoint string, query string) (string, error) {
 	return string(respBody), nil
 }
 
-// Register creates a new user account via the /register endpoint.
-// captcha can be empty in dev mode (shallow security provider).
-func (c *PhysioClient) Register(username, password string) error {
-	regData := map[string]string{
-		"user":    username,
-		"pass":    password,
-		"captcha": "",
-	}
-	body, _ := json.Marshal(regData)
-	resp, err := c.client.Post(c.baseURL+"/register", "application/json", bytes.NewReader(body))
-	if err != nil {
-		return fmt.Errorf("register request failed: %w", err)
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		respBody, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("register failed (%d): %s", resp.StatusCode, string(respBody))
-	}
-	return nil
-}
-
 func (c *PhysioClient) Put(endpoint string, data interface{}) (string, error) {
 	body, err := json.Marshal(data)
 	if err != nil {

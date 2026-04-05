@@ -140,7 +140,13 @@
                 var query = 'select * from PhysioExercise where joint=' + uniqueJoints[ji] + ' limit 500';
                 var url   = _apiPrefix() + '/50/PhyExercis?body=' + encodeURIComponent(JSON.stringify({ text: query }));
                 var resp  = await fetch(url, { headers: _authHeaders() });
-                if (!resp.ok) throw new Error('HTTP ' + resp.status);
+                if (!resp.ok) {
+                    var errText = await resp.text().catch(function() { return ''; });
+                    if (errText && errText.toLowerCase().includes('access denied')) {
+                        throw new Error('Access Denied — you do not have permission to view this data.');
+                    }
+                    throw new Error('HTTP ' + resp.status);
+                }
                 var data  = await resp.json();
                 allFetched = allFetched.concat(data.list || []);
             }

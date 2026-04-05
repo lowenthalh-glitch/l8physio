@@ -16,7 +16,7 @@ func RunAllPhases(client *PhysioClient, store *MockDataStore) {
 	// runPhysioPhase2(client, store)
 	runPhysioPhase3(client, store) // Appointments (needs clients)
 	runPhysioPhase4(client, store) // Progress Logs (needs clients, appointments)
-	runPhysioPhase6(client, store) // Register client logins (username=email, password=1234)
+	runPhysioPhase6(client, store) // Create user accounts (username=email, password=1234)
 }
 
 // runPhysioPhase1 generates therapists and exercises — no cross-entity dependencies
@@ -182,11 +182,11 @@ func runPhysioPhase5(client *PhysioClient, store *MockDataStore) {
 func runPhysioPhase6(client *PhysioClient, store *MockDataStore) {
 	fmt.Printf("=== Phase 6: User Logins ===\n")
 
-	registerFromService(client, "/physio/50/PhyClient", "PhysioClient", "client")
-	registerFromService(client, "/physio/50/PhyTherapt", "PhysioTherapist", "therapist")
+	createUsersFromService(client, "/physio/50/PhyClient", "PhysioClient", "client")
+	createUsersFromService(client, "/physio/50/PhyTherapt", "PhysioTherapist", "therapist")
 }
 
-func registerFromService(client *PhysioClient, endpoint, model, label string) {
+func createUsersFromService(client *PhysioClient, endpoint, model, label string) {
 	query := fmt.Sprintf(`{"text":"select * from %s"}`, model)
 	body, err := client.Get(endpoint, query)
 	if err != nil {
@@ -209,12 +209,35 @@ func registerFromService(client *PhysioClient, endpoint, model, label string) {
 		if email == "" {
 			continue
 		}
-		if err := client.Register(email, "1234"); err != nil {
+
+		// Use clientId/therapistId as userId so ${userId} deny queries resolve correctly
+		var userIdValue string
+		var roleName string
+		if label == "client" {
+			userIdValue, _ = rec["clientId"].(string)
+			roleName = "client"
+		} else {
+			userIdValue, _ = rec["therapistId"].(string)
+			roleName = "admin"
+		}
+		if userIdValue == "" {
+			userIdValue = email // fallback
+		}
+
+		userData := map[string]interface{}{
+			"userId":        userIdValue,
+			"fullName":      email,
+			"email":         email,
+			"password":      map[string]string{"hash": "admin"},
+			"accountStatus": "ACCOUNT_STATUS_ACTIVE",
+			"roles":         map[string]bool{roleName: true},
+		}
+		if _, err := client.Post("/physio/73/users", userData); err != nil {
 			fmt.Printf("  FAIL %s: %s -> %v\n", label, email, err)
 			failed++
 		} else {
 			success++
 		}
 	}
-	fmt.Printf("  Registered %d %s logins (%d failed)\n", success, label, failed)
+	fmt.Printf("  Created %d %s user accounts (%d failed)\n", success, label, failed)
 }

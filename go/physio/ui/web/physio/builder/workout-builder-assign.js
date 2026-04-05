@@ -129,7 +129,13 @@
                 headers: _authHeaders(),
                 body: JSON.stringify(plan)
             });
-            if (!resp.ok) throw new Error('HTTP ' + resp.status);
+            if (!resp.ok) {
+                var errorText = await resp.text().catch(function() { return ''; });
+                if (errorText && errorText.toLowerCase().includes('access denied')) {
+                    throw new Error('Access Denied — you do not have permission to perform this action.');
+                }
+                throw new Error('HTTP ' + resp.status);
+            }
             Layer8DPopup.close();
             Layer8DNotification.success('Workout assigned to client successfully.');
 
