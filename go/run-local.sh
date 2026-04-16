@@ -34,6 +34,9 @@ cd "$SCRIPT_DIR/physio/main" && go build -o "$SCRIPT_DIR/demo/physio_demo" .
 echo "Building physio-web..."
 cd "$SCRIPT_DIR/physio/ui" && go build -o "$SCRIPT_DIR/demo/web_demo" .
 
+echo "Building boostapp-sync..."
+cd "$SCRIPT_DIR/physio/boostapp/main" && go build -o "$SCRIPT_DIR/demo/boostapp_demo" .
+
 # Copy web assets (l8ui is already vendored inside physio/ui/web/l8ui)
 cd "$SCRIPT_DIR"
 cp -r "$SCRIPT_DIR/physio/ui/web" "$SCRIPT_DIR/demo/"
@@ -46,6 +49,7 @@ cat > kill_demo.sh << 'EOF'
 pkill -f vnet_demo 2>/dev/null || true
 pkill -f physio_demo 2>/dev/null || true
 pkill -f web_demo 2>/dev/null || true
+pkill -f boostapp_demo 2>/dev/null || true
 docker rm -f unsecure-postgres 2>/dev/null || true
 rm -rf /data/physio
 echo "Demo stopped and cleaned up."
@@ -66,6 +70,9 @@ sleep 5
 echo "Starting physio-web..."
 ./web_demo &
 sleep 2
+
+# Boostapp sync is not started automatically — run on-demand:
+#   ./boostapp_demo --once
 
 echo ""
 echo "=========================================="

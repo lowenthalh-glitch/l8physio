@@ -43,6 +43,7 @@
                   '<button class="physio-client-tab" data-tab="sessreports">Session Reports</button>',
                   '<button class="physio-client-tab" data-tab="stats">Statistics</button>',
                   '<button class="physio-client-tab" data-tab="homefeedback">Home Feedback</button>',
+                  '<button class="physio-client-tab" data-tab="appointments">Appointments</button>',
                   '<button class="physio-client-tab" data-tab="details">Details</button>',
                 '</div>',
                 '<div class="physio-client-tab-pane active" id="physio-exercises-pane">',
@@ -65,6 +66,9 @@
                 '<div class="physio-client-tab-pane" id="physio-homefeedback-pane">',
                   '<div id="physio-homefeedback-content"></div>',
                 '</div>',
+                '<div class="physio-client-tab-pane" id="physio-appointments-pane">',
+                  '<div id="physio-appointments-content"></div>',
+                '</div>',
                 '<div class="physio-client-tab-pane" id="physio-details-pane">',
                   '<div class="physio-details-content"></div>',
                 '</div>'
@@ -78,6 +82,7 @@
                 onShow: function(body) {
                     var statsInitialized = false;
                     var feedbackInitialized = false;
+                    var appointmentsInitialized = false;
                     body.querySelectorAll('.physio-client-tab').forEach(function(btn) {
                         btn.addEventListener('click', function() {
                             body.querySelectorAll('.physio-client-tab').forEach(function(b) { b.classList.remove('active'); });
@@ -92,6 +97,10 @@
                             if (btn.dataset.tab === 'homefeedback' && !feedbackInitialized && window.PhysioClientHomeFeedback) {
                                 feedbackInitialized = true;
                                 PhysioClientHomeFeedback.init(body.querySelector('#physio-homefeedback-content'), client, self);
+                            }
+                            if (btn.dataset.tab === 'appointments' && !appointmentsInitialized && window.PhysioClientAppointments) {
+                                appointmentsInitialized = true;
+                                PhysioClientAppointments.init(body.querySelector('#physio-appointments-content'), client);
                             }
                         });
                     });

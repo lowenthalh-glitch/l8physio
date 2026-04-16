@@ -67,7 +67,12 @@
                                 var result = await Layer8DForms.saveRecord(svcConfig.endpoint, data, false);
                                 Layer8DPopup.close();
                                 if (window.Physio.refreshCurrentTable) window.Physio.refreshCurrentTable();
-                                var entity = result && result.list ? result.list[0] : result;
+                                // saveRecord returns a transaction result, not the entity.
+                                // Build the entity from the form data + the generated ID.
+                                var entity = Object.assign({}, data);
+                                if (result && result.id) {
+                                    entity[svcConfig.primaryKey] = result.id;
+                                }
                                 if (entity) {
                                     if (service.model === 'PhysioClient') PhysioUserProvisioning.createClientUser(entity);
                                     else PhysioUserProvisioning.createTherapistUser(entity);

@@ -32,7 +32,10 @@
                     { key: 'progress',     label: 'Progress Logs',   icon: 'chart',
                       endpoint: '/50/PhyLog',     model: 'ProgressLog',   idField: 'logId' },
                     { key: 'protocols',    label: 'Protocols',        icon: 'clipboard',
-                      endpoint: '/50/PhyProto', model: 'PhysioProtocol', idField: 'protocolId' }
+                      endpoint: '/50/PhyProto', model: 'PhysioProtocol', idField: 'protocolId' },
+                    { key: 'boostapp',     label: 'Boostapp Calendar', icon: 'calendar',
+                      endpoint: '/50/BstpCal',  model: 'BoostappCalendarEvent', idField: 'eventId',
+                      readOnly: true, supportedViews: ['table', 'calendar'] }
                 ]
             }
         },

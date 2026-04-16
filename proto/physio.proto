@@ -245,6 +245,7 @@ message PhysioClient {
   string             user_id           = 12;
   string             protocol_id       = 13;
   string             therapist_id      = 14;
+  string             boostapp_id       = 15;
   l8common.AuditInfo      audit_info        = 30;
 }
 
@@ -482,4 +483,65 @@ message HomeFeedback {
 message HomeFeedbackList {
   repeated HomeFeedback list     = 1;
   l8api.L8MetaData      metadata = 2;
+}
+
+// ──────────────────────────────────────────────
+// Boostapp Calendar Sync
+// ──────────────────────────────────────────────
+
+enum BoostappEventType {
+  BOOSTAPP_EVENT_TYPE_UNSPECIFIED = 0;
+  BOOSTAPP_EVENT_TYPE_MEETING    = 1;  // Boostapp type 1: 1-on-1 meeting
+  BOOSTAPP_EVENT_TYPE_CLASS      = 2;  // Boostapp type 3: Group class
+  BOOSTAPP_EVENT_TYPE_BLOCK      = 3;  // Boostapp type 4: Block/task
+}
+
+enum BoostappEventStatus {
+  BOOSTAPP_EVENT_STATUS_UNSPECIFIED       = 0;
+  BOOSTAPP_EVENT_STATUS_IN_PROCESS        = 1;  // Boostapp status 0
+  BOOSTAPP_EVENT_STATUS_WAITING_APPROVAL  = 2;  // Boostapp status 1
+  BOOSTAPP_EVENT_STATUS_BOOKED            = 3;  // Boostapp status 2
+  BOOSTAPP_EVENT_STATUS_STARTED           = 4;  // Boostapp status 3
+  BOOSTAPP_EVENT_STATUS_COMPLETED         = 5;  // Boostapp status 4
+  BOOSTAPP_EVENT_STATUS_NO_SHOW           = 6;  // Boostapp status 5
+  BOOSTAPP_EVENT_STATUS_DONE              = 7;  // Boostapp status 6
+  BOOSTAPP_EVENT_STATUS_CANCELLED         = 8;  // Boostapp status 7
+}
+
+message BoostappParticipant {
+  string participant_id     = 1; // Boostapp activity ID (unique per participant per class)
+  string boostapp_client_id = 2; // Boostapp ClientId
+  string name               = 3;
+  string status             = 4; // Attendance status code from Boostapp
+  string membership         = 5; // Membership type
+  string physio_client_id   = 6; // Resolved link to PhysioClient
+}
+
+message BoostappCalendarEvent {
+  string                       event_id           = 1;
+  string                       title              = 2;
+  string                       start_time         = 3;
+  string                       end_time           = 4;
+  string                       coach_name         = 5;
+  string                       coach_id           = 6;
+  BoostappEventType            event_type         = 7;
+  BoostappEventStatus          event_status       = 8;
+  string                       location           = 9;
+  string                       client_name        = 10;
+  string                       client_phone       = 11;
+  string                       boostapp_client_id = 12;
+  int32                        members            = 13;
+  int32                        max_members        = 14;
+  string                       price              = 15;
+  bool                         is_cancelled       = 16;
+  string                       background_color   = 17;
+  string                       branch_id          = 18;
+  string                       physio_client_id   = 19;
+  repeated BoostappParticipant participants       = 20;
+  l8common.AuditInfo           audit_info         = 30;
+}
+
+message BoostappCalendarEventList {
+  repeated BoostappCalendarEvent list     = 1;
+  l8api.L8MetaData               metadata = 2;
 }

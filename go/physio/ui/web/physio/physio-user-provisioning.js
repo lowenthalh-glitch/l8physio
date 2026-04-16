@@ -10,10 +10,6 @@
             typeof getAuthHeaders === 'function' ? getAuthHeaders() : {});
     }
 
-    function deriveUserId(firstName, lastName) {
-        return (firstName + '.' + lastName).toLowerCase().replace(/\s+/g, '');
-    }
-
     async function postRole(role) {
         try {
             var resp = await fetch(Layer8DConfig.resolveEndpoint(ROLES_ENDPOINT), {
@@ -63,11 +59,12 @@
             }
         });
 
-        var userId = deriveUserId(client.firstName, client.lastName);
+        var userId = client.email;
+        if (!userId) return;
         var roles = {}; roles['client'] = true; roles[scopeRoleId] = true;
         var ok = await postUser({
             userId: userId, fullName: (client.firstName + ' ' + client.lastName).trim(),
-            email: client.email || '', accountStatus: 'ACCOUNT_STATUS_ACTIVE',
+            email: userId, accountStatus: 'ACCOUNT_STATUS_ACTIVE',
             portal: 'app.html', password: { hash: DEFAULT_PASSWORD }, roles: roles
         });
         if (ok) Layer8DNotification.success('User account "' + userId + '" created');
@@ -88,11 +85,12 @@
             }
         });
 
-        var userId = deriveUserId(therapist.firstName, therapist.lastName);
+        var userId = therapist.email;
+        if (!userId) return;
         var roles = {}; roles['therapist'] = true; roles[scopeRoleId] = true;
         var ok = await postUser({
             userId: userId, fullName: (therapist.firstName + ' ' + therapist.lastName).trim(),
-            email: therapist.email || '', accountStatus: 'ACCOUNT_STATUS_ACTIVE',
+            email: userId, accountStatus: 'ACCOUNT_STATUS_ACTIVE',
             portal: 'app.html', password: { hash: DEFAULT_PASSWORD }, roles: roles
         });
         if (ok) Layer8DNotification.success('User account "' + userId + '" created');

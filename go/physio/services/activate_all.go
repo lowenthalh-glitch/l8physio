@@ -4,6 +4,7 @@ import (
 	"sync"
 
 	"github.com/saichler/l8physio/go/physio/appointments"
+	"github.com/saichler/l8physio/go/physio/boostapp"
 	"github.com/saichler/l8physio/go/physio/clients"
 	"github.com/saichler/l8physio/go/physio/exercises"
 	"github.com/saichler/l8physio/go/physio/homefeedback"
@@ -30,6 +31,7 @@ func ActivateAllServices(creds, dbname string, vnic ifs.IVNic) {
 		func() { workout.Activate(creds, dbname, vnic) },
 		func() { sessionreport.Activate(creds, dbname, vnic) },
 		func() { homefeedback.Activate(creds, dbname, vnic) },
+		func() { boostapp.Activate(creds, dbname, vnic) },
 	}
 
 	sem := make(chan struct{}, parallelWorkers)

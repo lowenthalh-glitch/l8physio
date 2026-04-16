@@ -69,6 +69,22 @@
         ['No Show',     'no-show',   'status-terminated']
     ]);
 
+    var BOOSTAPP_EVENT_TYPE = factory.simple([
+        'Unspecified', 'Meeting', 'Class', 'Block'
+    ]);
+
+    var BOOSTAPP_EVENT_STATUS = factory.create([
+        ['Unspecified',       null,                ''],
+        ['In Process',        'in_process',        'status-pending'],
+        ['Waiting Approval',  'waiting_approval',  'status-pending'],
+        ['Booked',            'booked',            'status-active'],
+        ['Started',           'started',           'status-active'],
+        ['Completed',         'completed',         'status-completed'],
+        ['No Show',           'no_show',           'status-inactive'],
+        ['Done',              'done',              'status-completed'],
+        ['Cancelled',         'cancelled',         'status-inactive']
+    ]);
+
     MobilePhysioManagement.enums = {
         CLIENT_STATUS:        CLIENT_STATUS.enum,
         CLIENT_STATUS_VALUES: CLIENT_STATUS.values,
@@ -89,7 +105,11 @@
         PHYSIO_PHASE_CLASSES: PHYSIO_PHASE.classes,
         EXERCISE_TYPE:        EXERCISE_TYPE.enum,
         EXERCISE_TYPE_VALUES: EXERCISE_TYPE.values,
-        EXERCISE_TYPE_CLASSES:EXERCISE_TYPE.classes
+        EXERCISE_TYPE_CLASSES:EXERCISE_TYPE.classes,
+        BOOSTAPP_EVENT_TYPE:           BOOSTAPP_EVENT_TYPE.enum,
+        BOOSTAPP_EVENT_STATUS:         BOOSTAPP_EVENT_STATUS.enum,
+        BOOSTAPP_EVENT_STATUS_VALUES:  BOOSTAPP_EVENT_STATUS.values,
+        BOOSTAPP_EVENT_STATUS_CLASSES: BOOSTAPP_EVENT_STATUS.classes
     };
 
     const { renderEnum } = Layer8MRenderers;
@@ -104,6 +124,8 @@
         joint:            (v) => renderEnum(v, JOINT.enum),
         posture:          (v) => renderEnum(v, POSTURE.enum),
         phase:            createStatusRenderer(PHYSIO_PHASE.enum, PHYSIO_PHASE.classes),
-        exerciseType:     createStatusRenderer(EXERCISE_TYPE.enum, EXERCISE_TYPE.classes)
+        exerciseType:     createStatusRenderer(EXERCISE_TYPE.enum, EXERCISE_TYPE.classes),
+        boostappEventType:   (v) => renderEnum(v, BOOSTAPP_EVENT_TYPE.enum),
+        boostappEventStatus: createStatusRenderer(BOOSTAPP_EVENT_STATUS.enum, BOOSTAPP_EVENT_STATUS.classes)
     };
 })();

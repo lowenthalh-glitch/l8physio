@@ -72,4 +72,7 @@ func registerPhysioTypes(resources ifs.IResources) {
 	l8c.RegisterType(resources, &physio.GeneratedWorkout{}, &physio.GeneratedWorkoutList{}, "WorkoutId")
 	l8c.RegisterType(resources, &physio.SessionReport{}, &physio.SessionReportList{}, "ReportId")
 	l8c.RegisterType(resources, &physio.HomeFeedback{}, &physio.HomeFeedbackList{}, "FeedbackId")
+
+	// Boostapp calendar sync
+	l8c.RegisterType(resources, &physio.BoostappCalendarEvent{}, &physio.BoostappCalendarEventList{}, "EventId")
 }

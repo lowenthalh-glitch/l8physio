@@ -16,13 +16,18 @@ github.com/saichler/l8orm v0.0.0-20260405130733-399207a7ff16/go.mod h1:FYnievTs9
 =======
 github.com/saichler/l8common v0.0.0-20260412163226-bd082edcf9d9 h1:GDGaP9FaBKYXCkVhsjNIXsJNB70ig1qK9dDx75aB+F0=
 github.com/saichler/l8common v0.0.0-20260412163226-bd082edcf9d9/go.mod h1:O7WSHyHK4HPPkolxZn41hxzA0ufOTo6jDcTqL7KRS8k=
+<<<<<<< HEAD
 github.com/saichler/l8orm v0.0.0-20260412125255-b561830c01df h1:eJ3phQjMNWo1ZPMyMqoG7ylEijozlBkljqseZ5CHFDs=
 github.com/saichler/l8orm v0.0.0-20260412125255-b561830c01df/go.mod h1:FYnievTs9ZZ3WE8pjDC1y2Mu+SnNJa7rPY5q1LJbn+A=
 >>>>>>> e94694f (add collector to boostapp)
+=======
+github.com/saichler/l8orm v0.0.0-20260414115603-7d0a99aff5c3 h1:OoMDvMNn0mNRSC7mexEHP8x5+FjPc6UhIkXleEePwp4=
+github.com/saichler/l8orm v0.0.0-20260414115603-7d0a99aff5c3/go.mod h1:FYnievTs9ZZ3WE8pjDC1y2Mu+SnNJa7rPY5q1LJbn+A=
+>>>>>>> 03ebec2 (update physio)
 github.com/saichler/l8ql v0.0.0-20260322130921-a31581a0ab5f h1:dXbobK/1hPqtp4ys1JF9xueRj2JgZColFoXdMVH87zc=
 github.com/saichler/l8ql v0.0.0-20260322130921-a31581a0ab5f/go.mod h1:boBPUwEYgpyyTcZcqqjDDYgqkjemEO7iR8kdOwkS1S0=
-github.com/saichler/l8reflect v0.0.0-20260327101437-6da0c1cef4c9 h1:5ergxF19aF+IsFVTMQLLJd2gvUipCPB93T/O9DPaxQw=
-github.com/saichler/l8reflect v0.0.0-20260327101437-6da0c1cef4c9/go.mod h1:yCkCd5JQKqKG+dr6h0HYDiLvNAB8uLUUOdWApnWUw24=
+github.com/saichler/l8reflect v0.0.0-20260414115258-300dd0000aca h1:ruHwup6x2M7KcV1VLf62NkH8W/vNSJJ4/SAzieDJcIw=
+github.com/saichler/l8reflect v0.0.0-20260414115258-300dd0000aca/go.mod h1:yCkCd5JQKqKG+dr6h0HYDiLvNAB8uLUUOdWApnWUw24=
 github.com/saichler/l8services v0.0.0-20260405154617-7a86405cc5e2 h1:ksztAoumkdpIcgifylqhPSmIlHN7p0LaKS/l+EEK9XY=
 github.com/saichler/l8services v0.0.0-20260405154617-7a86405cc5e2/go.mod h1:9c3fnIfjQmQ4kyk5Nm3+LsrRWOwmbXvIzK2Xmjf8f1c=
 github.com/saichler/l8srlz v0.0.0-20260322124809-505a0d08f95d h1:r12x0ozovrtFsFs9CDtUT5kbJ7QycyAvgefBrgLyN+s=

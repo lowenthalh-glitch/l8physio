@@ -14,6 +14,7 @@
                         ...f.date('dateOfBirth',      'Date of Birth'),
                         ...f.select('status',         'Status',            enums.CLIENT_STATUS),
                         ...f.text('referralSource',      'Referral Source'),
+                        ...f.text('boostappId',          'Boostapp ID'),
                         ...f.reference('therapistId',    'Therapist', 'PhysioTherapist'),
                         ...f.reference('protocolId',     'Protocol',  'PhysioProtocol')
                     ]),
@@ -143,6 +144,39 @@
                     ]),
                     f.section('Audit', [
                         ...f.audit()
+                    ])
+                ]),
+
+                BoostappCalendarEvent: f.form('Boostapp Event', [
+                    f.section('Event Details', [
+                        ...f.text('title',       'Title',     false, { readOnly: true }),
+                        ...f.text('startTime',   'Start',     false, { readOnly: true }),
+                        ...f.text('endTime',     'End',       false, { readOnly: true }),
+                        ...f.text('coachName',   'Coach',     false, { readOnly: true }),
+                        ...f.select('eventType', 'Type',      enums.BOOSTAPP_EVENT_TYPE, false, { readOnly: true }),
+                        ...f.select('eventStatus','Status',   enums.BOOSTAPP_EVENT_STATUS, false, { readOnly: true }),
+                        ...f.text('location',    'Location',  false, { readOnly: true })
+                    ]),
+                    f.section('Client', [
+                        ...f.text('clientName',  'Client Name',  false, { readOnly: true }),
+                        ...f.text('clientPhone', 'Client Phone', false, { readOnly: true }),
+                        ...f.reference('physioClientId', 'Linked Client', 'PhysioClient')
+                    ]),
+                    f.section('Details', [
+                        ...f.text('price',          'Price',     false, { readOnly: true }),
+                        ...f.number('members',      'Members',   false, { readOnly: true }),
+                        ...f.number('maxMembers',   'Max Members', false, { readOnly: true }),
+                        ...f.checkbox('isCancelled', 'Cancelled', false, { readOnly: true })
+                    ]),
+                    f.section('Participants', [
+                        ...f.inlineTable('participants', 'Participants', [
+                            { key: 'participantId',    label: 'ID',           hidden: true },
+                            { key: 'name',             label: 'Name',         type: 'text' },
+                            { key: 'boostappClientId', label: 'Boostapp ID',  type: 'text' },
+                            { key: 'status',           label: 'Status',       type: 'text' },
+                            { key: 'membership',       label: 'Membership',   type: 'text' },
+                            { key: 'physioClientId',   label: 'Linked Client', type: 'reference', lookupModel: 'PhysioClient' }
+                        ])
                     ])
                 ])
             };

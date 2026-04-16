@@ -15,7 +15,8 @@
                 svc('appointments', 'Appointments',         'calendar',  '/50/PhyAppt',     'Appointment'),
                 svc('progress',     'Progress Logs',        'chart',     '/50/PhyLog',      'ProgressLog'),
                 svc('reports',      'Session Reports',      'clipboard', '/50/SessRpt',     'SessionReport'),
-                svc('feedback',     'Home Feedback',        'clipboard', '/50/HomeFdbk',    'HomeFeedback')
+                svc('feedback',     'Home Feedback',        'clipboard', '/50/HomeFdbk',    'HomeFeedback'),
+                svc('boostapp',     'Boostapp Calendar',    'calendar',  '/50/BstpCal',     'BoostappCalendarEvent')
             ])
         },
         submodules: ['PhysioManagement']
