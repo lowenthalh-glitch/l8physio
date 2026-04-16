@@ -407,8 +407,9 @@
         _addExerciseToCircuit: function(circuitNumber) {
             var self = this;
             var exMap = self._exerciseMap || {};
+            // Exclude exercises already in THIS circuit (prevent duplicates in same table)
             var existing = (self._currentPlan.exercises || []).filter(function(pe) {
-                return pe.circuitNumber === circuitNumber;
+                return (pe.circuitNumber || 0) === circuitNumber;
             }).map(function(pe) { return pe.exerciseId; });
             // Filter by category + joint + posture matching this circuit, exclude already-added
             var pJoint = self._planJoint;
@@ -438,6 +439,10 @@
                     var q = function(id) { return b ? b.querySelector('#' + id) : document.getElementById(id); };
                     var exerciseId = q('pe-add-ex-select').value;
                     if (!exerciseId) { Layer8DNotification.error('Please select an exercise'); return; }
+                    var alreadyInCircuit = (self._currentPlan.exercises || []).some(function(pe) {
+                        return pe.exerciseId === exerciseId && (pe.circuitNumber || 0) === circuitNumber;
+                    });
+                    if (alreadyInCircuit) { Layer8DNotification.warning('This exercise is already in this circuit'); return; }
                     var circuitLabel = (CATEGORY_LABELS[circuitNumber] || ('Circuit ' + circuitNumber));
                     var maxOrder = (self._currentPlan.exercises || []).reduce(function(mx, pe) {
                         return pe.circuitNumber === circuitNumber && pe.orderIndex > mx ? pe.orderIndex : mx;

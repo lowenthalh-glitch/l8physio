@@ -9,7 +9,7 @@
                     f.section('Personal Information', [
                         ...f.text('firstName',        'First Name',        true),
                         ...f.text('lastName',         'Last Name',         true),
-                        ...f.text('email',            'Email'),
+                        ...f.text('email',            'Email',             true),
                         ...f.text('phone',            'Phone'),
                         ...f.date('dateOfBirth',      'Date of Birth'),
                         ...f.select('status',         'Status',            enums.CLIENT_STATUS),

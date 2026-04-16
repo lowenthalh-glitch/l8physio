@@ -13,7 +13,7 @@
         ...col.number('painBefore',      'Pain Before'),
         ...col.number('painAfter',       'Pain After'),
         ...col.status('difficulty',      'Difficulty',   enums.DIFFICULTY_VALUES, render.difficulty),
-        ...col.enum('mood',             'Mood',         null, render.mood),
+        ...col.enum('mood',             'Mood',         null, render.mood, enums.MOOD),
         ...col.status('status',          'Status',       enums.SESSION_STATUS_VALUES, render.sessionStatus),
         ...col.col('notes',             'Notes')
     ];

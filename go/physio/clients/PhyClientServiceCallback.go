@@ -12,6 +12,7 @@ func newPhyClientServiceCallback() ifs.IServiceCallback {
 		func(e interface{}) bool { _, ok := e.(*physio.PhysioClient); return ok },
 		setPhyClientID,
 		validatePhyClient,
+		setClientUserId,
 	)
 }
 
@@ -28,5 +29,17 @@ func validatePhyClient(e interface{}, vnic ifs.IVNic) error {
 	if err := l8c.ValidateRequired(entity.LastName, "LastName"); err != nil {
 		return err
 	}
+	if err := l8c.ValidateRequired(entity.Email, "Email"); err != nil {
+		return err
+	}
+	return nil
+}
+
+func setClientUserId(e interface{}, action ifs.Action, vnic ifs.IVNic) error {
+	if action != ifs.POST {
+		return nil
+	}
+	client := e.(*physio.PhysioClient)
+	client.UserId = client.Email
 	return nil
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/saichler/l8bus/go/overlay/vnic"
 	l8c "github.com/saichler/l8common/go/common"
+	"github.com/saichler/l8agent/go/types/l8agent"
 	"github.com/saichler/l8physio/go/physio/aia"
 	"github.com/saichler/l8physio/go/physio/common"
 	"github.com/saichler/l8physio/go/types/physio"
@@ -31,8 +32,7 @@ func startWebServer(port int, cert string) {
 		panic(err)
 	}
 
-	resources := common.CreateResources("web-" + strconv.Itoa(port))
-	resources.SysConfig().VnetPort = common.PHYSIO_VNET
+	resources := common.CreateResources("web-" + strconv.Itoa(port), false)
 
 	registerPhysioTypes(resources)
 
@@ -55,6 +55,13 @@ func startWebServer(port int, cert string) {
 }
 
 func registerPhysioTypes(resources ifs.IResources) {
+	// Agent types
+	l8c.RegisterType(resources, &l8agent.L8AgentConversation{}, &l8agent.L8AgentConversationList{}, "ConversationId")
+	l8c.RegisterType(resources, &l8agent.L8AgentChatMessage{}, &l8agent.L8AgentChatMessageList{}, "ConversationId")
+	l8c.RegisterType(resources, &l8agent.L8AgentChatConversation{}, &l8agent.L8AgentChatConversationList{}, "ConversationId")
+	l8c.RegisterType(resources, &l8agent.L8AgentPrompt{}, &l8agent.L8AgentPromptList{}, "PromptId")
+
+	// Physio types
 	l8c.RegisterType(resources, &physio.PhysioTherapist{}, &physio.PhysioTherapistList{}, "TherapistId")
 	l8c.RegisterType(resources, &physio.PhysioClient{}, &physio.PhysioClientList{}, "ClientId")
 	l8c.RegisterType(resources, &physio.PhysioExercise{}, &physio.PhysioExerciseList{}, "ExerciseId")

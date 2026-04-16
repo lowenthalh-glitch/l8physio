@@ -8,10 +8,17 @@ github.com/saichler/l8agent v0.0.0-20260404041519-33c923998e3c h1:K/HcEUQm832HCa
 github.com/saichler/l8agent v0.0.0-20260404041519-33c923998e3c/go.mod h1:isTUof0SPHq4RdRY6EyIKTMnWS0OjivDbDJGQPDStCg=
 github.com/saichler/l8bus v0.0.0-20260326134657-42f845bc01f6 h1:NEodR8lQilyWoo03dUO5VLIcBTP4i4BfYqpG3ZXugQU=
 github.com/saichler/l8bus v0.0.0-20260326134657-42f845bc01f6/go.mod h1:ZK1m4Zqy9WhGVZXl5znHTr7+/r19rOytqwBqhH02Ui8=
+<<<<<<< HEAD
 github.com/saichler/l8common v0.0.0-20260405121518-c0088e5aaa6d h1:j6DhoQNlwA1yaG5sETr8Vug6kZiqoJcSiG6WGsQSCMA=
 github.com/saichler/l8common v0.0.0-20260405121518-c0088e5aaa6d/go.mod h1:O7WSHyHK4HPPkolxZn41hxzA0ufOTo6jDcTqL7KRS8k=
 github.com/saichler/l8orm v0.0.0-20260405130733-399207a7ff16 h1:pskmQoZe4SnyjeeyBptuCJJqTyZDII7S43xZ+5Q+UIc=
 github.com/saichler/l8orm v0.0.0-20260405130733-399207a7ff16/go.mod h1:FYnievTs9ZZ3WE8pjDC1y2Mu+SnNJa7rPY5q1LJbn+A=
+=======
+github.com/saichler/l8common v0.0.0-20260412163226-bd082edcf9d9 h1:GDGaP9FaBKYXCkVhsjNIXsJNB70ig1qK9dDx75aB+F0=
+github.com/saichler/l8common v0.0.0-20260412163226-bd082edcf9d9/go.mod h1:O7WSHyHK4HPPkolxZn41hxzA0ufOTo6jDcTqL7KRS8k=
+github.com/saichler/l8orm v0.0.0-20260412125255-b561830c01df h1:eJ3phQjMNWo1ZPMyMqoG7ylEijozlBkljqseZ5CHFDs=
+github.com/saichler/l8orm v0.0.0-20260412125255-b561830c01df/go.mod h1:FYnievTs9ZZ3WE8pjDC1y2Mu+SnNJa7rPY5q1LJbn+A=
+>>>>>>> e94694f (add collector to boostapp)
 github.com/saichler/l8ql v0.0.0-20260322130921-a31581a0ab5f h1:dXbobK/1hPqtp4ys1JF9xueRj2JgZColFoXdMVH87zc=
 github.com/saichler/l8ql v0.0.0-20260322130921-a31581a0ab5f/go.mod h1:boBPUwEYgpyyTcZcqqjDDYgqkjemEO7iR8kdOwkS1S0=
 github.com/saichler/l8reflect v0.0.0-20260327101437-6da0c1cef4c9 h1:5ergxF19aF+IsFVTMQLLJd2gvUipCPB93T/O9DPaxQw=
@@ -20,13 +27,13 @@ github.com/saichler/l8services v0.0.0-20260405154617-7a86405cc5e2 h1:ksztAoumkdp
 github.com/saichler/l8services v0.0.0-20260405154617-7a86405cc5e2/go.mod h1:9c3fnIfjQmQ4kyk5Nm3+LsrRWOwmbXvIzK2Xmjf8f1c=
 github.com/saichler/l8srlz v0.0.0-20260322124809-505a0d08f95d h1:r12x0ozovrtFsFs9CDtUT5kbJ7QycyAvgefBrgLyN+s=
 github.com/saichler/l8srlz v0.0.0-20260322124809-505a0d08f95d/go.mod h1:uDYNwF/5JUA39cg47kX8k+Qh5sI5WjfxgrfmCX5zmwo=
-github.com/saichler/l8types v0.0.0-20260331121528-95ec68dda6f9 h1:WdfdjfKmFN3atRRqQpYz/CbyCq7gMn21yPt4ropU0PM=
-github.com/saichler/l8types v0.0.0-20260331121528-95ec68dda6f9/go.mod h1:0+Snl9PYq+caqTu6OBVaw7mQVn0TrRY9OJz+GelHuM4=
-github.com/saichler/l8utils v0.0.0-20260322182652-722ad1c4c3b9 h1:B8UcztHXNSXNLd0+hEfRqAd7P87bY8hiD75hs01qcYA=
-github.com/saichler/l8utils v0.0.0-20260322182652-722ad1c4c3b9/go.mod h1:nKdvYAEGLyHfxPg09oR6OfkJ0SniSbPb+Zi6wr/D5LU=
-github.com/saichler/l8web v0.0.0-20260330122707-c8713091ebe7 h1:LRnTkNi9mye2EZzp1zSddIm9o62zGrLGDkgeni3tTn4=
-github.com/saichler/l8web v0.0.0-20260330122707-c8713091ebe7/go.mod h1:r2j6dgKs41L+dwaSh3hQ9OJN0RnQP0C8NWxAbAn+c8c=
-golang.org/x/sys v0.42.0 h1:omrd2nAlyT5ESRdCLYdm3+fMfNFE/+Rf4bDIQImRJeo=
-golang.org/x/sys v0.42.0/go.mod h1:4GL1E5IUh+htKOUEOaiffhrAeqysfVGipDYzABqnCmw=
+github.com/saichler/l8types v0.0.0-20260413144647-e11af7b63723 h1:Orf47Q8NQHwC2ZaaW5maJdKTPMzmqdJeO2XndEcmljE=
+github.com/saichler/l8types v0.0.0-20260413144647-e11af7b63723/go.mod h1:0+Snl9PYq+caqTu6OBVaw7mQVn0TrRY9OJz+GelHuM4=
+github.com/saichler/l8utils v0.0.0-20260412044401-2462343ecbb7 h1:n7Y1dA2cDGec+NbCSRwHNJ/kh7NfcqNboMqcMM2qVEM=
+github.com/saichler/l8utils v0.0.0-20260412044401-2462343ecbb7/go.mod h1:nKdvYAEGLyHfxPg09oR6OfkJ0SniSbPb+Zi6wr/D5LU=
+github.com/saichler/l8web v0.0.0-20260414013916-c8c72b83721d h1:rvEEBSxNy3tnz/w7ka8tjtZNscVJ5d+mC3UVCgtJ4ys=
+github.com/saichler/l8web v0.0.0-20260414013916-c8c72b83721d/go.mod h1:r2j6dgKs41L+dwaSh3hQ9OJN0RnQP0C8NWxAbAn+c8c=
+golang.org/x/sys v0.43.0 h1:Rlag2XtaFTxp19wS8MXlJwTvoh8ArU6ezoyFsMyCTNI=
+golang.org/x/sys v0.43.0/go.mod h1:4GL1E5IUh+htKOUEOaiffhrAeqysfVGipDYzABqnCmw=
 google.golang.org/protobuf v1.36.11 h1:fV6ZwhNocDyBLK0dj+fg8ektcVegBBuEolpbTQyBNVE=
 google.golang.org/protobuf v1.36.11/go.mod h1:HTf+CrKn2C3g5S8VImy6tdcUvCska2kB7j23XfzDpco=

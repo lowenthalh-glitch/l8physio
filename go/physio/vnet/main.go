@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	resources := common.CreateResources("vnet-" + os.Getenv("HOSTNAME"))
+	resources := common.CreateResources("vnet-" + os.Getenv("HOSTNAME"), false)
 	net := vnet.NewVNet(resources)
 	net.Start()
 	resources.Logger().Info("physio vnet started!")

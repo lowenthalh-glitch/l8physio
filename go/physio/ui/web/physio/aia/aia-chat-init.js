@@ -2,38 +2,34 @@
     'use strict';
 
     function initAiaChat() {
-        const container = document.getElementById('aia-chat-container');
+        if (typeof L8AgentChat === 'undefined') return;
+        var container = document.getElementById('aia-chat-container');
         if (!container) return;
         if (container.dataset.initialized) return;
         container.dataset.initialized = 'true';
 
         L8AgentChat.init({
             containerId:  'aia-chat-container',
-            chatEndpoint: '/physio/55/AgntChat'
+            chatEndpoint: '/55/AgntChat'
         });
     }
 
-    // Called by sections.js when the aia section is loaded
-    window.initAiaChatSection = function() {
-        // The AIA section has a tab; wait for the tab to activate
-        const observer = new MutationObserver(function(mutations) {
-            mutations.forEach(function(m) {
-                if (m.type === 'attributes' && m.attributeName === 'class') {
-                    const el = m.target;
-                    if (el.classList.contains('active') || el.classList.contains('l8-service-view')) {
-                        initAiaChat();
-                    }
-                }
-            });
-        });
+    // Override the module initializer to also init the chat UI
+    var origInit = window.initializeAia;
+    window.initializeAia = function() {
+        if (origInit) origInit();
 
-        const serviceView = document.querySelector('.l8-service-view[data-service="chat"]');
-        if (serviceView) {
-            observer.observe(serviceView, { attributes: true });
-            // Also try immediately in case it is already active
-            if (serviceView.classList.contains('active')) {
+        var chatView = document.querySelector('.l8-service-view[data-service="chat"]');
+        if (chatView) {
+            if (chatView.classList.contains('active')) {
                 initAiaChat();
             }
+            var observer = new MutationObserver(function() {
+                if (chatView.classList.contains('active')) {
+                    initAiaChat();
+                }
+            });
+            observer.observe(chatView, { attributes: true, attributeFilter: ['class'] });
         }
     };
 })();

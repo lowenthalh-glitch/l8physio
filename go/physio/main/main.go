@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-	res := common.CreateResources("PhysioServices")
+	res := common.CreateResources("PhysioServices", false)
 	ifs.SetNetworkMode(ifs.NETWORK_K8s)
 	nic := vnic.NewVirtualNetworkInterface(res, nil)
 	nic.Start()

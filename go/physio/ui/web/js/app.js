@@ -1,5 +1,18 @@
 // Main application initialization
 
+// Global fetch interceptor — redirect to login on 401 from any fetch
+(function() {
+    var _originalFetch = window.fetch;
+    window.fetch = function(url, options) {
+        return _originalFetch.apply(this, arguments).then(function(response) {
+            if (response.status === 401 && typeof showErrorAndLogout === 'function') {
+                showErrorAndLogout('Session expired', 'Please log in again.');
+            }
+            return response;
+        });
+    };
+})();
+
 function getAuthHeaders() {
     const bearerToken = sessionStorage.getItem('bearerToken');
     return {
