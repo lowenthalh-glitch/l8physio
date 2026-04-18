@@ -14,27 +14,33 @@
             ],
             services: {
                 'management': [
-                    { key: 'clients',      label: 'Clients',         icon: 'person',
-                      endpoint: '/50/PhyClient',  model: 'PhysioClient',  idField: 'clientId',
+                    { key: 'therapists',   label: 'Therapists',       icon: 'person',
+                      endpoint: '/50/PhyTherapt', model: 'PhysioTherapist', idField: 'therapistId' },
+                    { key: 'clients',      label: 'Clients',          icon: 'person',
+                      endpoint: '/50/PhyClient',  model: 'PhysioClient',    idField: 'clientId',
                       onRowClick: function(item, id) {
                           if (window.MobilePhysioClientExercises) {
                               MobilePhysioClientExercises.open(id);
                           }
                       }},
-                    { key: 'exercises',    label: 'Exercises',       icon: 'activity',
-                      endpoint: '/50/PhyExercis', model: 'PhysioExercise',idField: 'exerciseId' },
-                    { key: 'plans',        label: 'Treatment Plans', icon: 'clipboard',
-                      endpoint: '/50/PhyPlan',    model: 'TreatmentPlan', idField: 'planId',
+                    { key: 'exercises',    label: 'Exercises',        icon: 'activity',
+                      endpoint: '/50/PhyExercis', model: 'PhysioExercise',  idField: 'exerciseId' },
+                    { key: 'protocols',    label: 'Protocol Templates', icon: 'clipboard',
+                      endpoint: '/50/PhyProto',   model: 'PhysioProtocol',  idField: 'protocolId' },
+                    { key: 'plans',        label: 'Treatment Plans',  icon: 'clipboard',
+                      endpoint: '/50/PhyPlan',    model: 'TreatmentPlan',   idField: 'planId',
                       supportedViews: ['table', 'calendar'] },
-                    { key: 'appointments', label: 'Appointments',    icon: 'calendar',
-                      endpoint: '/50/PhyAppt',    model: 'Appointment',   idField: 'apptId',
+                    { key: 'appointments', label: 'Appointments',     icon: 'calendar',
+                      endpoint: '/50/PhyAppt',    model: 'Appointment',     idField: 'apptId',
                       supportedViews: ['table', 'calendar'] },
-                    { key: 'progress',     label: 'Progress Logs',   icon: 'chart',
-                      endpoint: '/50/PhyLog',     model: 'ProgressLog',   idField: 'logId' },
-                    { key: 'protocols',    label: 'Protocols',        icon: 'clipboard',
-                      endpoint: '/50/PhyProto', model: 'PhysioProtocol', idField: 'protocolId' },
+                    { key: 'progress',     label: 'Progress Logs',    icon: 'chart',
+                      endpoint: '/50/PhyLog',     model: 'ProgressLog',     idField: 'logId' },
+                    { key: 'reports',      label: 'Session Reports',  icon: 'clipboard',
+                      endpoint: '/50/SessRpt',    model: 'SessionReport',   idField: 'reportId' },
+                    { key: 'feedback',     label: 'Home Feedback',    icon: 'clipboard',
+                      endpoint: '/50/HomeFdbk',   model: 'HomeFeedback',    idField: 'feedbackId' },
                     { key: 'boostapp',     label: 'Boostapp Calendar', icon: 'calendar',
-                      endpoint: '/50/BstpCal',  model: 'BoostappCalendarEvent', idField: 'eventId',
+                      endpoint: '/50/BstpCal',    model: 'BoostappCalendarEvent', idField: 'eventId',
                       readOnly: true, supportedViews: ['table', 'calendar'] }
                 ]
             }
@@ -55,16 +61,41 @@
 
         system: {
             subModules: [
-                { key: 'admin', label: 'Administration', icon: 'system' }
+                { key: 'health',     label: 'Health',      icon: 'system' },
+                { key: 'security',   label: 'Security',    icon: 'system' },
+                { key: 'modules',    label: 'Modules',     icon: 'system' },
+                { key: 'logs',       label: 'Logs',        icon: 'clipboard' },
+                { key: 'dataimport', label: 'Data Import', icon: 'clipboard' }
             ],
             services: {
-                'admin': [
-                    { key: 'health',      label: 'Health',      icon: 'system',
-                      endpoint: '/0/Health',     model: 'L8Health',   idField: 'service', readOnly: true },
-                    { key: 'users',       label: 'Users',       icon: 'person',
-                      endpoint: '/0/User',       model: 'L8User',     idField: 'userId' },
-                    { key: 'roles',       label: 'Roles',       icon: 'system',
-                      endpoint: '/0/Role',       model: 'L8Role',     idField: 'roleId' }
+                'health': [
+                    { key: 'health',      label: 'Health',       icon: 'system',
+                      endpoint: '/0/Health',     model: 'L8Health',       idField: 'service', readOnly: true }
+                ],
+                'security': [
+                    { key: 'users',       label: 'Users',        icon: 'person',
+                      endpoint: '/73/users',     model: 'L8User',        idField: 'userId' },
+                    { key: 'roles',       label: 'Roles',        icon: 'system',
+                      endpoint: '/74/roles',     model: 'L8Role',        idField: 'roleId' },
+                    { key: 'credentials', label: 'Credentials',  icon: 'system',
+                      endpoint: '/75/Creds',     model: 'L8Credentials', idField: 'id' },
+                    { key: 'events',      label: 'Events',       icon: 'clipboard',
+                      endpoint: '/76/Events',    model: 'EventRecord',   idField: 'eventId', readOnly: true }
+                ],
+                'modules': [
+                    { key: 'modules',     label: 'Modules',      icon: 'system',
+                      customInit: 'L8SysModules', customContainer: 'modules-container',
+                      subtitle: 'Module dependency management' }
+                ],
+                'logs': [
+                    { key: 'logs',        label: 'Logs',         icon: 'clipboard',
+                      customInit: 'L8Logs', customContainer: 'logs-container',
+                      subtitle: 'System log viewer' }
+                ],
+                'dataimport': [
+                    { key: 'dataimport',  label: 'Data Import',  icon: 'clipboard',
+                      customInit: 'L8DataImport', customContainer: 'dataimport-container',
+                      subtitle: 'Import CSV, JSON, XML data' }
                 ]
             }
         },

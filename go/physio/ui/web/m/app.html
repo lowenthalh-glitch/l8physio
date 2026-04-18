@@ -10,7 +10,11 @@
     <link rel="icon" href="../l8ui/images/logo.gif">
     <link rel="apple-touch-icon" href="../l8ui/images/logo.gif">
 
-    <!-- CSS -->
+    <!-- CSS: Theme (MUST load first — all components use --layer8d-* tokens) -->
+    <link rel="stylesheet" href="../l8ui/shared/layer8d-theme-tokens.css">
+    <link rel="stylesheet" href="../l8ui/shared/layer8d-theme.css">
+
+    <!-- CSS: Components -->
     <link rel="stylesheet" href="../l8ui/shared/layer8d-toggle-tree.css">
     <link rel="stylesheet" href="../l8ui/sys/modules/l8sys-modules.css">
     <link rel="stylesheet" href="../l8ui/sys/dataimport/l8dataimport.css">
@@ -276,6 +280,11 @@
     <script src="js/physio/progress-enums.js"></script>
     <script src="js/physio/progress-columns.js"></script>
     <script src="js/physio/protocols-columns.js"></script>
+    <script src="js/physio/therapists-columns.js"></script>
+    <script src="js/physio/sessionreport-enums.js"></script>
+    <script src="js/physio/sessionreport-columns.js"></script>
+    <script src="js/physio/homefeedback-enums.js"></script>
+    <script src="js/physio/homefeedback-columns.js"></script>
     <script src="js/physio/boostapp-columns.js"></script>
     <script src="../physio/physio-forms-shared.js"></script>
     <script src="js/physio/physio-forms-mobile.js"></script>
