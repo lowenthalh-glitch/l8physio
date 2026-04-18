@@ -44,24 +44,9 @@
     }
 
     async function createClientUser(client) {
-        var clientId = client.clientId;
-        if (!clientId) return;
-
-        var scopeRoleId = 'client-scope-' + clientId;
-        await postRole({
-            roleId: scopeRoleId, roleName: 'Client Scope ' + clientId,
-            rules: {
-                'cs-client':   denyRule('cs-client',   'PhysioClient',     'select * from PhysioClient where clientId!='     + clientId),
-                'cs-plan':     denyRule('cs-plan',     'TreatmentPlan',    'select * from TreatmentPlan where clientId!='    + clientId),
-                'cs-appt':     denyRule('cs-appt',     'Appointment',      'select * from Appointment where clientId!='      + clientId),
-                'cs-progress': denyRule('cs-progress', 'ProgressLog',      'select * from ProgressLog where clientId!='      + clientId),
-                'cs-workout':  denyRule('cs-workout',  'GeneratedWorkout', 'select * from GeneratedWorkout where clientId!=' + clientId)
-            }
-        });
-
         var userId = client.email;
         if (!userId) return;
-        var roles = {}; roles['client'] = true; roles[scopeRoleId] = true;
+        var roles = {}; roles['client'] = true;
         var ok = await postUser({
             userId: userId, fullName: (client.firstName + ' ' + client.lastName).trim(),
             email: userId, accountStatus: 'ACCOUNT_STATUS_ACTIVE',

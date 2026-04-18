@@ -8,7 +8,12 @@
     }
 
     function authFetch(url) {
-        return fetch(url, { headers: getAuthHeaders() }).then(function(r) { return r.json(); });
+        return fetch(url, { headers: getAuthHeaders() }).then(function(r) {
+            if (!r.ok) {
+                return r.text().then(function(t) { throw new Error(t || ('HTTP ' + r.status)); });
+            }
+            return r.json();
+        });
     }
 
     window.PhysioClientAppointments = {
