@@ -5,17 +5,9 @@
     var USERS_ENDPOINT = '/73/users';
     var DEFAULT_PASSWORD = '12345678';
 
-    function getHeaders() {
-        return Object.assign({ 'Content-Type': 'application/json' },
-            typeof getAuthHeaders === 'function' ? getAuthHeaders() : {});
-    }
-
     async function postRole(role) {
         try {
-            var resp = await fetch(Layer8DConfig.resolveEndpoint(ROLES_ENDPOINT), {
-                method: 'POST', headers: getHeaders(), body: JSON.stringify(role)
-            });
-            if (!resp.ok) console.warn('[UserProvisioning] role creation returned', resp.status);
+            await Layer8MAuth.post(Layer8MConfig.resolveEndpoint(ROLES_ENDPOINT), role);
         } catch (e) {
             console.warn('[UserProvisioning] role creation failed', e);
         }
@@ -23,13 +15,7 @@
 
     async function postUser(user) {
         try {
-            var resp = await fetch(Layer8DConfig.resolveEndpoint(USERS_ENDPOINT), {
-                method: 'POST', headers: getHeaders(), body: JSON.stringify(user)
-            });
-            if (!resp.ok) {
-                console.warn('[UserProvisioning] user creation returned', resp.status, await resp.text());
-                return false;
-            }
+            await Layer8MAuth.post(Layer8MConfig.resolveEndpoint(USERS_ENDPOINT), user);
             return true;
         } catch (e) {
             console.warn('[UserProvisioning] user creation failed', e);
@@ -59,15 +45,14 @@
             }
         });
 
-        var userId = clientId;
         var roles = {}; roles['client'] = true; roles[scopeRoleId] = true;
         var ok = await postUser({
-            userId: userId, fullName: (client.firstName + ' ' + client.lastName).trim(),
+            userId: clientId, fullName: (client.firstName + ' ' + client.lastName).trim(),
             email: client.email || '', accountStatus: 'ACCOUNT_STATUS_ACTIVE',
             portal: 'app.html', password: { hash: DEFAULT_PASSWORD }, roles: roles
         });
-        if (ok) Layer8DNotification.success('User account "' + userId + '" created');
-        else    Layer8DNotification.warning('Client saved but user account creation failed');
+        if (ok) Layer8MUtils.showSuccess('User account "' + clientId + '" created');
+        else    Layer8MUtils.showError('Client saved but user account creation failed');
     }
 
     async function createTherapistUser(therapist) {
@@ -84,19 +69,17 @@
             }
         });
 
-        var userId = therapist.therapistId;
-        if (!userId) return;
         var roles = {}; roles['therapist'] = true; roles[scopeRoleId] = true;
         var ok = await postUser({
-            userId: userId, fullName: (therapist.firstName + ' ' + therapist.lastName).trim(),
+            userId: therapistId, fullName: (therapist.firstName + ' ' + therapist.lastName).trim(),
             email: therapist.email || '', accountStatus: 'ACCOUNT_STATUS_ACTIVE',
             portal: 'app.html', password: { hash: DEFAULT_PASSWORD }, roles: roles
         });
-        if (ok) Layer8DNotification.success('User account "' + userId + '" created');
-        else    Layer8DNotification.warning('Therapist saved but user account creation failed');
+        if (ok) Layer8MUtils.showSuccess('User account "' + therapistId + '" created');
+        else    Layer8MUtils.showError('Therapist saved but user account creation failed');
     }
 
-    window.PhysioUserProvisioning = {
+    window.PhysioUserProvisioningMobile = {
         createClientUser: createClientUser,
         createTherapistUser: createTherapistUser
     };

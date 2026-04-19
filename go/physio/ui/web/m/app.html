@@ -28,6 +28,7 @@
     <link rel="stylesheet" href="../l8ui/m/css/layer8m-datepicker.css">
     <link rel="stylesheet" href="../l8ui/m/css/layer8m-reference-picker.css">
     <link rel="stylesheet" href="../l8ui/m/css/layer8m-nav-cards.css">
+    <link rel="stylesheet" href="../l8ui/m/css/layer8m-portal-switcher.css">
     <link rel="stylesheet" href="../l8ui/chart/layer8d-chart.css">
     <link rel="stylesheet" href="../l8ui/kanban/layer8d-kanban.css">
     <link rel="stylesheet" href="../l8ui/timeline/layer8d-timeline.css">
@@ -38,7 +39,9 @@
     <link rel="stylesheet" href="../l8ui/dashboard/layer8d-widget.css">
     <link rel="stylesheet" href="../l8ui/shared/layer8-markdown.css">
     <link rel="stylesheet" href="../l8ui/l8agent/m/l8agent-chat-m.css">
+    <link rel="stylesheet" href="../l8ui/l8agent/m/l8agent-bubble-m.css">
     <link rel="stylesheet" href="../l8ui/shared/layer8-view-switcher.css">
+    <link rel="stylesheet" href="../l8ui/shared/layer8-print.css" media="print">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; }
@@ -189,6 +192,11 @@
         </main>
     </div>
 
+    <!-- Scripts - Theme switcher (load first so theme applies before paint) -->
+    <script src="../l8ui/shared/layer8d-theme-switcher.js"></script>
+    <script src="../l8ui/m/js/layer8m-portal-switcher.js"></script>
+    <script>Layer8DThemeSwitcher.init();</script>
+
     <!-- Scripts - Core -->
     <script src="../l8ui/m/js/layer8m-config.js"></script>
     <script src="../l8ui/m/js/layer8m-auth.js"></script>
@@ -212,7 +220,11 @@
     <script src="../l8ui/m/js/layer8m-data-source.js"></script>
     <script src="../l8ui/m/js/layer8m-table.js"></script>
     <script src="../l8ui/m/js/layer8m-edit-table.js"></script>
+    <script src="../l8ui/m/js/layer8m-table-touch.js"></script>
     <script src="../l8ui/shared/layer8-csv-export.js"></script>
+    <script src="../l8ui/shared/layer8-excel-export.js"></script>
+    <script src="../l8ui/shared/layer8-pdf-export.js"></script>
+    <script src="../l8ui/shared/layer8-export-helper.js"></script>
     <script src="../l8ui/shared/layer8-file-upload.js"></script>
     <!-- View System -->
     <script src="../l8ui/m/js/layer8m-view-factory.js"></script>
@@ -247,6 +259,7 @@
     <script src="../l8ui/m/js/layer8m-wizard.js"></script>
     <script src="../l8ui/dashboard/layer8d-widget.js"></script>
     <!-- Forms -->
+    <script src="../l8ui/shared/layer8-format-display.js"></script>
     <script src="../l8ui/m/js/layer8m-forms-fields.js"></script>
     <script src="../l8ui/m/js/layer8m-forms-fields-reference.js"></script>
     <script src="../l8ui/m/js/layer8m-forms-fields-ext.js"></script>
@@ -266,6 +279,7 @@
     <script src="../l8ui/l8agent/l8agent-columns.js"></script>
     <script src="../l8ui/l8agent/l8agent-forms.js"></script>
     <script src="../l8ui/l8agent/m/l8agent-chat-m.js"></script>
+    <script src="../l8ui/l8agent/m/l8agent-bubble-m.js"></script>
 
     <!-- Physio Mobile Module Data -->
     <script src="js/physio/clients-enums.js"></script>
@@ -289,6 +303,8 @@
     <script src="../physio/physio-forms-shared.js"></script>
     <script src="js/physio/physio-forms-mobile.js"></script>
     <script src="js/physio/physio-index.js"></script>
+    <script src="js/physio/physio-user-provisioning-m.js"></script>
+    <script src="js/physio/physio-nav-patch-m.js"></script>
 
     <!-- AIA Mobile Module Data -->
     <script src="js/aia/agent-enums.js"></script>
@@ -299,6 +315,7 @@
     <!-- Shared Toggle Tree + Module Filter -->
     <script src="../l8ui/shared/layer8d-toggle-tree.js"></script>
     <script src="../l8ui/shared/layer8d-module-filter.js"></script>
+    <script src="../l8ui/shared/layer8d-permission-filter.js"></script>
     <script src="../l8ui/sys/modules/l8sys-dependency-graph.js"></script>
     <script src="../l8ui/sys/modules/l8sys-modules-map.js"></script>
     <script src="../l8ui/sys/modules/l8sys-modules.js"></script>
