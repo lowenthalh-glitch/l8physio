@@ -4,6 +4,7 @@ import (
 	"github.com/saichler/l8bus/go/overlay/vnic"
 	l8c "github.com/saichler/l8common/go/common"
 	"github.com/saichler/l8agent/go/types/l8agent"
+	"github.com/saichler/l8events/go/types/l8events"
 	"github.com/saichler/l8physio/go/physio/aia"
 	"github.com/saichler/l8physio/go/physio/common"
 	"github.com/saichler/l8physio/go/types/physio"
@@ -75,4 +76,7 @@ func registerPhysioTypes(resources ifs.IResources) {
 
 	// Boostapp calendar sync
 	l8c.RegisterType(resources, &physio.BoostappCalendarEvent{}, &physio.BoostappCalendarEventList{}, "EventId")
+
+	// Event types
+	l8c.RegisterType(resources, &l8events.EventRecord{}, &l8events.EventRecordList{}, "EventId")
 }

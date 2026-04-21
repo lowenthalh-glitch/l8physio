@@ -6,6 +6,7 @@ import (
 	"github.com/saichler/l8physio/go/physio/aia"
 	"github.com/saichler/l8physio/go/physio/common"
 	"github.com/saichler/l8physio/go/physio/services"
+	evtservices "github.com/saichler/l8events/go/services"
 	"github.com/saichler/l8types/go/ifs"
 	"os"
 	"os/exec"
@@ -27,6 +28,7 @@ func main() {
 	services.ActivateAllServices(common.DB_CREDS, common.DB_NAME, nic)
 	aia.Activate(common.DB_CREDS, common.DB_NAME, nic)
 	aia.ActivateChat(common.DB_CREDS, common.DB_NAME, nic)
+	evtservices.ActivateEvents(common.DB_CREDS, common.DB_NAME, nic)
 
 	common.WaitForSignal(res)
 }
