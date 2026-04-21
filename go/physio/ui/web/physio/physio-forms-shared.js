@@ -34,6 +34,10 @@
                         ...f.textarea('exerciseAim', 'Exercise Aim'),
                         ...f.checkbox('isActive',    'Active')
                     ]),
+                    f.section('Progression / Regression', [
+                        ...f.reference('progressionExerciseId', 'Progression (harder)', 'PhysioExercise'),
+                        ...f.reference('regressionExerciseId',  'Regression (easier)',  'PhysioExercise')
+                    ]),
                     f.section('Protocol Classification', [
                         ...f.select('joint',        'Joint',         enums.JOINT),
                         ...f.select('posture',      'Posture Type',  enums.POSTURE),

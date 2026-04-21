@@ -105,5 +105,33 @@ func generatePhysioExercises() []*physio.PhysioExercise {
 		}
 	}
 
+	// Link progression/regression chains within each category
+	linkProgressionRegression(exercises)
+
 	return exercises
+}
+
+// linkProgressionRegression sets progression/regression references for exercises
+// in the same category. Within each category group, exercise[i] progresses to
+// exercise[i+1] and regresses to exercise[i-1].
+func linkProgressionRegression(exercises []*physio.PhysioExercise) {
+	// Group exercise indices by category
+	byCategory := map[physio.PhysioExerciseCategory][]int{}
+	for i, ex := range exercises {
+		byCategory[ex.Category] = append(byCategory[ex.Category], i)
+	}
+
+	for _, indices := range byCategory {
+		if len(indices) < 2 {
+			continue
+		}
+		for pos, idx := range indices {
+			if pos < len(indices)-1 {
+				exercises[idx].ProgressionExerciseId = exercises[indices[pos+1]].ExerciseId
+			}
+			if pos > 0 {
+				exercises[idx].RegressionExerciseId = exercises[indices[pos-1]].ExerciseId
+			}
+		}
+	}
 }

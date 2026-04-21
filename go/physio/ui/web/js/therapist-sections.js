@@ -12,7 +12,7 @@ const sectionInitializers = {
         setTimeout(function() {
             document.querySelectorAll('.l8-subnav-item').forEach(function(item) {
                 var svc = item.getAttribute('data-service');
-                if (svc !== 'therapists' && svc !== 'clients') {
+                if (svc !== 'htdash' && svc !== 'therapists' && svc !== 'clients' && svc !== 'boostapp') {
                     item.style.display = 'none';
                 }
             });

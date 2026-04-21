@@ -7,6 +7,8 @@ import (
 	"github.com/saichler/l8physio/go/physio/boostapp"
 	"github.com/saichler/l8physio/go/physio/clients"
 	"github.com/saichler/l8physio/go/physio/exercises"
+	"github.com/saichler/l8physio/go/physio/exswaplog"
+	"github.com/saichler/l8physio/go/physio/htdash"
 	"github.com/saichler/l8physio/go/physio/homefeedback"
 	"github.com/saichler/l8physio/go/physio/plans"
 	"github.com/saichler/l8physio/go/physio/progress"
@@ -32,6 +34,8 @@ func ActivateAllServices(creds, dbname string, vnic ifs.IVNic) {
 		func() { sessionreport.Activate(creds, dbname, vnic) },
 		func() { homefeedback.Activate(creds, dbname, vnic) },
 		func() { boostapp.Activate(creds, dbname, vnic) },
+		func() { exswaplog.Activate(creds, dbname, vnic) },
+		func() { htdash.Activate(creds, dbname, vnic) },
 	}
 
 	sem := make(chan struct{}, parallelWorkers)

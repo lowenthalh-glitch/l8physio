@@ -18,7 +18,9 @@
         ...col.col('movementDirection',  'Direction'),
         ...col.col('exerciseAim',        'Aim'),
         ...col.col('equipment',          'Equipment'),
-        ...col.boolean('isActive',       'Active')
+        ...col.boolean('isActive',       'Active'),
+        ...col.col('progressionExerciseId', 'Progression'),
+        ...col.col('regressionExerciseId',  'Regression')
     ];
 
     PhysioManagement.primaryKeys = PhysioManagement.primaryKeys || {};

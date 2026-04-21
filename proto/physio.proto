@@ -160,6 +160,12 @@ enum MoodLevel {
   MOOD_LEVEL_LOW         = 3;
 }
 
+enum SwapDirection {
+  SWAP_DIRECTION_UNSPECIFIED = 0;
+  SWAP_DIRECTION_PROGRESSION = 1;
+  SWAP_DIRECTION_REGRESSION  = 2;
+}
+
 // ──────────────────────────────────────────────
 // Child Types (no service, no List type)
 // ──────────────────────────────────────────────
@@ -246,6 +252,7 @@ message PhysioClient {
   string             protocol_id       = 13;
   string             therapist_id      = 14;
   string             boostapp_id       = 15;
+  SessionStatus      override_status   = 16;
   l8common.AuditInfo      audit_info        = 30;
 }
 
@@ -281,6 +288,9 @@ message PhysioExercise {
   string                 muscle_group         = 23;
   string                 default_reps_display = 24;
   string                 movement_direction   = 25;
+  // Progression/regression chain — references to exercises in the same category
+  string                 progression_exercise_id = 26;
+  string                 regression_exercise_id  = 27;
   l8common.AuditInfo          audit_info           = 30;
 }
 
@@ -544,4 +554,49 @@ message BoostappCalendarEvent {
 message BoostappCalendarEventList {
   repeated BoostappCalendarEvent list     = 1;
   l8api.L8MetaData               metadata = 2;
+}
+
+// ──────────────────────────────────────────────
+// Exercise Swap Log
+// ──────────────────────────────────────────────
+
+message ExerciseSwapLog {
+  string              swap_id          = 1;
+  string              client_id        = 2;
+  string              plan_id          = 3;
+  string              old_exercise_id  = 4;
+  string              new_exercise_id  = 5;
+  SwapDirection       direction        = 6;
+  int64               swap_date        = 7;
+  string              therapist_id     = 8;
+  l8common.AuditInfo  audit_info       = 30;
+}
+
+message ExerciseSwapLogList {
+  repeated ExerciseSwapLog list     = 1;
+  l8api.L8MetaData         metadata = 2;
+}
+
+// ──────────────────────────────────────────────
+// Head Therapist Dashboard (stored, refresh via POST)
+// ──────────────────────────────────────────────
+
+message HeadThDashRow {
+  string              row_id                = 1;
+  string              client_id             = 2;
+  string              client_name           = 3;
+  string              therapist_id          = 4;
+  string              therapist_name        = 5;
+  int64               last_feedback_date    = 6;
+  SessionStatus       last_feedback_status  = 7;
+  int64               last_session_date     = 8;
+  SessionStatus       last_session_status   = 9;
+  SessionStatus       override_status       = 10;
+  int32               swap_count            = 11;
+  l8common.AuditInfo  audit_info            = 30;
+}
+
+message HeadThDashRowList {
+  repeated HeadThDashRow list     = 1;
+  l8api.L8MetaData       metadata = 2;
 }

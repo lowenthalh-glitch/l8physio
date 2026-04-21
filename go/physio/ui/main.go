@@ -77,6 +77,10 @@ func registerPhysioTypes(resources ifs.IResources) {
 	// Boostapp calendar sync
 	l8c.RegisterType(resources, &physio.BoostappCalendarEvent{}, &physio.BoostappCalendarEventList{}, "EventId")
 
+	// Exercise swap log + Head therapist dashboard
+	l8c.RegisterType(resources, &physio.ExerciseSwapLog{}, &physio.ExerciseSwapLogList{}, "SwapId")
+	l8c.RegisterType(resources, &physio.HeadThDashRow{}, &physio.HeadThDashRowList{}, "RowId")
+
 	// Event types
 	l8c.RegisterType(resources, &l8events.EventRecord{}, &l8events.EventRecordList{}, "EventId")
 }

@@ -7,6 +7,7 @@
         namespace: 'Physio',
         modules: {
             'management': mod('Management', 'health', [
+                svc('htdash',        'Dashboard',            'chart',     '/50/HTDash',     'HeadThDashRow'),
                 svc('therapists',    'Therapists',           'person',    '/50/PhyTherapt', 'PhysioTherapist'),
                 svc('clients',      'Clients',              'person',    '/50/PhyClient',   'PhysioClient'),
                 svc('exercises',    'Exercises',            'activity',  '/50/PhyExercis',  'PhysioExercise'),

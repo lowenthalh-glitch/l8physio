@@ -265,3 +265,34 @@
 .physio-video-link:hover {
     text-decoration: underline;
 }
+
+/* ── Cross-browser tooltips for action buttons ─────────────────────── */
+.physio-progress-btn,
+.physio-regress-btn,
+.physio-move-up,
+.physio-move-down,
+.physio-video-btn {
+    position: relative;
+}
+
+.physio-progress-btn:hover::after,
+.physio-regress-btn:hover::after,
+.physio-move-up:hover::after,
+.physio-move-down:hover::after,
+.physio-video-btn:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--layer8d-text-dark, #1f2937);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 1000;
+    margin-bottom: 4px;
+}

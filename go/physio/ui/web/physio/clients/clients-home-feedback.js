@@ -115,11 +115,19 @@
                         Layer8DNotification.error('Validation failed', errors.map(function(e) { return e.message; }));
                         return;
                     }
-                    // Ensure reference fields are correct strings (fix picker collection issues)
+                    // Ensure reference fields are correct strings
                     data.clientId = preData.clientId;
                     data.therapistId = preData.therapistId || '';
                     data.planId = preData.planId || '';
                     data.status = self._calculateColor(data);
+
+                    // Check if feedback already exists for the selected date
+                    var isDuplicate = await self._checkDuplicateDate(client.clientId, data.feedbackDate, svcConfig.endpoint);
+                    if (isDuplicate) {
+                        Layer8DNotification.warning('Feedback already exists for this date. Only one feedback per day is allowed.');
+                        return;
+                    }
+
                     try {
                         await Layer8DForms.saveRecord(svcConfig.endpoint, data, false);
                         Layer8DPopup.close();
@@ -193,17 +201,35 @@
             });
         },
 
+        _checkDuplicateDate: async function(clientId, feedbackDate, endpoint) {
+            try {
+                var ts = parseInt(feedbackDate) || 0;
+                if (ts === 0) return false;
+                var d = new Date(ts * 1000);
+                d.setHours(0, 0, 0, 0);
+                var dayStart = Math.floor(d.getTime() / 1000);
+                var dayEnd = dayStart + 86399;
+                var q = 'select * from HomeFeedback where clientId=' + clientId +
+                    ' and feedbackDate>=' + dayStart + ' and feedbackDate<=' + dayEnd;
+                var body = encodeURIComponent(JSON.stringify({ text: q }));
+                var resp = await fetch(endpoint + '?body=' + body, { method: 'GET', headers: getAuthHeaders() });
+                var data = await resp.json();
+                return (data.list || []).length > 0;
+            } catch (e) {
+                return false;
+            }
+        },
+
         _applyFormLayout: function(body) {
             var self = this;
-            var grids = body.querySelectorAll('.probler-popup-form-grid');
-            grids.forEach(function(grid) {
-                grid.style.gridTemplateColumns = '1fr';
+            body.querySelectorAll('.detail-grid, .form-row, .probler-popup-form-grid, .probler-popup-section-grid').forEach(function(grid) {
+                grid.style.setProperty('grid-template-columns', '1fr', 'important');
             });
             self._replaceWithRadio(body, 'painDuring', 0, 5, 'No pain', 'Very painful');
             self._replaceWithRadio(body, 'painAfter',  0, 5, 'No pain', 'Very painful');
-            self._replaceWithRadio(body, 'painBefore', 1, 5, 'Good', 'Bad');
-            self._replaceWithRadio(body, 'compliance', 1, 5, 'Good', 'Bad');
-            self._replaceWithRadio(body, 'mood',       1, 5, 'Good', 'Bad');
+            self._replaceWithRadio(body, 'painBefore', 1, 5, 'Bad', 'Good');
+            self._replaceWithRadio(body, 'compliance', 1, 5, 'Bad', 'Good');
+            self._replaceWithRadio(body, 'mood',       1, 5, 'Bad', 'Good');
         },
 
         _preselectRadios: function(body, data) {

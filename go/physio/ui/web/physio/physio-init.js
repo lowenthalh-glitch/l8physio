@@ -22,6 +22,24 @@
         var origLoadSV = window.Physio && window.Physio.loadServiceView;
         if (typeof origLoadSV === 'function') {
             window.Physio.loadServiceView = function(moduleKey, serviceKey) {
+                if (serviceKey === 'htdash') {
+                    // Dashboard uses frontend aggregation (workaround for ORM zero-value panic)
+                    var sectionEl = window.Physio._state && window.Physio._state.sectionEl;
+                    if (sectionEl) {
+                        sectionEl.querySelectorAll('.l8-service-view').forEach(function(v) {
+                            v.classList.toggle('active', v.dataset.service === 'htdash');
+                        });
+                        sectionEl.querySelectorAll('.l8-subnav-item').forEach(function(a) {
+                            a.classList.toggle('active', a.dataset.service === 'htdash');
+                        });
+                    }
+                    setTimeout(function() {
+                        if (window.PhysioHeadDashboard) {
+                            PhysioHeadDashboard.init('management-htdash-table-container');
+                        }
+                    }, 50);
+                    return;
+                }
                 if (serviceKey === 'builder') {
                     var sectionEl = window.Physio._state && window.Physio._state.sectionEl;
                     if (sectionEl) {
@@ -97,7 +115,11 @@
         if (typeof origShowDetails === 'function') {
             window.Physio._showDetailsModal = function(service, item, itemId) {
                 console.log('[physio-init] _showDetailsModal called for model:', service.model);
-                if (service.model === 'PhysioClient' && window.PhysioClientExercises) {
+                if (service.model === 'HeadThDashRow') {
+                    _showDashboardDetail(item);
+                } else if (service.model === 'BoostappCalendarEvent') {
+                    _showSessionView(item);
+                } else if (service.model === 'PhysioClient' && window.PhysioClientExercises) {
                     PhysioClientExercises.open(itemId || (item && item.clientId));
                 } else if (service.model === 'PhysioTherapist') {
                     _showTherapistClients(item, itemId);
@@ -212,6 +234,127 @@
             pageSize: 20,
             serverSide: true,
             baseWhereClause: 'therapistId=' + tid,
+            showActions: false
+        });
+        table.init();
+    }
+
+    // ── Dashboard detail popup with override + swap log ──────────────
+    function _showDashboardDetail(item) {
+        if (!item) return;
+        var clientId = item.clientId;
+        var enums = PhysioManagement.enums;
+        var render = PhysioManagement.render;
+
+        var STATUS_OPTS = { 0: '— Clear —', 1: 'Green', 2: 'Yellow', 3: 'Red' };
+        var currentOverride = item.overrideStatus || 0;
+
+        var overrideHtml = '<select id="htdash-override-select" style="padding:6px 10px;border-radius:4px;border:1px solid var(--layer8d-border);">';
+        Object.keys(STATUS_OPTS).forEach(function(k) {
+            overrideHtml += '<option value="' + k + '"' + (parseInt(k) === currentOverride ? ' selected' : '') + '>' + STATUS_OPTS[k] + '</option>';
+        });
+        overrideHtml += '</select>';
+
+        var overviewHtml = '<div style="padding:8px 0;">' +
+            '<div style="margin-bottom:12px;"><strong>Client:</strong> ' + Layer8DUtils.escapeHtml(item.clientName || '') + '</div>' +
+            '<div style="margin-bottom:12px;"><strong>Therapist:</strong> ' + Layer8DUtils.escapeHtml(item.therapistName || '') + '</div>' +
+            '<div style="margin-bottom:12px;"><strong>Last Feedback:</strong> ' + (item.lastFeedbackDate ? Layer8DUtils.formatDate(item.lastFeedbackDate) : '—') +
+            ' ' + (item.lastFeedbackStatus ? render.sessionStatus(item.lastFeedbackStatus) : '') + '</div>' +
+            '<div style="margin-bottom:12px;"><strong>Last Session:</strong> ' + (item.lastSessionDate ? Layer8DUtils.formatDate(item.lastSessionDate) : '—') +
+            ' ' + (item.lastSessionStatus ? render.sessionStatus(item.lastSessionStatus) : '') + '</div>' +
+            '<div style="margin-bottom:12px;"><strong>Swaps:</strong> ' + (item.swapCount || 0) + '</div>' +
+            '<div style="margin-bottom:8px;"><strong>Override Status:</strong> ' + overrideHtml + '</div>' +
+            '</div>';
+
+        var swapTableId = 'htdash-swaplog-table';
+
+        var popupContent = '<div class="physio-therapist-tabs" style="display:flex;gap:0;border-bottom:2px solid var(--layer8d-border);margin-bottom:16px;">' +
+            '<button class="physio-therapist-tab active" data-ptab="overview" style="padding:8px 20px;border:none;background:none;cursor:pointer;font-size:14px;font-weight:600;border-bottom:2px solid var(--layer8d-primary);margin-bottom:-2px;color:var(--layer8d-primary);">Overview</button>' +
+            '<button class="physio-therapist-tab" data-ptab="swaps" style="padding:8px 20px;border:none;background:none;cursor:pointer;font-size:14px;font-weight:500;border-bottom:2px solid transparent;margin-bottom:-2px;color:var(--layer8d-text-medium);">Exercise Changes</button>' +
+            '</div>' +
+            '<div class="physio-therapist-pane" data-ppane="overview">' + overviewHtml + '</div>' +
+            '<div class="physio-therapist-pane" data-ppane="swaps" style="display:none;"><div id="' + swapTableId + '" style="min-height:200px;"></div></div>';
+
+        Layer8DPopup.show({
+            title: item.clientName || 'Client Dashboard',
+            content: popupContent,
+            size: 'large',
+            showFooter: false,
+            onShow: function(body) {
+                // Override save handler
+                var sel = body.querySelector('#htdash-override-select');
+                if (sel) {
+                    sel.addEventListener('change', function() {
+                        _saveOverride(clientId, parseInt(sel.value, 10));
+                    });
+                }
+
+                // Tab switching
+                var swapsLoaded = false;
+                body.querySelectorAll('.physio-therapist-tab').forEach(function(tab) {
+                    tab.addEventListener('click', function() {
+                        var target = tab.getAttribute('data-ptab');
+                        body.querySelectorAll('.physio-therapist-tab').forEach(function(t) {
+                            t.classList.remove('active');
+                            t.style.borderBottomColor = 'transparent';
+                            t.style.color = 'var(--layer8d-text-medium)';
+                            t.style.fontWeight = '500';
+                        });
+                        tab.classList.add('active');
+                        tab.style.borderBottomColor = 'var(--layer8d-primary)';
+                        tab.style.color = 'var(--layer8d-primary)';
+                        tab.style.fontWeight = '600';
+                        body.querySelectorAll('.physio-therapist-pane').forEach(function(p) {
+                            p.style.display = p.getAttribute('data-ppane') === target ? '' : 'none';
+                        });
+                        if (target === 'swaps' && !swapsLoaded) {
+                            swapsLoaded = true;
+                            _loadSwapLogTable(swapTableId, clientId);
+                        }
+                    });
+                });
+            }
+        });
+    }
+
+    function _saveOverride(clientId, newStatus) {
+        var query = encodeURIComponent(JSON.stringify({ text: 'select * from PhysioClient where clientId=' + clientId }));
+        fetch(Layer8DConfig.resolveEndpoint('/50/PhyClient') + '?body=' + query, {
+            method: 'GET', headers: getAuthHeaders()
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            var client = (data.list || [])[0];
+            if (!client) { Layer8DNotification.error('Client not found'); return; }
+            client.overrideStatus = newStatus;
+            return fetch(Layer8DConfig.resolveEndpoint('/50/PhyClient'), {
+                method: 'PUT',
+                headers: Object.assign({}, getAuthHeaders(), { 'Content-Type': 'application/json' }),
+                body: JSON.stringify(client)
+            });
+        })
+        .then(function(r) {
+            if (r && r.ok) Layer8DNotification.success('Override updated');
+            else Layer8DNotification.error('Failed to update override');
+        })
+        .catch(function(err) { Layer8DNotification.error('Error: ' + err.message); });
+    }
+
+    function _loadSwapLogTable(containerId, clientId) {
+        var el = document.getElementById(containerId);
+        if (!el || typeof Layer8DTable === 'undefined') return;
+
+        var cols = PhysioManagement.columns.ExerciseSwapLog || [];
+
+        var table = new Layer8DTable({
+            containerId: containerId,
+            endpoint: Layer8DConfig.resolveEndpoint('/50/ExSwapLog'),
+            modelName: 'ExerciseSwapLog',
+            columns: cols,
+            primaryKey: 'swapId',
+            pageSize: 20,
+            serverSide: true,
+            baseWhereClause: 'clientId=' + clientId,
             showActions: false
         });
         table.init();

@@ -45,34 +45,20 @@ func runPhysioPhase1(client *PhysioClient, store *MockDataStore) {
 		fmt.Printf("  Created %d PhysioTherapists\n", len(therapists))
 	}
 
-	// Synthetic exercises (broad category coverage)
-	exercises := generatePhysioExercises()
-	_, err = client.Post("/physio/50/PhyExercis", &physio.PhysioExerciseList{List: exercises})
-	if err != nil {
-		fmt.Printf("  ERROR creating PhysioExercises: %v\n", err)
-	} else {
-		storeExercises(exercises, store)
-		fmt.Printf("  Created %d PhysioExercises\n", len(exercises))
-	}
-
 	// Classified exercises from client's rehab protocol builder (full joint/posture/phase classification)
 	rehabExercises := generateRehabBankExercises()
-	_, err = client.Post("/physio/50/PhyExercis", &physio.PhysioExerciseList{List: rehabExercises})
-	if err != nil {
-		fmt.Printf("  ERROR creating rehab bank exercises: %v\n", err)
-	} else {
-		storeExercises(rehabExercises, store)
-		fmt.Printf("  Created %d rehab bank exercises\n", len(rehabExercises))
-	}
-
 	// Client exercises (manually curated from protocols.xlsx with full classification)
 	clientExercises := generateClientExercises()
-	_, err = client.Post("/physio/50/PhyExercis", &physio.PhysioExerciseList{List: clientExercises})
+	// Combine all classified exercises and link progression/regression chains
+	allExercises := append(rehabExercises, clientExercises...)
+	linkProgressionRegression(allExercises)
+
+	_, err = client.Post("/physio/50/PhyExercis", &physio.PhysioExerciseList{List: allExercises})
 	if err != nil {
-		fmt.Printf("  ERROR creating client exercises: %v\n", err)
+		fmt.Printf("  ERROR creating exercises: %v\n", err)
 	} else {
-		storeExercises(clientExercises, store)
-		fmt.Printf("  Created %d client exercises\n", len(clientExercises))
+		storeExercises(allExercises, store)
+		fmt.Printf("  Created %d exercises (with progression/regression links)\n", len(allExercises))
 	}
 }
 
