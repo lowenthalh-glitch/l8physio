@@ -131,40 +131,89 @@
             ? (item.firstName + ' ' + item.lastName)
             : (PhysioManagement.lookups ? PhysioManagement.lookups.therapistName(tid) : tid);
 
+        var formDef = Layer8DServiceRegistry.getFormDef('Physio', 'PhysioTherapist');
+        var detailsHtml = '';
+        if (formDef && item) {
+            detailsHtml = Layer8DForms.generateFormHtml(formDef, item);
+        }
+
         var containerId = 'therapist-clients-popup-table';
-        var popupContent = '<div id="' + containerId + '" style="min-height:200px;"></div>';
+        var popupContent = '<div class="physio-therapist-tabs" style="display:flex;gap:0;border-bottom:2px solid var(--layer8d-border);margin-bottom:16px;">' +
+            '<button class="physio-therapist-tab active" data-ptab="details" style="padding:8px 20px;border:none;background:none;cursor:pointer;font-size:14px;font-weight:600;border-bottom:2px solid var(--layer8d-primary);margin-bottom:-2px;color:var(--layer8d-primary);">Details</button>' +
+            '<button class="physio-therapist-tab" data-ptab="clients" style="padding:8px 20px;border:none;background:none;cursor:pointer;font-size:14px;font-weight:500;border-bottom:2px solid transparent;margin-bottom:-2px;color:var(--layer8d-text-medium);">Clients</button>' +
+            '</div>' +
+            '<div class="physio-therapist-pane" data-ppane="details">' + detailsHtml + '</div>' +
+            '<div class="physio-therapist-pane" data-ppane="clients" style="display:none;"><div id="' + containerId + '" style="min-height:200px;"></div></div>';
 
         Layer8DPopup.show({
-            title: 'Clients — ' + therapistName,
+            title: therapistName,
             content: popupContent,
             size: 'large',
             showFooter: false,
             onShow: function(body) {
-                var el = body.querySelector('#' + containerId);
-                if (!el || typeof Layer8DTable === 'undefined') return;
+                // Make details form read-only
+                var detailsPane = body.querySelector('[data-ppane="details"]');
+                if (detailsPane) {
+                    detailsPane.querySelectorAll('input, select, textarea').forEach(function(el) {
+                        el.disabled = true;
+                    });
+                }
 
-                var colFactory = window.Layer8ColumnFactory;
-                var cols = [
-                    ...colFactory.col('firstName', 'First Name'),
-                    ...colFactory.col('lastName',  'Last Name'),
-                    ...colFactory.col('email',     'Email'),
-                    ...colFactory.col('phone',     'Phone'),
-                    ...colFactory.col('diagnosis', 'Diagnosis')
-                ];
-
-                var table = new Layer8DTable({
-                    containerId: containerId,
-                    endpoint: Layer8DConfig.resolveEndpoint('/50/PhyClient'),
-                    modelName: 'PhysioClient',
-                    columns: cols,
-                    primaryKey: 'clientId',
-                    pageSize: 20,
-                    serverSide: true,
-                    baseWhereClause: 'therapistId=' + tid,
-                    showActions: false
+                // Custom tab switching
+                var clientsLoaded = false;
+                body.querySelectorAll('.physio-therapist-tab').forEach(function(tab) {
+                    tab.addEventListener('click', function() {
+                        var target = tab.getAttribute('data-ptab');
+                        // Update tab styles
+                        body.querySelectorAll('.physio-therapist-tab').forEach(function(t) {
+                            t.classList.remove('active');
+                            t.style.borderBottomColor = 'transparent';
+                            t.style.color = 'var(--layer8d-text-medium)';
+                            t.style.fontWeight = '500';
+                        });
+                        tab.classList.add('active');
+                        tab.style.borderBottomColor = 'var(--layer8d-primary)';
+                        tab.style.color = 'var(--layer8d-primary)';
+                        tab.style.fontWeight = '600';
+                        // Show/hide panes
+                        body.querySelectorAll('.physio-therapist-pane').forEach(function(p) {
+                            p.style.display = p.getAttribute('data-ppane') === target ? '' : 'none';
+                        });
+                        // Load clients table on first click
+                        if (target === 'clients' && !clientsLoaded) {
+                            clientsLoaded = true;
+                            _loadTherapistClientsTable(containerId, tid);
+                        }
+                    });
                 });
-                table.init();
             }
         });
+    }
+
+    function _loadTherapistClientsTable(containerId, tid) {
+        var el = document.getElementById(containerId);
+        if (!el || typeof Layer8DTable === 'undefined') return;
+
+        var colFactory = window.Layer8ColumnFactory;
+        var cols = [
+            ...colFactory.col('firstName', 'First Name'),
+            ...colFactory.col('lastName',  'Last Name'),
+            ...colFactory.col('email',     'Email'),
+            ...colFactory.col('phone',     'Phone'),
+            ...colFactory.col('diagnosis', 'Diagnosis')
+        ];
+
+        var table = new Layer8DTable({
+            containerId: containerId,
+            endpoint: Layer8DConfig.resolveEndpoint('/50/PhyClient'),
+            modelName: 'PhysioClient',
+            columns: cols,
+            primaryKey: 'clientId',
+            pageSize: 20,
+            serverSide: true,
+            baseWhereClause: 'therapistId=' + tid,
+            showActions: false
+        });
+        table.init();
     }
 })();

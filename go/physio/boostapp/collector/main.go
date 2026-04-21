@@ -1,6 +1,8 @@
 package main
 
 import (
+	"time"
+
 	"github.com/saichler/l8bus/go/overlay/vnic"
 	"github.com/saichler/l8collector/go/collector/service"
 	"github.com/saichler/l8pollaris/go/pollaris"
@@ -12,21 +14,13 @@ import (
 )
 
 func main() {
+	targets.Links = &common.BoostappLinks{}
 	res := common.CreateResources("boostapp-collector", false)
 	nic := vnic.NewVirtualNetworkInterface(res, nil)
 	nic.Start()
 	nic.WaitForConnection()
 
-	// Activate pollaris and collector
-	pollaris.Activate(nic)
-	service.Activate(common.Boostapp_Links_ID, nic)
-
-	// Register Boostapp poll configuration
-	bootPolls := boostapp.CreateBoostappBootPolls()
-	pollaris.Pollaris(nic.Resources()).Post(bootPolls, true)
-	res.Logger().Info("Registered Boostapp poll config (15-minute cadence)")
-
-	// Load credentials and post target
+	// Load credentials first — needed to inject branchId into poll config
 	_, email, password, branchID, err := res.Security().Credential("boostapp", "login", res)
 	if err != nil {
 		res.Logger().Error("Boostapp credentials not configured: ", err.Error())
@@ -35,8 +29,19 @@ func main() {
 		return
 	}
 
-	// Inject branchId into the calendar poll body
-	injectBranchId(bootPolls, branchID)
+	// Build poll config with branchId injected BEFORE registering
+	bootPolls := boostapp.CreateBoostappBootPolls(branchID)
+
+	// Activate pollaris, targets service, and collector
+	pollaris.Activate(nic)
+	pollaris.Pollaris(nic.Resources()).Post(bootPolls, true)
+	res.Logger().Info("Registered Boostapp poll config (15-minute cadence, branchId=", branchID, ")")
+
+	targets.Activate(common.DB_CREDS, common.DB_NAME, nic)
+	service.Activate(common.Boostapp_Links_ID, nic)
+
+	// Wait for services to be fully wired before posting the target
+	time.Sleep(2 * time.Second)
 
 	target := boostapp.CreateBoostappTarget(email, password, branchID)
 	nic.Resources().Registry().Register(&l8tpollaris.L8PTarget{})
@@ -48,16 +53,4 @@ func main() {
 	}
 
 	common.WaitForSignal(res)
-}
-
-func injectBranchId(p *l8tpollaris.L8Pollaris, branchID string) {
-	if poll, ok := p.Polling["boostapp-calendar"]; ok {
-		poll.What = poll.What[:len("POST::/ajax/CalendarView.php::")] +
-			"fun=GetClassesByStudioByDate&branchId=" + branchID + "&" +
-			"ClassesAll=1&MeetingsAll=1&Tasks=1&" +
-			"Classes=&Meetings=&Locations=&Coaches=&ViewState=timeGridWeek&" +
-			"SplitView=0&TypeOfView=1&extraParams=true&showAllCoaches=1&" +
-			"showAllLocations=1&blockEvents=1&ScreenWidth=1657&zoomValue=2" +
-			"::application/x-www-form-urlencoded; charset=UTF-8"
-	}
 }

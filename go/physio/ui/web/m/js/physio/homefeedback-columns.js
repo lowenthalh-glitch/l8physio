@@ -9,18 +9,19 @@
         ...col.id('feedbackId'),
         ...col.date('feedbackDate',      'Date'),
         ...col.col('clientId',           'Client'),
-        ...col.status('compliance',      'Compliance', enums.COMPLIANCE_VALUES, render.compliance),
-        ...col.number('painBefore',      'Pain Before'),
+        ...col.status('difficulty',      'Training Level', enums.TRAINING_LEVEL_VALUES, render.trainingLevel),
+        ...col.number('painDuring',      'Pain During'),
         ...col.number('painAfter',       'Pain After'),
-        ...col.status('difficulty',      'Difficulty',  enums.DIFFICULTY_VALUES, render.difficulty),
-        ...col.enum('mood',             'Mood',        null, render.mood),
-        ...col.status('status',          'Status',      enums.SESSION_STATUS_VALUES, render.sessionStatus)
+        ...col.number('painBefore',      'Sleep'),
+        ...col.number('compliance',      'Nutrition'),
+        ...col.number('mood',            'Stress'),
+        ...col.status('status',          'Status', enums.SESSION_STATUS_VALUES, render.sessionStatus)
     ];
 
     MobilePhysioManagement.columns.HomeFeedback =
         MobilePhysioManagement.columns.HomeFeedback.map(function(c) {
             if (c.key === 'feedbackDate') return Object.assign({}, c, { primary: true });
-            if (c.key === 'compliance')   return Object.assign({}, c, { secondary: true });
+            if (c.key === 'status')       return Object.assign({}, c, { secondary: true });
             return c;
         });
 

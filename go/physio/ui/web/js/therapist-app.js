@@ -1,4 +1,4 @@
-// Main application initialization
+// Therapist portal application initialization
 
 // Global fetch interceptor — redirect to login on 401 from any fetch
 (function() {
@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     localStorage.setItem('bearerToken', bearerToken);
     window.bearerToken = bearerToken;
 
-    const username = sessionStorage.getItem('currentUser') || 'Admin';
+    const username = sessionStorage.getItem('currentUser') || '';
     document.querySelector('.username').textContent = username;
 
     // Load per-type action permissions for the current user
@@ -112,33 +112,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     } catch (e) { console.warn('Failed to load permissions:', e); }
 
-    // Physio does not use ModConfig — skip Layer8DModuleFilter to avoid logout on 404
-
-    // Apply permission-based nav filtering (hide modules/services user can't GET)
-    if (typeof Layer8DPermissionFilter !== 'undefined') {
-        const nsMap = {
-            'physio': 'Physio'
-        };
-        Layer8DPermissionFilter.registerResolver(function(sectionKey, moduleKey, serviceKey) {
-            var ns = window[nsMap[sectionKey]];
-            if (!ns || !ns.modules || !ns.modules[moduleKey]) return null;
-            var svc = ns.modules[moduleKey].services.find(function(s) { return s.key === serviceKey; });
-            return svc ? svc.model : null;
-        });
-
-        var sidebarModels = {};
-        Object.keys(nsMap).forEach(function(section) {
-            var ns = window[nsMap[section]];
-            if (!ns || !ns.modules) return;
-            var models = [];
-            Object.values(ns.modules).forEach(function(mod) {
-                if (mod.services) mod.services.forEach(function(svc) { if (svc.model) models.push(svc.model); });
-            });
-            sidebarModels[section] = models;
-        });
-        Layer8DPermissionFilter.applyToSidebar(sidebarModels);
-    }
-
     loadSection('physio');
 
     const navLinks = document.querySelectorAll('.nav-link');
@@ -150,16 +123,4 @@ document.addEventListener('DOMContentLoaded', async function() {
             loadSection(this.getAttribute('data-section'));
         });
     });
-
-    const mainContent = document.querySelector('.main-content');
-    if (mainContent) {
-        mainContent.addEventListener('scroll', function() {
-            const scrollPosition = this.scrollTop;
-            const sectionContainer = this.querySelector('.section-container');
-            if (sectionContainer) {
-                const parallaxOffset = scrollPosition * 0.3;
-                sectionContainer.style.transform = `translateY(${parallaxOffset * 0.1}px)`;
-            }
-        });
-    }
 });

@@ -1,20 +1,29 @@
-// Section Navigation and Loading Module
+// Client portal section navigation — physio and AI Agent only
 
 const sections = {
     physio:  'sections/physio.html',
-    aia:     'sections/aia.html',
-    system:  'sections/system.html'
+    aia:     'sections/aia.html'
 };
 
 const sectionInitializers = {
     physio: () => {
         if (typeof initializePhysio === 'function') initializePhysio();
+        // After init, hide all services except 'clients' and activate it
+        setTimeout(function() {
+            document.querySelectorAll('.l8-subnav-item').forEach(function(item) {
+                if (item.getAttribute('data-service') !== 'clients') {
+                    item.style.display = 'none';
+                }
+            });
+            // Click the 'clients' service to make it the active/default view
+            var clientsNav = document.querySelector('.l8-subnav-item[data-service="clients"]');
+            if (clientsNav && !clientsNav.classList.contains('active')) {
+                clientsNav.click();
+            }
+        }, 100);
     },
     aia: () => {
         if (typeof initializeAia === 'function') initializeAia();
-    },
-    system: () => {
-        if (typeof initializeL8Sys === 'function') initializeL8Sys();
     }
 };
 
@@ -60,11 +69,6 @@ function loadSection(sectionName) {
 
                 if (sectionInitializers[sectionName]) {
                     sectionInitializers[sectionName]();
-                }
-
-                // Apply permission filter to hide services user can't GET
-                if (window.Layer8DPermissionFilter) {
-                    Layer8DPermissionFilter.applyToSection(sectionName);
                 }
             }, 200);
         })

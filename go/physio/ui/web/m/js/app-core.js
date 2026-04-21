@@ -42,6 +42,11 @@
 
             // Physio does not use ModConfig — skip Layer8DModuleFilter to avoid logout on 404
 
+            // Apply permission-based sidebar filtering
+            if (typeof Layer8DPermissionFilter !== 'undefined' && window.Layer8DPermissions) {
+                this.applyPermissionFilter();
+            }
+
             this.initSidebar();
 
             var refreshBtn = document.getElementById('refresh-btn');
@@ -214,6 +219,25 @@
             if (initFn && typeof window[initFn] === 'function') {
                 window[initFn]();
             }
+        },
+
+        applyPermissionFilter() {
+            if (!window.Layer8DPermissionFilter || !Layer8DPermissionFilter._isActive()) return;
+            document.querySelectorAll('.sidebar-item[data-section]').forEach(item => {
+                const section = item.dataset.section;
+                const module = item.dataset.module;
+                if (section === 'dashboard' || module === 'system') return;
+                const moduleKey = module || section;
+                var mc = window.LAYER8M_NAV_CONFIG && LAYER8M_NAV_CONFIG[moduleKey];
+                if (!mc || !mc.services) return;
+                var hasAny = false;
+                Object.values(mc.services).forEach(function(svcs) {
+                    svcs.forEach(function(svc) {
+                        if (svc.model && Layer8DPermissionFilter.canView(svc.model)) hasAny = true;
+                    });
+                });
+                if (!hasAny) item.style.display = 'none';
+            });
         },
 
         getCurrentSection() {

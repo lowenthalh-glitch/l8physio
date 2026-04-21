@@ -9,11 +9,9 @@
     <title>Physio by Layer 8</title>
     <link rel="icon" href="l8ui/images/logo.gif" type="image/gif">
     <!-- Theme -->
-    <link rel="stylesheet" href="l8ui/shared/layer8d-theme-tokens.css">
     <link rel="stylesheet" href="l8ui/shared/layer8d-theme.css">
     <link rel="stylesheet" href="l8ui/shared/layer8d-animations.css">
     <link rel="stylesheet" href="l8ui/shared/layer8d-scrollbar.css">
-    <link rel="stylesheet" href="l8ui/shared/layer8-print.css" media="print">
     <!-- App Shell -->
     <link rel="stylesheet" href="css/base-core.css">
     <link rel="stylesheet" href="css/components-modals.css">
@@ -37,13 +35,6 @@
     <link rel="stylesheet" href="l8ui/shared/layer8-file-upload.css">
     <!-- AI Agent -->
     <link rel="stylesheet" href="l8ui/l8agent/l8agent-chat.css">
-    <link rel="stylesheet" href="l8ui/l8agent/l8agent-bubble.css">
-    <!-- SYS Module -->
-    <link rel="stylesheet" href="l8ui/sys/l8sys.css">
-    <link rel="stylesheet" href="l8ui/sys/health/l8health.css">
-    <link rel="stylesheet" href="l8ui/sys/modules/l8sys-modules.css">
-    <link rel="stylesheet" href="l8ui/sys/logs/l8logs.css">
-    <link rel="stylesheet" href="l8ui/sys/dataimport/l8dataimport.css">
     <!-- Toggle Tree + Popup + Forms -->
     <link rel="stylesheet" href="l8ui/shared/layer8d-toggle-tree.css">
     <link rel="stylesheet" href="l8ui/popup/layer8d-popup.css">
@@ -88,7 +79,7 @@
                 <img src="l8ui/images/logo.gif" alt="Physio by Layer 8" class="header-logo">
                 <div class="header-title">
                     <h1>Physio by Layer 8</h1>
-                    <p class="header-subtitle">Physiotherapy Management</p>
+                    <p class="header-subtitle">Therapist Portal</p>
                 </div>
             </div>
             <div class="header-right">
@@ -97,14 +88,8 @@
                     <img src="l8ui/images/Layer8Logo.gif" alt="Layer 8 Ecosystem" class="layer8-header-logo">
                     <span class="layer8-header-text">Layer 8 Ecosystem</span>
                 </div>
-                <div class="layer8d-theme-picker">
-                    <button class="layer8d-theme-btn" onclick="Layer8DThemeSwitcher.toggleDropdown()" aria-label="Choose theme">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a7 7 0 0 0 0 20V2z"/></svg>
-                    </button>
-                    <div class="layer8d-theme-menu"></div>
-                </div>
                 <div class="user-menu">
-                    <span class="username">Admin</span>
+                    <span class="username"></span>
                     <button class="logout-btn" onclick="logout()">Logout</button>
                 </div>
             </div>
@@ -121,10 +106,6 @@
                     <span class="nav-icon">🤖</span>
                     <span>AI Agent</span>
                 </a></li>
-                <li><a href="#" data-section="system" class="nav-link">
-                    <span class="nav-icon">⚙️</span>
-                    <span>System</span>
-                </a></li>
             </ul>
         </nav>
 
@@ -137,19 +118,14 @@
     <div id="layer8d-popup-root"></div>
 
     <!-- App Shell -->
-    <script src="js/sections.js"></script>
-    <script src="js/app.js"></script>
-
-    <!-- Theme Switcher -->
-    <script src="l8ui/shared/layer8d-theme-switcher.js"></script>
-    <script>Layer8DThemeSwitcher.init();</script>
+    <script src="js/therapist-sections.js"></script>
+    <script src="js/therapist-app.js"></script>
 
     <!-- Layer8 Core -->
     <script src="l8ui/shared/layer8d-config.js"></script>
     <script src="l8ui/shared/layer8d-utils.js"></script>
     <script src="l8ui/shared/layer8d-renderers.js"></script>
     <script src="l8ui/shared/layer8d-reference-registry.js"></script>
-    <script src="l8ui/shared/layer8d-portal-switcher.js"></script>
 
     <!-- Factory Components -->
     <script src="l8ui/shared/layer8-enum-factory.js"></script>
@@ -173,16 +149,12 @@
     <script src="l8ui/input_formatters/layer8d-input-formatter-core.js"></script>
     <script src="l8ui/input_formatters/layer8d-input-formatter.js"></script>
 
-    <!-- Markdown + File Upload + Exports -->
+    <!-- Markdown + File Upload + CSV Export -->
     <script src="l8ui/shared/layer8-markdown.js"></script>
     <script src="l8ui/shared/layer8-file-upload.js"></script>
     <script src="l8ui/shared/layer8-csv-export.js"></script>
-    <script src="l8ui/shared/layer8-excel-export.js"></script>
-    <script src="l8ui/shared/layer8-pdf-export.js"></script>
-    <script src="l8ui/shared/layer8-export-helper.js"></script>
 
     <!-- Forms Component -->
-    <script src="l8ui/shared/layer8-format-display.js"></script>
     <script src="l8ui/shared/layer8d-forms-fields.js"></script>
     <script src="l8ui/shared/layer8d-forms-fields-ext.js"></script>
     <script src="l8ui/shared/layer8d-forms-data.js"></script>
@@ -246,8 +218,6 @@
     <script src="l8ui/shared/layer8d-module-navigation.js"></script>
     <script src="l8ui/shared/layer8d-toggle-tree.js"></script>
     <script src="l8ui/shared/layer8d-module-filter.js"></script>
-    <script src="l8ui/shared/layer8d-permission-filter.js"></script>
-    <script src="l8ui/shared/layer8-module-factory-core.js"></script>
     <script src="l8ui/shared/layer8d-module-factory.js"></script>
 
     <!-- Physio Module -->
@@ -293,32 +263,8 @@
     <script src="l8ui/l8agent/l8agent-columns.js"></script>
     <script src="l8ui/l8agent/l8agent-forms.js"></script>
     <script src="l8ui/l8agent/l8agent-chat.js"></script>
-    <script src="l8ui/l8agent/l8agent-bubble.js"></script>
     <script src="physio/aia/aia-config.js"></script>
     <script src="physio/aia/aia-init.js"></script>
     <script src="physio/aia/aia-chat-init.js"></script>
-
-    <!-- SYS Module -->
-    <script src="l8ui/sys/l8sys-config.js"></script>
-    <script src="l8ui/sys/health/l8health.js"></script>
-    <script src="l8ui/sys/security/l8security-enums.js"></script>
-    <script src="l8ui/sys/security/l8security-columns.js"></script>
-    <script src="l8ui/sys/security/l8security-forms.js"></script>
-    <script src="l8ui/sys/security/l8security.js"></script>
-    <script src="l8ui/sys/security/l8security-users-crud.js"></script>
-    <script src="l8ui/sys/security/l8security-roles-crud.js"></script>
-    <script src="l8ui/sys/security/l8security-credentials-crud.js"></script>
-    <script src="l8ui/sys/security/l8security-events-enums.js"></script>
-    <script src="l8ui/sys/security/l8security-events-columns.js"></script>
-    <script src="l8ui/sys/modules/l8sys-dependency-graph.js"></script>
-    <script src="physio/physio-dependency-graph.js"></script>
-    <script src="l8ui/sys/modules/l8sys-modules-map.js"></script>
-    <script src="l8ui/sys/modules/l8sys-modules.js"></script>
-    <script src="l8ui/sys/logs/l8logs.js"></script>
-    <script src="l8ui/sys/dataimport/l8dataimport.js"></script>
-    <script src="l8ui/sys/dataimport/l8dataimport-templates.js"></script>
-    <script src="l8ui/sys/dataimport/l8dataimport-transfer.js"></script>
-    <script src="l8ui/sys/dataimport/l8dataimport-execute.js"></script>
-    <script src="l8ui/sys/l8sys-init.js"></script>
 </body>
 </html>

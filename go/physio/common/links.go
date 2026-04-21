@@ -1,11 +1,5 @@
 package common
 
-import "github.com/saichler/l8pollaris/go/pollaris/targets"
-
-func init() {
-	targets.Links = &BoostappLinks{}
-}
-
 const (
 	Boostapp_Links_ID             = "Bstp"
 	Boostapp_Collector_Service_Name = "BColl"

@@ -16,13 +16,12 @@
         });
     }
 
+    var TYPE_MAP = { 1: 'Meeting', 2: 'Class', 3: 'Block' };
+
     window.PhysioClientAppointments = {
 
-        /**
-         * Renders the appointments tab for a client.
-         * Matches on client.boostappId → event.participants[].boostappClientId
-         * Also falls back to matching event.physioClientId === client.clientId (for 1-on-1 meetings).
-         */
+        _table: null,
+
         init: function(container, client) {
             if (!container) return;
             if (!client.boostappId && !client.clientId) {
@@ -32,15 +31,13 @@
 
             container.innerHTML = '<div class="physio-exercises-loading">Loading appointments\u2026</div>';
 
-            // Fetch all Boostapp events and filter client-side (simpler than server query for nested participants)
+            var self = this;
             var query = encodeURIComponent(JSON.stringify({ text: 'select * from BoostappCalendarEvent limit 500' }));
             authFetch(apiPrefix() + '/50/BstpCal?body=' + query)
             .then(function(data) {
                 var all = data.list || [];
                 var matched = all.filter(function(e) {
-                    // 1-on-1 meetings: physioClientId direct link
                     if (e.physioClientId && e.physioClientId === client.clientId) return true;
-                    // Classes: check participants
                     if (client.boostappId && Array.isArray(e.participants)) {
                         return e.participants.some(function(p) {
                             return p.boostappClientId === client.boostappId;
@@ -54,50 +51,63 @@
                     return;
                 }
 
-                // Sort by start time (desc = newest first)
+                // Sort newest first
                 matched.sort(function(a, b) {
                     return (b.startTime || '').localeCompare(a.startTime || '');
                 });
 
-                var esc = Layer8DUtils.escapeHtml;
-                var rows = matched.map(function(e) {
-                    var typeLabel = '';
-                    if (e.eventType === 1) typeLabel = 'Meeting';
-                    else if (e.eventType === 2) typeLabel = 'Class';
-                    else if (e.eventType === 3) typeLabel = 'Block';
+                // Build status lookup for this client's participation
+                var statusMap = {};
+                if (client.boostappId) {
+                    matched.forEach(function(e) {
+                        if (!Array.isArray(e.participants)) return;
+                        var p = e.participants.find(function(p) { return p.boostappClientId === client.boostappId; });
+                        if (p) statusMap[e.eventId] = p.status || '';
+                    });
+                }
 
-                    var statusLabel = '';
-                    if (e.participants && client.boostappId) {
-                        var part = e.participants.find(function(p) { return p.boostappClientId === client.boostappId; });
-                        if (part) statusLabel = part.status || '';
-                    }
-                    var cancelled = e.isCancelled ? '<span style="color:var(--layer8d-error);font-weight:600;">Cancelled</span>' : '';
+                // Transform data for table
+                var items = matched.map(function(e) {
+                    return {
+                        eventId: e.eventId,
+                        startTime: e.startTime || '',
+                        endTime: e.endTime || '',
+                        title: e.title || '',
+                        eventType: TYPE_MAP[e.eventType] || '',
+                        coachName: e.coachName || '',
+                        location: e.location || '',
+                        participantStatus: statusMap[e.eventId] || '',
+                        isCancelled: e.isCancelled ? 'Cancelled' : ''
+                    };
+                });
 
-                    return '<tr>' +
-                        '<td>' + esc(e.startTime || '') + '</td>' +
-                        '<td>' + esc(e.endTime || '') + '</td>' +
-                        '<td>' + esc(e.title || '') + '</td>' +
-                        '<td>' + esc(typeLabel) + '</td>' +
-                        '<td>' + esc(e.coachName || '') + '</td>' +
-                        '<td>' + esc(e.location || '') + '</td>' +
-                        '<td>' + esc(statusLabel) + '</td>' +
-                        '<td>' + cancelled + '</td>' +
-                    '</tr>';
-                }).join('');
+                var containerId = 'physio-client-appointments-table';
+                container.innerHTML = '<div id="' + containerId + '"></div>';
 
-                container.innerHTML =
-                    '<div style="padding:12px;">' +
-                      '<div style="margin-bottom:12px;color:var(--layer8d-text-medium);font-size:13px;">' +
-                        matched.length + ' appointment' + (matched.length === 1 ? '' : 's') + ' matched' +
-                        (client.boostappId ? ' (Boostapp ID: ' + esc(client.boostappId) + ')' : '') +
-                      '</div>' +
-                      '<table class="layer8d-table" style="width:100%;">' +
-                        '<thead><tr>' +
-                          '<th>Start</th><th>End</th><th>Title</th><th>Type</th><th>Coach</th><th>Location</th><th>Status</th><th></th>' +
-                        '</tr></thead>' +
-                        '<tbody>' + rows + '</tbody>' +
-                      '</table>' +
-                    '</div>';
+                var col = window.Layer8ColumnFactory;
+                var columns = [
+                    ...col.col('startTime', 'Start'),
+                    ...col.col('endTime', 'End'),
+                    ...col.col('title', 'Title'),
+                    ...col.col('eventType', 'Type'),
+                    ...col.col('coachName', 'Coach'),
+                    ...col.col('location', 'Location'),
+                    ...col.col('participantStatus', 'Status'),
+                    ...col.col('isCancelled', '')
+                ];
+
+                self._table = new Layer8DTable({
+                    containerId: containerId,
+                    columns: columns,
+                    primaryKey: 'eventId',
+                    pageSize: 10,
+                    serverSide: false,
+                    sortable: true,
+                    filterable: false,
+                    showActions: false
+                });
+                self._table.init();
+                self._table.setData(items);
             })
             .catch(function(err) {
                 container.innerHTML = '<div class="physio-no-protocol" style="color:var(--layer8d-error);">Failed to load appointments: ' + Layer8DUtils.escapeHtml(err.message) + '</div>';

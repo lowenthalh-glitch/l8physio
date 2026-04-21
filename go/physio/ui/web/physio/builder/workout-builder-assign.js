@@ -134,7 +134,7 @@
                 if (errorText && errorText.toLowerCase().includes('access denied')) {
                     throw new Error('Access Denied — you do not have permission to perform this action.');
                 }
-                throw new Error('HTTP ' + resp.status);
+                throw new Error('HTTP ' + resp.status + (errorText ? ': ' + errorText : ''));
             }
             Layer8DPopup.close();
             Layer8DNotification.success('Workout assigned to client successfully.');

@@ -1,6 +1,18 @@
 (function() {
     'use strict';
 
+    var ENDPOINT = '/50/HomeFdbk';
+    var MODEL    = 'HomeFeedback';
+    var PK       = 'feedbackId';
+
+    function hasPerm(action) {
+        var perms = window.Layer8DPermissions;
+        if (!perms) return true; // permissive mode
+        var actions = perms[MODEL];
+        if (!actions) return false;
+        return actions.indexOf(action) !== -1;
+    }
+
     window.PhysioClientHomeFeedback = {
 
         init: function(container, client, parentCtx) {
@@ -28,30 +40,49 @@
             var col    = window.Layer8ColumnFactory;
             var enums  = PhysioManagement.enums;
             var render = PhysioManagement.render;
+            var canEdit   = hasPerm(2);
+            var canDelete = hasPerm(3);
 
             var columns = [
                 ...col.date('feedbackDate',      'Date'),
-                ...col.status('compliance',      'Compliance',  enums.COMPLIANCE_VALUES, render.compliance),
-                ...col.number('painBefore',      'Pain Before'),
+                ...col.status('difficulty',      'Training Level', enums.TRAINING_LEVEL_VALUES, render.trainingLevel),
+                ...col.number('painDuring',      'Pain During'),
                 ...col.number('painAfter',       'Pain After'),
-                ...col.status('difficulty',      'Difficulty',   enums.DIFFICULTY_VALUES, render.difficulty),
-                ...col.enum('mood',             'Mood',         null, render.mood),
-                ...col.status('status',          'Status',       enums.SESSION_STATUS_VALUES, render.sessionStatus),
-                ...col.col('notes',              'Notes')
+                ...col.number('painBefore',      'Sleep'),
+                ...col.number('compliance',      'Nutrition'),
+                ...col.number('mood',            'Stress'),
+                ...col.status('status',          'Status', enums.SESSION_STATUS_VALUES, render.sessionStatus)
             ];
+
+            var svcConfig = {
+                endpoint:   Layer8DConfig.resolveEndpoint(ENDPOINT),
+                primaryKey: PK,
+                modelName:  MODEL
+            };
 
             var table = new Layer8DTable({
                 containerId: 'physio-homefeedback-table',
-                endpoint:    Layer8DConfig.resolveEndpoint('/50/HomeFdbk'),
-                modelName:   'HomeFeedback',
+                endpoint:    svcConfig.endpoint,
+                modelName:   MODEL,
                 columns:     columns,
-                primaryKey:  'feedbackId',
+                primaryKey:  PK,
                 pageSize:    10,
                 serverSide:  true,
                 baseWhereClause: 'clientId=' + self._client.clientId,
-                showActions: false
+                showActions: canEdit || canDelete,
+                onEdit: canEdit ? function(id) { self._openEditFeedback(id, svcConfig); } : null,
+                onDelete: canDelete ? function(id) { self._deleteFeedback(id, svcConfig); } : null
             });
             table.init();
+            self._table = table;
+        },
+
+        _getSvcConfig: function() {
+            return {
+                endpoint:   Layer8DConfig.resolveEndpoint(ENDPOINT),
+                primaryKey: PK,
+                modelName:  MODEL
+            };
         },
 
         _openAddFeedback: function() {
@@ -69,11 +100,7 @@
             var formDef = (PhysioManagement.forms || {}).HomeFeedback;
             if (!formDef) { Layer8DNotification.error('HomeFeedback form not found'); return; }
 
-            var svcConfig = {
-                endpoint:   Layer8DConfig.resolveEndpoint('/50/HomeFdbk'),
-                primaryKey: 'feedbackId',
-                modelName:  'HomeFeedback'
-            };
+            var svcConfig = self._getSvcConfig();
 
             Layer8DPopup.show({
                 title: 'Add Home Feedback',
@@ -88,6 +115,11 @@
                         Layer8DNotification.error('Validation failed', errors.map(function(e) { return e.message; }));
                         return;
                     }
+                    // Ensure reference fields are correct strings (fix picker collection issues)
+                    data.clientId = preData.clientId;
+                    data.therapistId = preData.therapistId || '';
+                    data.planId = preData.planId || '';
+                    data.status = self._calculateColor(data);
                     try {
                         await Layer8DForms.saveRecord(svcConfig.endpoint, data, false);
                         Layer8DPopup.close();
@@ -101,31 +133,150 @@
                     Layer8DForms.setFormContext(formDef, svcConfig);
                     setTimeout(function() {
                         Layer8DForms.attachDatePickers(body);
-                        self._replaceExercisesField(body, plan);
+                        self._applyFormLayout(body);
                     }, 50);
                 }
             });
         },
 
-        _replaceExercisesField: function(body, plan) {
+        _openEditFeedback: function(id, svcConfig) {
             var self = this;
-            var input = body.querySelector('input[name="exercisesDone"]');
-            if (!input) return;
-            var exerciseMap = self._parentCtx ? self._parentCtx._exerciseMap : {};
-            var checkboxHtml = PhysioClientExerciseInfo.buildExerciseCheckboxes(plan, exerciseMap);
+            var formDef = (PhysioManagement.forms || {}).HomeFeedback;
+            if (!formDef) return;
 
-            input.style.display = 'none';
-            var container = document.createElement('div');
-            container.innerHTML = checkboxHtml;
-            input.parentElement.appendChild(container);
+            Layer8DForms.fetchRecord(svcConfig.endpoint, PK, id, MODEL).then(function(data) {
+                if (!data) { Layer8DNotification.error('Record not found'); return; }
 
-            container.addEventListener('change', function() {
-                var selected = [];
-                container.querySelectorAll('.physio-diff-ex-cb:checked').forEach(function(cb) {
-                    selected.push(cb.value);
+                Layer8DPopup.show({
+                    title: 'Edit Home Feedback',
+                    content: Layer8DForms.generateFormHtml(formDef, data),
+                    size: 'large',
+                    showFooter: true,
+                    saveButtonText: 'Update Feedback',
+                    onSave: async function() {
+                        var updated = Layer8DForms.collectFormData(formDef);
+                        var errors = Layer8DForms.validateFormData(formDef, updated);
+                        if (errors.length > 0) {
+                            Layer8DNotification.error('Validation failed', errors.map(function(e) { return e.message; }));
+                            return;
+                        }
+                        updated[PK] = id;
+                        updated.status = self._calculateColor(updated);
+                        try {
+                            await Layer8DForms.saveRecord(svcConfig.endpoint, updated, true);
+                            Layer8DPopup.close();
+                            Layer8DNotification.success('Feedback updated');
+                            self._loadTable();
+                        } catch (err) {
+                            Layer8DNotification.error('Error updating feedback', [err.message]);
+                        }
+                    },
+                    onShow: function(body) {
+                        Layer8DForms.setFormContext(formDef, svcConfig);
+                        setTimeout(function() {
+                            Layer8DForms.attachDatePickers(body);
+                            self._applyFormLayout(body);
+                            self._preselectRadios(body, data);
+                        }, 50);
+                    }
                 });
-                input.value = selected.join(',');
             });
+        },
+
+        _deleteFeedback: function(id, svcConfig) {
+            var self = this;
+            Layer8DForms.deleteRecord(svcConfig.endpoint, id, PK, MODEL).then(function() {
+                Layer8DNotification.success('Feedback deleted');
+                self._loadTable();
+            }).catch(function(err) {
+                Layer8DNotification.error('Error deleting feedback', [err.message]);
+            });
+        },
+
+        _applyFormLayout: function(body) {
+            var self = this;
+            var grids = body.querySelectorAll('.probler-popup-form-grid');
+            grids.forEach(function(grid) {
+                grid.style.gridTemplateColumns = '1fr';
+            });
+            self._replaceWithRadio(body, 'painDuring', 0, 5, 'No pain', 'Very painful');
+            self._replaceWithRadio(body, 'painAfter',  0, 5, 'No pain', 'Very painful');
+            self._replaceWithRadio(body, 'painBefore', 1, 5, 'Good', 'Bad');
+            self._replaceWithRadio(body, 'compliance', 1, 5, 'Good', 'Bad');
+            self._replaceWithRadio(body, 'mood',       1, 5, 'Good', 'Bad');
+        },
+
+        _preselectRadios: function(body, data) {
+            var fields = ['painDuring', 'painAfter', 'painBefore', 'compliance', 'mood'];
+            fields.forEach(function(f) {
+                var val = data[f];
+                if (val === undefined || val === null) return;
+                var radio = body.querySelector('input[name="' + f + '_radio"][value="' + val + '"]');
+                if (radio) radio.checked = true;
+            });
+        },
+
+        // RED=3: difficulty 1 or 4, painDuring 3-5, painAfter 3-5
+        // YELLOW=2: difficulty 2, painDuring 1-2, painAfter 1-2
+        // GREEN=1: difficulty 3 and painDuring 0 and painAfter 0
+        _calculateColor: function(data) {
+            var d = parseInt(data.difficulty) || 0;
+            var pd = parseInt(data.painDuring) || 0;
+            var pa = parseInt(data.painAfter) || 0;
+
+            if (d === 1 || d === 4 || pd >= 3 || pa >= 3) return 3;
+            if (d === 2 || (pd >= 1 && pd <= 2) || (pa >= 1 && pa <= 2)) return 2;
+            return 1;
+        },
+
+        _replaceWithRadio: function(body, fieldName, min, max, minLabel, maxLabel) {
+            var select = body.querySelector('select[name="' + fieldName + '"]');
+            if (!select) return;
+
+            var wrapper = select.closest('.form-group') || select.parentElement;
+            select.style.display = 'none';
+
+            var radioDiv = document.createElement('div');
+            radioDiv.style.cssText = 'display:flex; gap:16px; margin-top:6px; align-items:center;';
+
+            if (minLabel) {
+                var minSpan = document.createElement('span');
+                minSpan.textContent = minLabel;
+                minSpan.style.cssText = 'font-size:12px; color:var(--layer8d-text-muted);';
+                radioDiv.appendChild(minSpan);
+            }
+
+            for (var i = min; i <= max; i++) {
+                var label = document.createElement('label');
+                label.style.cssText = 'display:flex; flex-direction:column; align-items:center; gap:2px; cursor:pointer;';
+
+                var radio = document.createElement('input');
+                radio.type = 'radio';
+                radio.name = fieldName + '_radio';
+                radio.value = String(i);
+                radio.style.cssText = 'cursor:pointer; width:18px; height:18px;';
+
+                radio.addEventListener('change', (function(sel, val) {
+                    return function() { sel.value = val; };
+                })(select, String(i)));
+
+                var numSpan = document.createElement('span');
+                numSpan.textContent = String(i);
+                numSpan.style.cssText = 'font-size:13px;';
+
+                label.appendChild(radio);
+                label.appendChild(numSpan);
+                radioDiv.appendChild(label);
+            }
+
+            if (maxLabel) {
+                var maxSpan = document.createElement('span');
+                maxSpan.textContent = maxLabel;
+                maxSpan.style.cssText = 'font-size:12px; color:var(--layer8d-text-muted);';
+                radioDiv.appendChild(maxSpan);
+            }
+
+            wrapper.appendChild(radioDiv);
         }
     };
 })();

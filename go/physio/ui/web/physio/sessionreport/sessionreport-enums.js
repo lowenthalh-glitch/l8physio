@@ -8,8 +8,8 @@
     const SESSION_STATUS = factory.create([
         ['Unspecified', null,    ''],
         ['Green',       'green', 'layer8d-status-active'],
-        ['Yellow',      'yellow','layer8d-status-warning'],
-        ['Red',         'red',   'layer8d-status-error']
+        ['Yellow',      'yellow','layer8d-status-pending'],
+        ['Red',         'red',   'layer8d-status-terminated']
     ]);
 
     const ADJUSTMENT_LEVEL = factory.create([

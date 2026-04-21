@@ -3,36 +3,32 @@
     window.PhysioManagement = window.PhysioManagement || {};
 
     const factory = window.Layer8EnumFactory;
-    const { createStatusRenderer, renderEnum } = Layer8DRenderers;
+    const { createStatusRenderer } = Layer8DRenderers;
 
-    const COMPLIANCE = factory.create([
-        ['Unspecified',  null,      ''],
-        ['Full',         'full',    'layer8d-status-active'],
-        ['Partial',      'partial', 'layer8d-status-warning'],
-        ['Skipped',      'skipped', 'layer8d-status-error']
+    // Q1: Training Level (maps to difficulty field)
+    const TRAINING_LEVEL = factory.create([
+        ['Unspecified',                     null,       ''],
+        ['Easy, needs adjustment',          'easy',     'layer8d-status-warning'],
+        ['Okay, need adjustment',           'ok',       'layer8d-status-warning'],
+        ['Perfect',                         'perfect',  'layer8d-status-active'],
+        ['Too difficult, needs adjustment', 'toohard',  'layer8d-status-error']
     ]);
 
-    const DIFFICULTY = factory.create([
-        ['Unspecified',    null,       ''],
-        ['Easy',           'easy',     'layer8d-status-active'],
-        ['Moderate',       'moderate', 'layer8d-status-warning'],
-        ['Hard',           'hard',     'layer8d-status-error'],
-        ['Could Not',      'couldnot', 'layer8d-status-error']
-    ]);
+    // Q2-Q3: Pain scale 0-5 (for select options)
+    var PAIN_SCALE = { 0: '0 - No pain', 1: '1', 2: '2', 3: '3', 4: '4', 5: '5 - Very painful' };
 
-    const MOOD = factory.simple(['Unspecified', 'Good', 'Neutral', 'Low']);
+    // Q4-Q6: Rating scale 1-5 (for select options)
+    var RATING_SCALE = { 1: '1', 2: '2', 3: '3', 4: '4', 5: '5' };
 
     PhysioManagement.enums = PhysioManagement.enums || {};
-    PhysioManagement.enums.COMPLIANCE         = COMPLIANCE.enum;
-    PhysioManagement.enums.COMPLIANCE_VALUES   = COMPLIANCE.values;
-    PhysioManagement.enums.COMPLIANCE_CLASSES   = COMPLIANCE.classes;
-    PhysioManagement.enums.DIFFICULTY          = DIFFICULTY.enum;
-    PhysioManagement.enums.DIFFICULTY_VALUES    = DIFFICULTY.values;
-    PhysioManagement.enums.DIFFICULTY_CLASSES   = DIFFICULTY.classes;
-    PhysioManagement.enums.MOOD               = MOOD.enum;
+    PhysioManagement.enums.TRAINING_LEVEL         = TRAINING_LEVEL.enum;
+    PhysioManagement.enums.TRAINING_LEVEL_VALUES   = TRAINING_LEVEL.values;
+    PhysioManagement.enums.TRAINING_LEVEL_CLASSES   = TRAINING_LEVEL.classes;
+    PhysioManagement.enums.PAIN_SCALE              = PAIN_SCALE;
+    PhysioManagement.enums.RATING_SCALE            = RATING_SCALE;
 
     PhysioManagement.render = PhysioManagement.render || {};
-    PhysioManagement.render.compliance = createStatusRenderer(COMPLIANCE.enum, COMPLIANCE.classes);
-    PhysioManagement.render.difficulty = createStatusRenderer(DIFFICULTY.enum, DIFFICULTY.classes);
-    PhysioManagement.render.mood = function(value) { return renderEnum(value, MOOD.enum); };
+    PhysioManagement.render.trainingLevel = createStatusRenderer(
+        TRAINING_LEVEL.enum, TRAINING_LEVEL.classes
+    );
 })();

@@ -9,6 +9,7 @@ import (
 	l8c "github.com/saichler/l8common/go/common"
 	"github.com/saichler/l8physio/go/physio/boostapp"
 	"github.com/saichler/l8physio/go/physio/common"
+	"github.com/saichler/l8physio/go/physio/services"
 	"github.com/saichler/l8physio/go/types/physio"
 	"github.com/saichler/l8types/go/ifs"
 )
@@ -21,8 +22,8 @@ func main() {
 	nic.WaitForConnection()
 	log("Connected to vnet")
 
-	boostapp.Activate(common.DB_CREDS, common.DB_NAME, nic)
-	log("BstpCal service activated")
+	services.ActivateAllServices(common.DB_CREDS, common.DB_NAME, nic)
+	log("All physio services activated")
 
 	email, password, branchID, err := loadCredentials(res)
 	if err != nil {

@@ -210,27 +210,45 @@ func createUsersFromService(client *PhysioClient, endpoint, model, label string)
 			continue
 		}
 
-		// Use clientId/therapistId as userId so ${userId} deny queries resolve correctly
+		// userId must match the ID field used in deny-scope rules (${userId})
+		// email field enables login by email via l8secure email login
 		var userIdValue string
 		var roleName string
+		var portal string
 		if label == "client" {
 			userIdValue, _ = rec["clientId"].(string)
 			roleName = "client"
+			portal = "client-app.html"
 		} else {
 			userIdValue, _ = rec["therapistId"].(string)
-			roleName = "admin"
+			roleName = "therapist"
+			portal = "therapist-app.html"
 		}
 		if userIdValue == "" {
-			userIdValue = email // fallback
+			userIdValue = email
 		}
+
+		fullName := ""
+		if fn, _ := rec["firstName"].(string); fn != "" {
+			fullName = fn
+			if ln, _ := rec["lastName"].(string); ln != "" {
+				fullName += " " + ln
+			}
+		}
+		if fullName == "" {
+			fullName = email
+		}
+
+		roles := map[string]bool{roleName: true}
 
 		userData := map[string]interface{}{
 			"userId":        userIdValue,
-			"fullName":      email,
+			"fullName":      fullName,
 			"email":         email,
-			"password":      map[string]string{"hash": "admin"},
+			"portal":        portal,
+			"password":      map[string]string{"hash": "12345678"},
 			"accountStatus": "ACCOUNT_STATUS_ACTIVE",
-			"roles":         map[string]bool{roleName: true},
+			"roles":         roles,
 		}
 		if _, err := client.Post("/physio/73/users", userData); err != nil {
 			fmt.Printf("  FAIL %s: %s -> %v\n", label, email, err)

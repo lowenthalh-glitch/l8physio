@@ -12,15 +12,12 @@
             ...f.reference('planId',       'Plan',      'TreatmentPlan')
         ]),
         f.section('Feedback', [
-            ...f.text('exercisesDone',         'Exercises Done'),
-            ...f.select('compliance',          'Compliance',      enums.COMPLIANCE),
-            ...f.number('painBefore',          'Pain Before (0-10)'),
-            ...f.number('painDuring',          'Pain During (0-10)'),
-            ...f.number('painAfter',           'Pain After (0-10)'),
-            ...f.select('difficulty',          'Difficulty',       enums.DIFFICULTY),
-            ...f.select('mood',                'Mood',             enums.MOOD),
-            ...f.select('status',              'Status',           enums.SESSION_STATUS),
-            ...f.textarea('notes',             'Notes')
+            ...f.select('difficulty',  'Training Level',    enums.TRAINING_LEVEL, true),
+            ...f.select('painDuring',  'Pain during workout', enums.PAIN_SCALE, true),
+            ...f.select('painAfter',   'Pain after workout',  enums.PAIN_SCALE, true),
+            ...f.select('painBefore',  'Sleep quality',      enums.RATING_SCALE, true),
+            ...f.select('compliance',  'Nutrition quality',  enums.RATING_SCALE, true),
+            ...f.select('mood',        'Stress level',       enums.RATING_SCALE, true)
         ])
     ]);
 })();

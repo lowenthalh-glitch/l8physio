@@ -10,13 +10,13 @@ var EVERY_15_MINUTES = &l8tpollaris.L8PCadencePlan{Cadences: []int64{900}, Enabl
 
 // CreateBoostappBootPolls creates the Pollaris configuration for Boostapp calendar collection.
 // The collector will poll the Boostapp calendar API every 15 minutes.
-func CreateBoostappBootPolls() *l8tpollaris.L8Pollaris {
+func CreateBoostappBootPolls(branchID string) *l8tpollaris.L8Pollaris {
 	p := &l8tpollaris.L8Pollaris{}
 	p.Name = "boostapp"
 	p.Groups = []string{common.BOOT_STAGE_00}
 	p.Polling = make(map[string]*l8tpollaris.L8Poll)
 
-	createCalendarPoll(p)
+	createCalendarPoll(p, branchID)
 
 	return p
 }
@@ -24,11 +24,12 @@ func CreateBoostappBootPolls() *l8tpollaris.L8Pollaris {
 // createCalendarPoll creates the poll for fetching the Boostapp weekly calendar.
 // The body contains form-encoded parameters for GetClassesByStudioByDate.
 // BranchId, StartDate, and EndDate are substituted at runtime by the sync orchestrator.
-func createCalendarPoll(p *l8tpollaris.L8Pollaris) {
+func createCalendarPoll(p *l8tpollaris.L8Pollaris, branchID string) {
 	poll := &l8tpollaris.L8Poll{}
 	poll.Name = "boostapp-calendar"
 	poll.What = "POST::/ajax/CalendarView.php::" +
-		"fun=GetClassesByStudioByDate&ClassesAll=1&MeetingsAll=1&Tasks=1&" +
+		"fun=GetClassesByStudioByDate&branchId=" + branchID + "&" +
+		"ClassesAll=1&MeetingsAll=1&Tasks=1&" +
 		"Classes=&Meetings=&Locations=&Coaches=&ViewState=timeGridWeek&" +
 		"SplitView=0&TypeOfView=1&extraParams=true&showAllCoaches=1&" +
 		"showAllLocations=1&blockEvents=1&ScreenWidth=1657&zoomValue=2" +
