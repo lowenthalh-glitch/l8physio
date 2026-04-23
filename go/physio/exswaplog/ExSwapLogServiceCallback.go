@@ -28,11 +28,6 @@ func validateExSwapLog(e interface{}, vnic ifs.IVNic) error {
 	if err := l8c.ValidateRequired(entity.PlanId, "PlanId"); err != nil {
 		return err
 	}
-	if err := l8c.ValidateRequired(entity.OldExerciseId, "OldExerciseId"); err != nil {
-		return err
-	}
-	if err := l8c.ValidateRequired(entity.NewExerciseId, "NewExerciseId"); err != nil {
-		return err
-	}
+	// OldExerciseId and NewExerciseId are optional — empty for add/delete operations
 	return nil
 }

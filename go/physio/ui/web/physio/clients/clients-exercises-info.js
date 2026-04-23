@@ -24,6 +24,19 @@
         .catch(function() { callback(null); });
     }
 
+    function _showPopup(title, content, size, onShow) {
+        var opts = { title: title, content: content, showFooter: false };
+        if (typeof Layer8DPopup !== 'undefined') {
+            opts.size = size || 'large';
+            if (onShow) opts.onShow = onShow;
+            Layer8DPopup.show(opts);
+        } else if (typeof Layer8MPopup !== 'undefined') {
+            opts.size = 'full';
+            if (onShow) opts.onShow = function(popup) { onShow(popup && popup.body ? popup.body : popup); };
+            Layer8MPopup.show(opts);
+        }
+    }
+
     function _extractYoutubeId(url) {
         var m = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
         return m ? m[1] : null;
@@ -89,18 +102,17 @@
             var ex = (exerciseMap || {})[exerciseId] || {};
             var name = ex.name || exerciseId;
             var videoHtml = _renderVideoHtml(ex.videoStoragePath || '');
-            Layer8DPopup.show({ title: name, content: '<div style="padding:8px;">' + videoHtml + '</div>', size: 'large', showFooter: false });
+            _showPopup(name, '<div style="padding:8px;">' + videoHtml + '</div>', 'large');
         },
 
         showImagePopup: function(exerciseId, exerciseMap) {
             var ex = (exerciseMap || {})[exerciseId] || {};
             if (!ex.imageStoragePath) return;
             var name = ex.name || exerciseId;
-            Layer8DPopup.show({
-                title: name,
-                content: '<div style="padding:8px;text-align:center;"><img id="physio-img-popup" alt="" style="max-width:100%;max-height:500px;border-radius:6px;display:none;"><div class="physio-exercises-loading" id="physio-img-loading">Loading\u2026</div></div>',
-                size: 'large', showFooter: false,
-                onShow: function() {
+            _showPopup(name,
+                '<div style="padding:8px;text-align:center;"><img id="physio-img-popup" alt="" style="max-width:100%;max-height:500px;border-radius:6px;display:none;"><div class="physio-exercises-loading" id="physio-img-loading">Loading\u2026</div></div>',
+                'large',
+                function() {
                     _fetchImageBlob(ex.imageStoragePath, function(blobUrl) {
                         var img = document.getElementById('physio-img-popup');
                         var loading = document.getElementById('physio-img-loading');
@@ -108,7 +120,7 @@
                         if (loading) loading.style.display = 'none';
                     });
                 }
-            });
+            );
         },
         render: function(plan, planExercises, exerciseMap, container) {
             var ordered = planExercises.slice().sort(function(a, b) {

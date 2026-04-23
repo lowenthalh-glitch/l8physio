@@ -56,7 +56,7 @@
         .header-actions { display: flex; align-items: center; gap: 4px; }
         .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; }
         .sidebar-overlay.visible { display: block; }
-        .mobile-sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100vh; background: #ffffff; border-right: 1px solid #e5e7eb; transition: left 0.25s ease; z-index: 300; display: flex; flex-direction: column; }
+        .mobile-sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100dvh; height: 100vh; background: #ffffff; border-right: 1px solid #e5e7eb; transition: left 0.25s ease; z-index: 300; display: flex; flex-direction: column; overflow: hidden; }
         .mobile-sidebar.open { left: 0; }
         .sidebar-header { padding: 20px 16px 12px; border-bottom: 1px solid #f3f4f6; }
         .sidebar-logo { display: flex; align-items: center; gap: 10px; }
@@ -70,7 +70,7 @@
         .sidebar-item.active { background: #eff6ff; color: #2563eb; }
         .sidebar-item-icon { width: 20px; height: 20px; flex-shrink: 0; }
         .sidebar-item-icon svg { width: 20px; height: 20px; }
-        .sidebar-user { padding: 16px; border-top: 1px solid #f3f4f6; display: flex; align-items: center; gap: 10px; }
+        .sidebar-user { padding: 16px; border-top: 1px solid #f3f4f6; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
         .sidebar-avatar { width: 36px; height: 36px; border-radius: 50%; background: #2563eb; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; flex-shrink: 0; }
         .sidebar-user-details { flex: 1; min-width: 0; }
         .sidebar-user-name { font-size: 13px; font-weight: 600; color: #111827; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -128,6 +128,13 @@
                         <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
                     </svg>
                 </button>
+                <button class="header-action-btn" onclick="MobileApp.logout()" title="Logout">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                </button>
             </div>
         </header>
 
@@ -180,12 +187,13 @@
                     <div class="sidebar-user-name" id="user-name">User</div>
                     <div class="sidebar-user-role">Physiotherapist</div>
                 </div>
-                <button class="sidebar-logout-btn" onclick="MobileApp.logout()">
+                <button class="sidebar-logout-btn" onclick="MobileApp.logout()" style="gap:6px;">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
                         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                         <polyline points="16 17 21 12 16 7"></polyline>
                         <line x1="21" y1="12" x2="9" y2="12"></line>
                     </svg>
+                    <span style="font-size:12px;">Logout</span>
                 </button>
             </div>
         </aside>
@@ -287,28 +295,46 @@
     <script src="../l8ui/l8agent/m/l8agent-chat-m.js"></script>
     <script src="../l8ui/l8agent/m/l8agent-bubble-m.js"></script>
 
-    <!-- Physio Mobile Module Data -->
-    <script src="js/physio/clients-enums.js"></script>
-    <script src="js/physio/clients-columns.js"></script>
-    <script src="js/physio/clients-exercises.js"></script>
-    <script src="js/physio/exercises-enums.js"></script>
-    <script src="js/physio/exercises-columns.js"></script>
-    <script src="js/physio/plans-enums.js"></script>
-    <script src="js/physio/plans-columns.js"></script>
-    <script src="js/physio/appointments-enums.js"></script>
-    <script src="js/physio/appointments-columns.js"></script>
-    <script src="js/physio/progress-enums.js"></script>
-    <script src="js/physio/progress-columns.js"></script>
-    <script src="js/physio/protocols-columns.js"></script>
-    <script src="js/physio/therapists-columns.js"></script>
-    <script src="js/physio/sessionreport-enums.js"></script>
-    <script src="js/physio/sessionreport-columns.js"></script>
-    <script src="js/physio/homefeedback-enums.js"></script>
-    <script src="js/physio/homefeedback-columns.js"></script>
-    <script src="js/physio/boostapp-columns.js"></script>
+    <!-- Physio Module Data — load desktop enums/columns directly (l8erp pattern) -->
+    <script src="../physio/clients/clients-enums.js"></script>
+    <script src="../physio/clients/clients-columns.js"></script>
+    <script src="../physio/exercises/exercises-enums.js"></script>
+    <script src="../physio/exercises/exercises-columns.js"></script>
+    <script src="../physio/plans/plans-enums.js"></script>
+    <script src="../physio/plans/plans-columns.js"></script>
+    <script src="../physio/appointments/appointments-enums.js"></script>
+    <script src="../physio/appointments/appointments-columns.js"></script>
+    <script src="../physio/progress/progress-enums.js"></script>
+    <script src="../physio/progress/progress-columns.js"></script>
+    <script src="../physio/protocols/protocols-columns.js"></script>
+    <script src="../physio/therapists/therapists-columns.js"></script>
+    <script src="../physio/sessionreport/sessionreport-enums.js"></script>
+    <script src="../physio/sessionreport/sessionreport-columns.js"></script>
+    <script src="../physio/homefeedback/homefeedback-enums.js"></script>
+    <script src="../physio/homefeedback/homefeedback-columns.js"></script>
+    <script src="../physio/boostapp/boostapp-enums.js"></script>
+    <script src="../physio/boostapp/boostapp-columns.js"></script>
+    <!-- Shared desktop files: lookups, popups, plan editing, timeline, swap log columns -->
+    <script src="../physio/physio-lookups.js"></script>
+    <script src="../physio/htdash/htdash-swaplog-columns.js"></script>
+    <script src="../physio/htdash/htdash-timeline.js"></script>
     <script src="../physio/physio-forms-shared.js"></script>
-    <script src="js/physio/physio-forms-mobile.js"></script>
+    <script src="../physio/sessionreport/sessionreport-forms.js"></script>
+    <script src="../physio/homefeedback/homefeedback-forms.js"></script>
+    <script src="../physio/plan-actions.js"></script>
+    <script src="../physio/builder/workout-builder-circuits.js"></script>
+    <script src="../physio/clients/clients-exercises-info.js"></script>
+    <!-- Mobile-specific: registry first (aliases PhysioManagement), then forms, then views -->
     <script src="js/physio/physio-index.js"></script>
+    <script src="js/physio/physio-forms-mobile.js"></script>
+    <script src="js/physio/htdash-view-m.js"></script>
+    <script src="js/physio/plan-renderer-m.js"></script>
+    <script src="js/physio/clients-popup-tabs-m.js"></script>
+    <script src="js/physio/therapist-detail-m.js"></script>
+    <script src="js/physio/session-view-m.js"></script>
+    <script src="js/physio/plans-editor-m.js"></script>
+    <script src="js/physio/workout-builder-m.js"></script>
+    <script src="js/physio/clients-exercises.js"></script>
     <script src="js/physio/physio-user-provisioning-m.js"></script>
     <script src="js/physio/physio-nav-patch-m.js"></script>
 

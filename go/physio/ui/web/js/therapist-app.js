@@ -17,7 +17,8 @@ function getAuthHeaders() {
     const bearerToken = sessionStorage.getItem('bearerToken');
     return {
         'Authorization': bearerToken ? `Bearer ${bearerToken}` : '',
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache'
     };
 }
 

@@ -15,7 +15,8 @@ func RunAllPhases(client *PhysioClient, store *MockDataStore) {
 	// Treatment plans are created via the Workout Builder UI, not mock data
 	// runPhysioPhase2(client, store)
 	runPhysioPhase3(client, store) // Appointments (needs clients)
-	runPhysioPhase4(client, store) // Progress Logs (needs clients, appointments)
+	runPhysioPhase4(client, store)  // Progress Logs (needs clients, appointments)
+	runPhysioDashboardData(client, store) // HomeFeedback + SessionReport for dashboard
 	runPhysioPhase6(client, store) // Create user accounts (username=email, password=1234)
 }
 
@@ -161,6 +162,31 @@ func runPhysioPhase5(client *PhysioClient, store *MockDataStore) {
 			store.PhysioProtocolIDs = append(store.PhysioProtocolIDs, p.ProtocolId)
 		}
 		fmt.Printf("  Created %d PhysioProtocols\n", len(protocols))
+	}
+}
+
+// runPhysioDashboardData creates HomeFeedback and SessionReport records for the dashboard
+func runPhysioDashboardData(client *PhysioClient, store *MockDataStore) {
+	fmt.Printf("=== Dashboard Data: HomeFeedback + SessionReport ===\n")
+
+	feedbacks := generateHomeFeedbacks(store)
+	if len(feedbacks) > 0 {
+		_, err := client.Post("/physio/50/HomeFdbk", &physio.HomeFeedbackList{List: feedbacks})
+		if err != nil {
+			fmt.Printf("  ERROR creating HomeFeedbacks: %v\n", err)
+		} else {
+			fmt.Printf("  Created %d HomeFeedbacks\n", len(feedbacks))
+		}
+	}
+
+	reports := generateSessionReports(store)
+	if len(reports) > 0 {
+		_, err := client.Post("/physio/50/SessRpt", &physio.SessionReportList{List: reports})
+		if err != nil {
+			fmt.Printf("  ERROR creating SessionReports: %v\n", err)
+		} else {
+			fmt.Printf("  Created %d SessionReports\n", len(reports))
+		}
 	}
 }
 

@@ -12,18 +12,9 @@
     if (!self) return;
 
     self._addExerciseToCircuit = function(circuitNumber) {
+        var PA = window.PhysioPlanActions;
         var exMap = self._exerciseMap || {};
-        var existing = (self._currentPlan.exercises || []).filter(function(pe) {
-            return (pe.circuitNumber || 0) === circuitNumber;
-        }).map(function(pe) { return pe.exerciseId; });
-        var pJoint = self._planJoint;
-        var pPosture = self._planPosture;
-        var available = Object.values(exMap).filter(function(ex) {
-            if (ex.category !== circuitNumber) return false;
-            if (pJoint != null && ex.joint !== pJoint) return false;
-            if (pPosture != null && ex.posture !== pPosture) return false;
-            return existing.indexOf(ex.exerciseId) === -1;
-        });
+        var available = PA.availableForCircuit(self._currentPlan.exercises || [], exMap, circuitNumber, self._planJoint, self._planPosture);
         var options = available.length === 0
             ? '<option value="">No exercises available</option>'
             : '<option value="">-- Select --</option>' + available.map(function(ex) {
@@ -43,25 +34,11 @@
                 var q = function(id) { return b ? b.querySelector('#' + id) : document.getElementById(id); };
                 var exerciseId = q('pe-add-ex-select').value;
                 if (!exerciseId) { Layer8DNotification.error('Please select an exercise'); return; }
-                var alreadyInCircuit = (self._currentPlan.exercises || []).some(function(pe) {
-                    return pe.exerciseId === exerciseId && (pe.circuitNumber || 0) === circuitNumber;
-                });
-                if (alreadyInCircuit) { Layer8DNotification.warning('This exercise is already in this circuit'); return; }
-                var circuitLabel = (CATEGORY_LABELS[circuitNumber] || ('Circuit ' + circuitNumber));
-                var maxOrder = (self._currentPlan.exercises || []).reduce(function(mx, pe) {
-                    return pe.circuitNumber === circuitNumber && pe.orderIndex > mx ? pe.orderIndex : mx;
-                }, 0);
                 self._currentPlan.exercises = self._currentPlan.exercises || [];
-                self._currentPlan.exercises.push({
-                    planExerciseId: 'pe-' + Date.now(),
-                    exerciseId:     exerciseId,
-                    sets:           parseInt(q('pe-add-sets').value, 10) || 3,
-                    reps:           parseInt(q('pe-add-reps').value, 10) || 12,
-                    notes:          q('pe-add-notes').value.trim(),
-                    orderIndex:     maxOrder + 1,
-                    circuitNumber:  circuitNumber,
-                    circuitLabel:   circuitLabel
-                });
+                var pe = PA.addToPlan(self._currentPlan.exercises, exerciseId, circuitNumber, exMap);
+                pe.sets = parseInt(q('pe-add-sets').value, 10) || pe.sets;
+                pe.reps = parseInt(q('pe-add-reps').value, 10) || pe.reps;
+                pe.notes = q('pe-add-notes').value.trim();
                 Layer8DPopup.close();
                 self._savePlan();
             }

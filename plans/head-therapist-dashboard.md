@@ -1,218 +1,222 @@
-# Head Therapist Dashboard + Exercise Swap Tracking (Service-Based)
+# HTDash Service — Rethink (v3)
 
 ## Context
 
-The head therapist needs a single screen to track ALL clients — their latest feedback status, latest session report status, exercise progression/regression changes, and the ability to manually override the status color (RED/YELLOW/RED). When a therapist swaps an exercise to its progression or regression in a client's workout plan, that change needs to be logged. This replaces the earlier frontend-only plan with a proper backend service approach.
+The dashboard has been through two failed approaches:
+1. **ORM-backed stored entity** — panicked on zero-value enums during postgres Write
+2. **AlmOverlay custom IServiceHandler + Layer8DTable** — Layer8DTable caches GET responses in the browser; the framework's `AsList()` wrapping may not work correctly with custom services; no reliable way to force table refresh after popup actions
 
-## Approach
+The root problems are:
+- **Layer8DTable + custom IServiceHandler** are not designed to work together. Layer8DTable expects ORM-backed services with pagination metadata. Custom services return full datasets with no metadata.
+- **Browser HTTP caching** can't be reliably busted from JS — `Cache-Control` headers and `_t=` timestamps don't work consistently across browsers.
+- **Popup ↔ table state** is disconnected — actions in a popup (override, plan edits) don't propagate to the table behind it.
 
-Two new backend services:
+## Approach: Custom UI View + AlmOverlay Backend
 
-1. **HTDash** — stored dashboard service with refresh-on-GET. The callback's Before hook on GET re-computes the dashboard data (queries PhysioClient + latest HomeFeedback + latest SessionReport + ExerciseSwapLog counts), writes/updates HeadThDashRow records into the HTDash table, then returns `continue=true` to let the normal ORM read proceed. This follows the standard service pattern — real table, real L8Query, real pagination — while keeping data fresh on every read.
+Keep the AlmOverlay backend (already implemented, computes correctly). Replace the Layer8DTable integration with a **custom dashboard view** (`htdash-view.js`) that:
+1. Fetches from `/50/HTDash` (one GET to the backend service)
+2. Renders its own HTML table (not Layer8DTable)
+3. Owns its own state — can refresh itself after any action
+4. The popup updates the view's state directly via callbacks
 
-2. **ExSwapLog** — standard CRUD service logging each exercise swap as an immutable record.
+This is the pattern used by the Workout Builder (`physio-workout-builder.js`) — a custom view that manages its own table, not a Layer8DTable. It's also how `clients-exercises.js` works — it renders circuit tables with `table.setData()` callbacks.
 
-PhysioClient gets `override_status` (field 16, reuses SessionStatus enum) for manual color overrides via existing PhyClient PUT.
+## What stays (already implemented, no changes)
 
-## Phase 1: Proto Changes
+- **Backend:** `go/physio/htdash/HTDashService.go` (AlmOverlay, computes on GET)
+- **Backend:** `go/physio/htdash/HTDashAggregation.go` (query + aggregate + sort + reason)
+- **Backend:** `go/physio/ovrdlog/` (OvrdLog service for override audit trail)
+- **Backend:** `go/physio/exswaplog/` (ExSwapLog service)
+- **Proto:** HeadThDashRow, StatusOverrideLog, ExerciseSwapLog, status_reason, description
+- **UI:** `htdash-columns.js`, `htdash-swaplog-columns.js`, `htdash-timeline.js`
+- **UI:** `sections/physio.html` (dashboard sub-nav + container)
+- **UI:** `physio-config.js` (service entry)
+- **UI:** `therapist-sections.js` (dashboard visible)
+- **UI:** `session-view.js` (Boostapp session + workout plan renderer)
+- **UI:** `plan-actions.js` (shared plan editing logic)
 
-**File:** `proto/physio.proto`
+## What changes
 
-Add enum:
-```protobuf
-enum SwapDirection {
-  SWAP_DIRECTION_UNSPECIFIED = 0;
-  SWAP_DIRECTION_PROGRESSION = 1;
-  SWAP_DIRECTION_REGRESSION  = 2;
+### Phase 0: Use existing l8ui shared components (no custom helpers)
+
+The ecosystem already provides everything needed:
+
+**Tab switching** — `Layer8DPopup` has built-in tab handling via `.probler-popup-tab[data-tab]` + `.probler-popup-tab-pane[data-pane]`. It also supports `onTabChange` callback. All popups (therapist detail, dashboard detail) should use this standard system instead of custom tab code.
+
+**Status badges** — `Layer8DRenderers.renderStatus(value, enumMap, classMap)` returns HTML badges. `createStatusRenderer(enumMap, classMap)` returns a reusable function. Both `htdash-view.js` and `htdash-timeline.js` should use `PhysioManagement.render.sessionStatus(value)` which is already defined in `sessionreport-enums.js`.
+
+**View refresh** — `Layer8DModuleNavigation` provides `refreshCurrentTable()` which calls `view.refresh()`. The dashboard view implements `init()/refresh()/destroy()` interface.
+
+**Cache-busting** — inline `?t=timestamp` at the fetch call site (established pattern in l8erp sections.js).
+
+**Refactor existing popups:**
+- Therapist detail popup in `physio-init.js` → replace custom `physio-therapist-tab`/`data-ptab` with standard `.probler-popup-tab`/`data-tab`
+- Dashboard detail popup → same
+- Session view popup → same (replace `physio-session-tab`/`data-stab`)
+- All status rendering → use `PhysioManagement.render.sessionStatus()` (already available)
+
+**No new files needed for Phase 0** — just refactor existing popups to use l8ui built-in components.
+
+### Phase 1: Rewrite `htdash-view.js` as the dashboard renderer
+
+**File:** `go/physio/ui/web/physio/htdash/htdash-view.js` — **rewrite**
+
+```javascript
+window.PhysioHeadDashboard = {
+    _container: null,
+    _rows: [],
+
+    init: function(containerId) {
+        // Fetch from /50/HTDash, render custom table, store reference
+    },
+
+    refresh: function() {
+        // Re-fetch from /50/HTDash, re-render table in place
+    },
+
+    _render: function() {
+        // Render HTML table with status dots, reason, swap count
+        // Each row clickable → opens detail popup with refresh callback
+    },
+
+    _onRowClick: function(row) {
+        // Open detail popup, pass self.refresh as callback
+        _showDashboardDetail(row, self.refresh.bind(self));
+    }
+};
+```
+
+**Key design:**
+- Fetches from the backend HTDash service (one GET) — not from 5 individual services
+- Renders its own HTML table — not Layer8DTable (avoids caching/pagination issues)
+- `refresh()` method re-fetches and re-renders — called after popup actions
+- Popup receives `onRefresh` callback — calls it after override save, plan changes, etc.
+
+### Phase 2: Wire dashboard in `physio-init.js`
+
+**File:** `go/physio/ui/web/physio/physio-init.js`
+
+Keep the `serviceKey === 'htdash'` custom handler in `loadServiceView`:
+```javascript
+if (serviceKey === 'htdash') {
+    // Show htdash service view, initialize custom dashboard
+    sectionEl.querySelectorAll('.l8-service-view').forEach(...)
+    PhysioHeadDashboard.init('management-htdash-table-container');
+    return;
 }
 ```
 
-Add to PhysioClient: `SessionStatus override_status = 16;`
+**Rewrite `_showDashboardDetail(item, onRefresh)`** to accept a refresh callback:
+- After override save → call `onRefresh()` (re-fetches dashboard data, table updates)
+- Timeline refresh → re-renders in place
+- No popup close needed, no section reload, no nav click
 
-Add messages: `ExerciseSwapLog` (swap_id, client_id, plan_id, old_exercise_id, new_exercise_id, direction, swap_date, therapist_id, audit_info) + List, `HeadThDashRow` (row_id, client_id, client_name, therapist_id, therapist_name, last_feedback_date, last_feedback_status, last_session_date, last_session_status, override_status, swap_count, audit_info) + List.
+### Phase 3: Remove fetch interceptor cache-busting
 
-Run `cd proto && ./make-bindings.sh`
+The `_t=` cache-buster in the fetch interceptor is no longer needed for the dashboard because the custom view controls its own fetches.
 
-## Phase 2: ExerciseSwapLog Service
+**Revert:** Remove `_t=` interceptor from `app.js`, `therapist-app.js`, `client-app.js`
+**Keep:** `Cache-Control: no-cache` in `getAuthHeaders` — this is a safe default for all API requests and doesn't cause issues. Other Layer8DTable services benefit from it too.
 
-**New:** `go/physio/exswaplog/ExSwapLogService.go` + `ExSwapLogServiceCallback.go`
-- ServiceName: `"ExSwapLog"` (9 chars), ServiceArea: 50, PrimaryKey: `"SwapId"`
-- Validate: ClientId, PlanId, OldExerciseId, NewExerciseId required
+### Phase 3b: Remove dead column definitions
 
-## Phase 3: Dashboard Service (Stored Entity, Explicit Refresh)
+`htdash-columns.js` defined columns for Layer8DTable which is no longer used for the dashboard. Remove it to avoid confusion.
 
-**New:** `go/physio/htdash/HTDashService.go` + `HTDashServiceCallback.go`
-- ServiceName: `"HTDash"` (6 chars), ServiceArea: 50, PrimaryKey: `"RowId"`
-- Standard service with real persistence table
-- GET: pure read — no refresh logic, standard ORM read with full L8Query support (pagination, filtering, sorting)
-- POST: triggers the refresh. The callback Before hook on POST:
-  1. Ignores the incoming entity (POST body can be empty or a dummy)
-  2. Batch query all active PhysioClients
-  3. Batch query all PhysioTherapists (name map)
-  4. Batch query all HomeFeedback — group by clientId, pick latest by feedbackDate
-  5. Batch query all SessionReports — group by clientId, pick latest by sessionDate
-  6. Batch query ExerciseSwapLog — count per clientId
-  7. For each client, write a HeadThDashRow directly to the ORM (using the service handler's internal Put/Post)
-  8. Return `continue=false` (the POST itself doesn't need to store anything — the refresh already wrote the rows)
-- PUT/DELETE: rejected (read-only except refresh)
+**Delete:** `go/physio/ui/web/physio/htdash/htdash-columns.js`
+**Update:** `app.html`, `therapist-app.html` — remove htdash-columns.js script include
 
-**UI Refresh Flow:**
-1. Dashboard page loads → UI POSTs to `/50/HTDash` (triggers refresh)
-2. On success → UI GETs `/50/HTDash` (reads fresh rows with L8Query)
-3. "Refresh" button in toolbar repeats step 1+2
+The custom view in `htdash-view.js` defines its own column rendering inline. `htdash-swaplog-columns.js` stays — it's used by the swap log Layer8DTable in the detail popup.
 
-This avoids:
-- Self-write recursion (POST handler writes rows, GET handler only reads)
-- Concurrency issues (refresh is an explicit user action, not triggered on every GET)
-- Wasteful refresh on filtered reads (GET is a pure read from stored data)
+### Phase 4: Fix change detection in `session-view.js`
 
-## Phase 4: Registration
+The false "Plan Edit" entries are caused by type mismatch between original capture and collected values. The root cause: `defaultRepsDisplay` (string like "10-12") vs `defaultReps` (number or null).
 
-**File:** `go/physio/services/activate_all.go` — add both services
-**File:** `go/physio/ui/main.go` — RegisterType for ExerciseSwapLog + HeadThDashRow
+**Fix:** When capturing originals AND when comparing, read the ACTUAL input DOM value after render (not computed from exercise defaults). This guarantees originals match what `_collectEdits` will read:
 
-## Phase 5: Security
+```javascript
+// After rendering, read actual input values as originals
+if (!st.originals) {
+    st.originals = {};
+    container.querySelectorAll('.session-edit-sets').forEach(function(input) {
+        var idx = parseInt(input.dataset.row, 10);
+        var pe = st.flatRows[idx];
+        if (pe) {
+            if (!st.originals[pe.exerciseId]) st.originals[pe.exerciseId] = {};
+            st.originals[pe.exerciseId].sets = parseInt(input.value, 10) || 0;
+        }
+    });
+    // Same for reps, notes
+}
+```
 
-**File:** `../l8secure/.../phy.json`
-- Therapist role: GET + POST on HeadThDashRow (GET to read, POST to trigger refresh)
-- Therapist role: GET + POST on ExerciseSwapLog (POST to create, GET to view history, no PUT/DELETE — swap history is immutable)
+This reads from the DOM AFTER render — exactly what `_collectEdits` does. Zero type mismatches.
 
-## Phase 6: UI — Swap Log POST
+### Phase 5: Mobile parity
 
-**File:** `go/physio/ui/web/physio/clients/clients-exercises.js`
-- In `_swapExercise`, POST to `/50/ExSwapLog` with clientId, planId, oldExerciseId, newExerciseId, direction, swapDate
+The custom dashboard view (`htdash-view.js`) uses standard HTML/CSS and `fetch()` — no desktop-specific components. It works in both desktop and mobile contexts.
 
-## Phase 7: UI — Dashboard View
+For mobile: add `htdash-view.js` to `m/app.html`. The `PhysioHeadDashboard.init()` can be called from the mobile nav when the dashboard service is selected. The popup uses `Layer8DPopup` on desktop — on mobile, use `Layer8MPopup` for the detail view if needed, or let the existing mobile popup system handle it.
 
-**No htdash-enums.js** — the dashboard status columns reuse `PhysioManagement.enums.SESSION_STATUS_VALUES` and `PhysioManagement.render.sessionStatus` directly from sessionreport-enums.js (already loaded earlier in app.html). Creating an enums file that only aliases existing enums would violate the no-duplicate-code rule.
+**File:** `go/physio/ui/web/m/app.html` — add htdash-view.js script include
 
-**New:** `go/physio/ui/web/physio/htdash/htdash-columns.js`
-- Columns: Client Name, Therapist, Last Feedback Date, Feedback Status (colored dot), Last Session Date, Session Status (colored dot), Override (colored dot), Swap Count
-- Status columns reference `PhysioManagement.enums.SESSION_STATUS_VALUES` and `PhysioManagement.render.sessionStatus` directly
+### Theme compliance note
 
-**Update:** `go/physio/ui/web/sections/physio.html`
-- Add sub-nav item: `<a class="l8-subnav-item" data-service="htdash">Dashboard</a>`
-- Add service view: `<div class="l8-service-view" data-service="htdash"><div class="l8-table-container" id="management-htdash-table-container"></div></div>`
+The custom HTML table in `htdash-view.js` MUST use `--layer8d-*` CSS tokens for all colors, backgrounds, and borders:
+- Table background: `var(--layer8d-bg-white)`
+- Row borders: `var(--layer8d-border)`
+- Header background: `var(--layer8d-bg-light)`
+- Text colors: `var(--layer8d-text-dark)`, `var(--layer8d-text-medium)`, `var(--layer8d-text-muted)`
+- Status dots: `var(--layer8d-success)`, `var(--layer8d-warning)`, `var(--layer8d-error)`
+- No hardcoded hex colors
 
-**Update:** `physio-config.js` — add `svc('htdash', 'Dashboard', 'chart', '/50/HTDash', 'HeadThDashRow')`
+## Verification
 
-**Update:** `app.html`, `therapist-app.html` — add script include for htdash-columns.js (after sessionreport scripts, before physio-init.js)
+1. `go build ./...` passes
+2. Dashboard tab → custom table renders with all active clients
+3. Click row → popup opens with Overview, Timeline, Exercise Changes, Workout Plan tabs
+4. Override save → notification, timeline refreshes in-place, table behind updates via callback
+5. Plan edit in Workout Plan tab → save → only actual changes logged
+6. Add/delete exercise → logged in timeline
+7. No hard refresh needed at any point
+8. No false "Plan Edit" entries
+9. Mobile: dashboard loads with same data and functionality
+10. Dark mode: dashboard uses theme tokens, no hardcoded colors
 
-**Update:** `therapist-sections.js` — show `'htdash'` in visible services
-
-## Phase 8: Dashboard Detail Popup + Override Editing
-
-In `physio-init.js`, override `_showDetailsModal` for HeadThDashRow. Popup has 2 tabs:
-
-**Tab 1: Overview**
-- Client info (name, therapist, status dots)
-- Override dropdown (GREEN/YELLOW/RED/Clear) — on change, fetch PhysioClient, update `overrideStatus`, PUT to `/50/PhyClient`, refresh dashboard table
-
-**Tab 2: Exercise Changes**
-- Layer8DTable showing ExerciseSwapLog filtered by `clientId`
-- Columns: Date, Old Exercise (name via lookup), New Exercise (name via lookup), Direction (Progression/Regression badge), Therapist
-- Read-only (no edit/delete actions — immutable history)
-- Query: `select * from ExerciseSwapLog where clientId={clientId}`
-
-**New:** `go/physio/ui/web/physio/htdash/htdash-swaplog-columns.js`
-- Column definitions for ExerciseSwapLog table inside the detail popup
-- SwapDirection enum rendering: 1=Progression (green badge), 2=Regression (orange badge)
-
-## Phase 9: Analytics (Progressive Enhancement)
-
-After core works: trend arrows, compliance streak, pain sparkline, perception gap, alerts, client notes. UI-only computations — no backend changes.
-
-## Phase 10: Mock Data
-
-**ExerciseSwapLog** — no mock data needed. Swap logs are created by real user actions (exercise +/- buttons). The table starts empty and populates as therapists use the system.
-
-**HeadThDashRow** — no mock data generator needed. Rows are computed and stored on every GET by the refresh-on-GET callback. As long as PhysioClient, HomeFeedback, and SessionReport have mock data (they already do), the dashboard will populate automatically.
-
-**Reference registry** — neither HeadThDashRow nor ExerciseSwapLog are referenced by other forms via `lookupModel`. No reference registry entries needed. Documented as intentional.
-
-## Phase 11: Mobile
-
-**New:** `go/physio/ui/web/m/js/physio/htdash-m.js` — mobile card-based dashboard
-**Update:** `m/app.html` — script include
-
-## Phase 12: Verification
-
-1. `go build ./...` passes after proto + service changes
-2. Admin: physio section → "Dashboard" sub-nav visible → table loads all active clients with colored status dots
-3. Therapist portal: "Dashboard" sub-nav visible → same data
-4. Swap exercise (+/-) in workout plan → ExSwapLog record created → dashboard swap count increments on refresh
-5. Override dropdown → PhysioClient overrideStatus updates → persists across refresh
-6. L8Query works: filter by client name, sort by status, pagination
-7. Mobile: dashboard card view loads
-8. Client portal: no dashboard access (security blocks GET on HeadThDashRow)
-9. No regressions: client detail view, feedback tab, reports tab still work
-
-## Traceability
-
-| Requirement | Phase |
-|-------------|-------|
-| Dashboard service (stored, refresh-on-GET) | Phase 3 |
-| Exercise swap tracking | Phase 2 (service) + Phase 6 (UI POST) |
-| Manual override color | Phase 1 (proto) + Phase 8 (UI) |
-| Latest feedback per client | Phase 3 (callback aggregation) |
-| Latest session report per client | Phase 3 (callback aggregation) |
-| Swap count per client | Phase 3 (callback aggregation) |
-| Section HTML sub-nav + container | Phase 7 |
-| Enums/renderers for status columns | Phase 7 (direct reuse of sessionreport-enums, no new enums file) |
-| View individual swap records | Phase 8 (swap log tab in dashboard detail popup) |
-| Swap history immutable | Phase 5 (POST + GET only, no PUT/DELETE) |
-| Dashboard refresh explicit | Phase 3 (POST triggers refresh, GET is pure read) |
-| Visible to therapists | Phase 5 (security) + Phase 7 (UI) |
-| Mock data | Phase 10 (not needed — documented) |
-| Reference registry | Phase 10 (not needed — documented) |
-| Mobile parity | Phase 11 |
-| Analytics | Phase 9 |
-
-## Files
+## Files Changed
 
 | File | Action |
 |------|--------|
-| `proto/physio.proto` | Modify — SwapDirection, override_status, ExerciseSwapLog, HeadThDashRow |
-| `go/types/physio/*.pb.go` | Regenerate |
-| `go/physio/exswaplog/ExSwapLogService.go` | **New** |
-| `go/physio/exswaplog/ExSwapLogServiceCallback.go` | **New** |
-| `go/physio/htdash/HTDashService.go` | **New** |
-| `go/physio/htdash/HTDashServiceCallback.go` | **New** |
-| `go/physio/services/activate_all.go` | Modify — add 2 services |
-| `go/physio/ui/main.go` | Modify — register 2 types |
-| `go/physio/ui/web/physio/clients/clients-exercises.js` | Modify — POST swap log |
-| `go/physio/ui/web/physio/htdash/htdash-columns.js` | **New** — uses sessionreport enums directly, no separate enums file |
-| `go/physio/ui/web/physio/htdash/htdash-swaplog-columns.js` | **New** — ExerciseSwapLog columns for detail popup tab |
-| `go/physio/ui/web/sections/physio.html` | Modify — add dashboard sub-nav + service view container |
-| `go/physio/ui/web/physio/physio-config.js` | Modify — add service |
-| `go/physio/ui/web/physio/physio-init.js` | Modify — override detail modal |
-| `go/physio/ui/web/app.html` | Modify — script includes |
-| `go/physio/ui/web/therapist-app.html` | Modify — script includes |
-| `go/physio/ui/web/js/therapist-sections.js` | Modify — show htdash |
-| `../l8secure/.../phy.json` | Modify — therapist security rules |
-| `go/physio/ui/web/m/js/physio/htdash-m.js` | **New** — mobile |
-| `go/physio/ui/web/m/app.html` | Modify — script include |
+| `go/physio/ui/web/physio/htdash/htdash-view.js` | **Rewrite** — custom view with refresh, uses l8ui renderStatus |
+| `go/physio/ui/web/physio/htdash/htdash-columns.js` | **Delete** — dead code, Layer8DTable no longer used |
+| `go/physio/ui/web/physio/htdash/htdash-timeline.js` | **Update** — use renderStatus instead of local statusDot |
+| `go/physio/ui/web/physio/physio-init.js` | **Update** — wire htdash loadServiceView, rewrite popup with onRefresh callback |
+| `go/physio/ui/web/physio/session-view.js` | **Fix** — read originals from DOM, not computed values |
+| `go/physio/ui/web/js/app.js` | **Revert** — remove _t= interceptor and Cache-Control |
+| `go/physio/ui/web/js/therapist-app.js` | **Revert** — same |
+| `go/physio/ui/web/js/client-app.js` | **Revert** — same |
+| `go/physio/ui/web/app.html` | **Update** — add htdash-view.js, remove htdash-columns.js |
+| `go/physio/ui/web/therapist-app.html` | **Update** — same |
+| `go/physio/ui/web/m/app.html` | **Update** — add htdash-view.js for mobile |
+
+## Why this approach works
+
+| Problem | Previous approach | This approach |
+|---------|------------------|---------------|
+| Browser caching | Layer8DTable implicit GET cached | Custom view explicit fetch — no caching issue |
+| Popup → table refresh | nav.click / loadSection workarounds | `onRefresh` callback directly re-renders |
+| False plan edits | Computed original ≠ displayed value | Read originals from DOM after render |
+| AsList() double-wrap | Unknown if HTDash list wraps correctly | Custom view parses response.list directly |
+| Layer8DTable pagination | Custom service returns no metadata | Custom view renders full list, no pagination needed |
 
 ## Rule Compliance
 
 | Rule | Status |
 |------|--------|
-| maintainability — max 500 lines | OK — each file well under limit |
-| maintainability — ServiceName max 10 chars | OK — ExSwapLog (9), HTDash (6) |
-| maintainability — no duplicate code | OK — reuses sessionreport enums/renderers directly, no alias file |
-| no-go-generics | OK |
-| protobuf-generation — make-bindings.sh | OK — Phase 1 |
-| proto-enum-zero-value — UNSPECIFIED | OK — SwapDirection has UNSPECIFIED=0 |
-| proto-list-convention — list + metadata | OK |
-| prime-object-references — ID fields only | OK — string IDs, no struct refs |
-| demo-directory-sync — never touch demo | OK |
-| l8ui-no-project-specific-code | OK — all code in physio/ |
-| l8ui-theme-compliance — --layer8d-* tokens | OK |
-| mobile-rules — desktop/mobile parity | OK — Phase 11 |
-| data-completeness-pipeline | OK — Phase 10 documents no mock data needed |
-| reference-registry-completeness | OK — Phase 10 documents no registry needed |
-| js-protobuf-field-names — verify json tags | OK — verify after proto gen |
-| plan-traceability-and-verification | OK — traceability matrix + Phase 12 |
-| plan-approval-workflow — write to ./plans/ | OK — will sync to ./plans/ on approval |
-| checklist — config, enums, columns, section HTML, app.html | OK — all covered in Phase 7 |
-| report-infra-bugs — don't work around | OK — chose stored entity to avoid framework bypass |
+| maintainability — max 500 lines | OK |
+| maintainability — no duplicate code | OK — Phase 0 refactors to use l8ui built-in tabs + renderStatus (no custom copies) |
+| canonical-project-selection | OK — backend: AlmOverlay; UI: Workout Builder custom view pattern |
+| report-infra-bugs | OK — ORM bug reported, AlmOverlay avoids it |
+| l8ui-no-project-specific-code | OK — all in physio/ |
+| l8ui-theme-compliance | OK — Phase 5 documents --layer8d-* token usage, no hardcoded colors |
+| mobile-rules — parity | OK — Phase 5 adds mobile support, htdash-view.js is platform-agnostic |
+| plan-traceability-and-verification | OK — verification section covers desktop + mobile + dark mode |

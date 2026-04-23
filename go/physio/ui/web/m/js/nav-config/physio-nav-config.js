@@ -14,8 +14,21 @@
             ],
             services: {
                 'management': [
+                    { key: 'htdash',       label: 'Dashboard',        icon: 'chart',
+                      endpoint: '/50/HTDash',    model: 'HeadThDashRow',   idField: 'clientId',
+                      readOnly: true,
+                      onRowClick: function(item) {
+                          if (window.MobilePhysioDashboard) {
+                              MobilePhysioDashboard.showDetail(item);
+                          }
+                      }},
                     { key: 'therapists',   label: 'Therapists',       icon: 'person',
-                      endpoint: '/50/PhyTherapt', model: 'PhysioTherapist', idField: 'therapistId' },
+                      endpoint: '/50/PhyTherapt', model: 'PhysioTherapist', idField: 'therapistId',
+                      onRowClick: function(item, id) {
+                          if (window.MobilePhysioTherapistDetail) {
+                              MobilePhysioTherapistDetail.open(item, id);
+                          }
+                      }},
                     { key: 'clients',      label: 'Clients',          icon: 'person',
                       endpoint: '/50/PhyClient',  model: 'PhysioClient',    idField: 'clientId',
                       onRowClick: function(item, id) {
@@ -29,7 +42,12 @@
                       endpoint: '/50/PhyProto',   model: 'PhysioProtocol',  idField: 'protocolId' },
                     { key: 'plans',        label: 'Treatment Plans',  icon: 'clipboard',
                       endpoint: '/50/PhyPlan',    model: 'TreatmentPlan',   idField: 'planId',
-                      supportedViews: ['table', 'calendar'] },
+                      supportedViews: ['table', 'calendar'],
+                      onRowClick: function(item) {
+                          if (window.MobilePlanEditor) {
+                              MobilePlanEditor.open(item);
+                          }
+                      }},
                     { key: 'appointments', label: 'Appointments',     icon: 'calendar',
                       endpoint: '/50/PhyAppt',    model: 'Appointment',     idField: 'apptId',
                       supportedViews: ['table', 'calendar'] },
@@ -41,7 +59,12 @@
                       endpoint: '/50/HomeFdbk',   model: 'HomeFeedback',    idField: 'feedbackId' },
                     { key: 'boostapp',     label: 'Boostapp Calendar', icon: 'calendar',
                       endpoint: '/50/BstpCal',    model: 'BoostappCalendarEvent', idField: 'eventId',
-                      readOnly: true, supportedViews: ['table', 'calendar'] }
+                      readOnly: true, supportedViews: ['table', 'calendar'],
+                      onRowClick: function(item) {
+                          if (window.MobilePhysioSessionView) {
+                              MobilePhysioSessionView.show(item);
+                          }
+                      }}
                 ]
             }
         },

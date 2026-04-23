@@ -174,40 +174,16 @@
         },
 
         _buildCircuitRows: function(planExercises, exerciseMap) {
-            var map = {};
-            var labels = {};
-            planExercises.forEach(function(pe) {
-                var fullEx = exerciseMap[pe.exerciseId] || {};
-                var cNum = pe.circuitNumber || 0;
-                if (!map[cNum]) map[cNum] = [];
-                if (pe.circuitLabel) labels[cNum] = pe.circuitLabel;
-                map[cNum].push({
-                    planExerciseId: pe.planExerciseId,
-                    exerciseId:     pe.exerciseId,
-                    name:           fullEx.name || pe.exerciseId || '\u2014',
-                    sets:           pe.sets  || fullEx.defaultSets  || '\u2014',
-                    reps:           pe.reps  || fullEx.defaultRepsDisplay || String(fullEx.defaultReps || '') || '\u2014',
-                    notes:          pe.notes || '',
-                    exerciseType:   fullEx.exerciseType || 0,
-                    imageStoragePath: fullEx.imageStoragePath || '',
-                    _circuitNumber: cNum,
-                    _orderIndex:    pe.orderIndex || 0
+            var PA = window.PhysioPlanActions;
+            var result = PA.groupAndSort(planExercises, exerciseMap);
+            // Build display rows from sorted plan exercises
+            var rows = {};
+            Object.keys(result.circuits).forEach(function(k) {
+                rows[k] = result.circuits[k].map(function(pe) {
+                    return PA.displayRow(pe, exerciseMap);
                 });
             });
-            Object.keys(map).forEach(function(k) {
-                map[k].sort(function(a, b) {
-                    if (a.exerciseType !== b.exerciseType) return a.exerciseType - b.exerciseType;
-                    return a._orderIndex - b._orderIndex;
-                });
-                // Normalize orderIndex to match display order
-                for (var ri = 0; ri < map[k].length; ri++) {
-                    map[k][ri]._orderIndex = ri + 1;
-                    // Sync back to plan exercises
-                    var pe = planExercises.filter(function(p) { return p.exerciseId === map[k][ri].exerciseId && (p.circuitNumber || 0) === parseInt(k, 10); })[0];
-                    if (pe) pe.orderIndex = ri + 1;
-                }
-            });
-            return { rows: map, labels: labels };
+            return { rows: rows, labels: result.labels };
         },
 
         _renderPlanTable: function(plan, planExercises, exerciseMap, container) {
@@ -237,6 +213,9 @@
                     return item.exerciseType === 1
                         ? '<span class="physio-type-badge physio-type-fixed">Fixed</span>'
                         : '<span class="physio-type-badge physio-type-variable">Variable</span>';
+                }, { sortKey: false }),
+                ...col.custom('loadType', 'Load', function(item) {
+                    return PhysioPlanActions.loadTypeSelect(item.loadType, 'physio-load-select', ' data-eid="' + Layer8DUtils.escapeHtml(item.exerciseId) + '"');
                 }, { sortKey: false }),
                 ...col.col('notes', 'Notes'),
                 ...col.custom('_progReg', '', function(item) {
@@ -305,6 +284,13 @@
                         var thumb = e.target.closest('.physio-exercise-thumb');
                         if (thumb) { e.stopPropagation(); self._showImagePopup(thumb.dataset.eid); return; }
                     });
+                    w.addEventListener('change', function(e) {
+                        var sel = e.target.closest('.physio-load-select');
+                        if (!sel) return;
+                        var eid = sel.dataset.eid;
+                        var pe = (self._currentPlan.exercises || []).filter(function(ex) { return ex.exerciseId === eid; })[0];
+                        if (pe) { pe.loadType = parseInt(sel.value, 10) || 0; self._savePlan(); }
+                    });
                 })(wrap, cNum);
 
                 var table = new Layer8DTable({
@@ -331,14 +317,7 @@
 
         _savePlan: function() {
             var self = this;
-            fetch(_apiPrefix() + '/50/PhyPlan', {
-                method: 'PUT',
-                headers: Object.assign({}, _headers(), { 'Content-Type': 'application/json' }),
-                body: JSON.stringify(self._currentPlan)
-            })
-            .then(function(r) {
-                if (!r.ok) throw new Error('HTTP ' + r.status);
-                Layer8DNotification.success('Plan saved.');
+            PhysioPlanActions.save(self._currentPlan, function() {
                 var result = self._buildCircuitRows(self._currentPlan.exercises, self._exerciseMap || {});
                 Object.keys(self._circuitTables).forEach(function(key) {
                     self._circuitTables[key].setData(result.rows[parseInt(key, 10)] || []);
@@ -347,8 +326,7 @@
                 if (info && self._exerciseMap) {
                     self._renderExerciseInfo(self._currentPlan, self._currentPlan.exercises, self._exerciseMap, info);
                 }
-            })
-            .catch(function(e) { Layer8DNotification.error('Failed to save: ' + e.message); });
+            });
         },
 
         _editExercise: function(exerciseId) {
@@ -357,10 +335,12 @@
             if (!pe) return;
             var exName = ((self._exerciseMap || {})[pe.exerciseId] || {}).name || pe.exerciseId;
             var r = function(l, h) { return '<div class="wb-af-row"><label class="wb-af-label">' + l + '</label>' + h + '</div>'; };
+            var loadSelect = PhysioPlanActions.loadTypeSelect(pe.loadType || ((self._exerciseMap || {})[pe.exerciseId] || {}).loadType || 0, '', ' id="pe-edit-load"');
             var html = '<div class="wb-assign-form">'
                 + r('Exercise', '<div class="wb-af-static">' + Layer8DUtils.escapeHtml(exName) + '</div>')
                 + r('Sets', '<input type="number" id="pe-edit-sets" class="wb-af-input" min="1" max="20" value="' + (pe.sets || '') + '">')
                 + r('Reps', '<input type="number" id="pe-edit-reps" class="wb-af-input" min="1" max="100" value="' + (pe.reps || '') + '">')
+                + r('Load', loadSelect)
                 + r('Notes', '<input type="text" id="pe-edit-notes" class="wb-af-input" value="' + Layer8DUtils.escapeHtml(pe.notes || '') + '">') + '</div>';
             Layer8DPopup.show({
                 title: 'Edit Exercise', content: html, size: 'small', showFooter: true, saveButtonText: 'Save',
@@ -369,6 +349,7 @@
                     var q = function(id) { return b ? b.querySelector('#' + id) : document.getElementById(id); };
                     pe.sets = parseInt(q('pe-edit-sets').value, 10) || 0;
                     pe.reps = parseInt(q('pe-edit-reps').value, 10) || 0;
+                    pe.loadType = parseInt(q('pe-edit-load').value, 10) || 0;
                     pe.notes = q('pe-edit-notes').value.trim();
                     Layer8DPopup.close();
                     self._savePlan();
@@ -379,96 +360,29 @@
         _deleteExercise: function(exerciseId) {
             var self = this;
             if (!self._currentPlan) return;
-            self._currentPlan.exercises = self._currentPlan.exercises.filter(function(e) {
-                return e.exerciseId !== exerciseId;
-            });
+            var pe = self._currentPlan.exercises.filter(function(e) { return e.exerciseId === exerciseId; })[0];
+            if (pe) PhysioPlanActions.remove(self._currentPlan.exercises, pe);
             self._savePlan();
         },
 
         _moveExercise: function(circuitNumber, exerciseId, dir) {
             var self = this;
             if (!self._currentPlan) return;
-            var exMap = self._exerciseMap || {};
-            // Get exercises in this circuit sorted by orderIndex
-            var circuitExs = (self._currentPlan.exercises || []).filter(function(pe) {
-                return pe.circuitNumber === circuitNumber;
-            }).sort(function(a, b) { return (a.orderIndex || 0) - (b.orderIndex || 0); });
-
-            var idx = -1;
-            for (var i = 0; i < circuitExs.length; i++) {
-                if (circuitExs[i].exerciseId === exerciseId) { idx = i; break; }
+            var pe = self._currentPlan.exercises.filter(function(e) {
+                return e.exerciseId === exerciseId && e.circuitNumber === circuitNumber;
+            })[0];
+            if (pe && PhysioPlanActions.move(self._currentPlan.exercises, self._exerciseMap || {}, pe, dir)) {
+                self._savePlan();
             }
-            if (idx === -1) return;
-            var targetIdx = idx + dir;
-            if (targetIdx < 0 || targetIdx >= circuitExs.length) return;
-
-            var cur = circuitExs[idx];
-            var tgt = circuitExs[targetIdx];
-            var curType = (exMap[cur.exerciseId] || {}).exerciseType || 0;
-            var tgtType = (exMap[tgt.exerciseId] || {}).exerciseType || 0;
-
-            // Fixed must stay above Variable
-            if (dir === -1 && curType === 2 && tgtType === 1) {
-                Layer8DNotification.warning('Variable exercises cannot be placed above Fixed exercises.');
-                return;
-            }
-            if (dir === 1 && curType === 1 && tgtType === 2) {
-                Layer8DNotification.warning('Fixed exercises cannot be placed below Variable exercises.');
-                return;
-            }
-
-            var tmpOrder = cur.orderIndex;
-            cur.orderIndex = tgt.orderIndex;
-            tgt.orderIndex = tmpOrder;
-            self._savePlan();
         },
 
         _swapExercise: function(exerciseId, direction) {
             var self = this;
             if (!self._currentPlan || !self._exerciseMap) return;
-            var fullEx = self._exerciseMap[exerciseId];
-            if (!fullEx) return;
-
-            var newId = direction === 'progression' ? fullEx.progressionExerciseId : fullEx.regressionExerciseId;
-            if (!newId) {
-                Layer8DNotification.warning('No ' + direction + ' exercise defined.');
-                return;
-            }
-
-            var newEx = self._exerciseMap[newId];
-            var newName = newEx ? newEx.name : newId;
-            var oldName = fullEx.name || exerciseId;
-
-            // Replace exerciseId in the plan exercise entry
-            var pe = (self._currentPlan.exercises || []).filter(function(e) {
-                return e.exerciseId === exerciseId;
-            })[0];
+            var pe = (self._currentPlan.exercises || []).filter(function(e) { return e.exerciseId === exerciseId; })[0];
             if (!pe) return;
-
-            pe.exerciseId = newId;
-            // Update sets/reps to new exercise defaults if available
-            if (newEx) {
-                pe.sets = pe.sets || newEx.defaultSets || 3;
-                pe.reps = pe.reps || newEx.defaultReps || 12;
-            }
-
-            Layer8DNotification.info(oldName + ' \u2192 ' + newName);
-
-            // Log the swap to ExerciseSwapLog service
-            fetch(_apiPrefix() + '/50/ExSwapLog', {
-                method: 'POST',
-                headers: Object.assign({}, _headers(), { 'Content-Type': 'application/json' }),
-                body: JSON.stringify({
-                    clientId: self._currentPlan.clientId,
-                    planId: self._currentPlan.planId,
-                    oldExerciseId: exerciseId,
-                    newExerciseId: newId,
-                    direction: direction === 'progression' ? 1 : 2,
-                    swapDate: Math.floor(Date.now() / 1000)
-                })
-            }).catch(function(err) { console.warn('Failed to log swap:', err); });
-
-            self._savePlan();
+            var result = PhysioPlanActions.swap(self._exerciseMap, pe, direction, self._currentPlan.planId, self._currentPlan.clientId);
+            if (result) self._savePlan();
         },
 
         _showVideoPopup: function(exerciseId) {

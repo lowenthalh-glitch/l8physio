@@ -1,6 +1,100 @@
 <div class="section-container l8-section">
-    <div class="page-header">
-        <h1>AI Agent</h1>
+    <!-- Header with Parallax Effect -->
+    <div class="l8-header-frame parallax-container">
+        <!-- Background Illustration Layer -->
+        <div class="l8-header-bg parallax-layer" data-speed="0.5">
+            <svg class="l8-illustration" viewBox="0 0 1200 120" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="aiaGradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:0.4" />
+                        <stop offset="100%" style="stop-color:#7c3aed;stop-opacity:0.2" />
+                    </linearGradient>
+                </defs>
+
+                <!-- Grid Background -->
+                <g opacity="0.1">
+                    <line x1="0" y1="30" x2="1200" y2="30" stroke="#8b5cf6" stroke-width="0.5"/>
+                    <line x1="0" y1="60" x2="1200" y2="60" stroke="#8b5cf6" stroke-width="0.5"/>
+                    <line x1="0" y1="90" x2="1200" y2="90" stroke="#8b5cf6" stroke-width="0.5"/>
+                    <line x1="200" y1="0" x2="200" y2="120" stroke="#8b5cf6" stroke-width="0.5"/>
+                    <line x1="400" y1="0" x2="400" y2="120" stroke="#8b5cf6" stroke-width="0.5"/>
+                    <line x1="600" y1="0" x2="600" y2="120" stroke="#8b5cf6" stroke-width="0.5"/>
+                    <line x1="800" y1="0" x2="800" y2="120" stroke="#8b5cf6" stroke-width="0.5"/>
+                    <line x1="1000" y1="0" x2="1000" y2="120" stroke="#8b5cf6" stroke-width="0.5"/>
+                </g>
+
+                <!-- AI Icons -->
+                <g class="people-animation">
+                    <!-- Brain Icon -->
+                    <ellipse cx="200" cy="55" rx="16" ry="18" fill="url(#aiaGradient1)" opacity="0.5"/>
+                    <path d="M 192,55 Q 196,42 200,50 Q 204,42 208,55" fill="none" stroke="#fff" stroke-width="1.2" opacity="0.4"/>
+                    <line x1="200" y1="42" x2="200" y2="68" stroke="#fff" stroke-width="0.8" opacity="0.3"/>
+                    <line x1="188" y1="55" x2="212" y2="55" stroke="#fff" stroke-width="0.8" opacity="0.3"/>
+
+                    <!-- Chat Bubble Icon -->
+                    <rect x="390" y="40" width="36" height="26" rx="6" fill="url(#aiaGradient1)" opacity="0.5"/>
+                    <polygon points="400,66 406,66 398,76" fill="url(#aiaGradient1)" opacity="0.5"/>
+                    <circle cx="401" cy="53" r="2" fill="#fff" opacity="0.5"/>
+                    <circle cx="408" cy="53" r="2" fill="#fff" opacity="0.5"/>
+                    <circle cx="415" cy="53" r="2" fill="#fff" opacity="0.5"/>
+
+                    <!-- Neural Network Icon -->
+                    <circle cx="590" cy="45" r="5" fill="url(#aiaGradient1)" opacity="0.6"/>
+                    <circle cx="610" cy="45" r="5" fill="url(#aiaGradient1)" opacity="0.6"/>
+                    <circle cx="600" cy="65" r="5" fill="url(#aiaGradient1)" opacity="0.6"/>
+                    <circle cx="580" cy="65" r="5" fill="url(#aiaGradient1)" opacity="0.6"/>
+                    <circle cx="620" cy="65" r="5" fill="url(#aiaGradient1)" opacity="0.6"/>
+                    <line x1="590" y1="50" x2="580" y2="60" stroke="#8b5cf6" stroke-width="1" opacity="0.4"/>
+                    <line x1="590" y1="50" x2="600" y2="60" stroke="#8b5cf6" stroke-width="1" opacity="0.4"/>
+                    <line x1="610" y1="50" x2="600" y2="60" stroke="#8b5cf6" stroke-width="1" opacity="0.4"/>
+                    <line x1="610" y1="50" x2="620" y2="60" stroke="#8b5cf6" stroke-width="1" opacity="0.4"/>
+
+                    <!-- Sparkle/Star Icon -->
+                    <path d="M 800,55 L 803,48 L 806,55 L 813,52 L 806,55 L 809,62 L 806,55 L 800,58 Z" fill="url(#aiaGradient1)" opacity="0.6"/>
+                    <path d="M 790,45 L 792,41 L 794,45 L 798,43 L 794,45 L 796,49 L 794,45 L 790,47 Z" fill="url(#aiaGradient1)" opacity="0.4"/>
+                    <path d="M 810,65 L 812,62 L 814,65 L 817,63 L 814,65 L 815,68 L 814,65 L 810,67 Z" fill="url(#aiaGradient1)" opacity="0.4"/>
+
+                    <!-- Circuit/Chip Icon -->
+                    <rect x="980" y="42" width="30" height="30" rx="4" fill="url(#aiaGradient1)" opacity="0.5"/>
+                    <rect x="988" y="50" width="14" height="14" rx="2" fill="none" stroke="#fff" stroke-width="1.2" opacity="0.4"/>
+                    <line x1="995" y1="42" x2="995" y2="50" stroke="#8b5cf6" stroke-width="1.5" opacity="0.4"/>
+                    <line x1="988" y1="57" x2="980" y2="57" stroke="#8b5cf6" stroke-width="1.5" opacity="0.4"/>
+                    <line x1="1002" y1="57" x2="1010" y2="57" stroke="#8b5cf6" stroke-width="1.5" opacity="0.4"/>
+                    <line x1="995" y1="64" x2="995" y2="72" stroke="#8b5cf6" stroke-width="1.5" opacity="0.4"/>
+                </g>
+
+                <!-- Connection Lines -->
+                <path d="M 216,55 Q 305,40 390,53" fill="none" stroke="#8b5cf6" stroke-width="1" opacity="0.3"/>
+                <path d="M 426,53 Q 510,70 580,55" fill="none" stroke="#8b5cf6" stroke-width="1" opacity="0.3"/>
+                <path d="M 625,55 Q 710,45 790,55" fill="none" stroke="#8b5cf6" stroke-width="1" opacity="0.3"/>
+                <path d="M 815,55 Q 895,70 980,57" fill="none" stroke="#8b5cf6" stroke-width="1" opacity="0.3"/>
+
+                <!-- Animated Dots -->
+                <circle cx="305" cy="46" r="3" fill="#8b5cf6" opacity="0.8">
+                    <animate attributeName="opacity" values="0.3;1;0.3" dur="2s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="510" cy="62" r="3" fill="#8b5cf6" opacity="0.8">
+                    <animate attributeName="opacity" values="0.3;1;0.3" dur="2.5s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="710" cy="48" r="3" fill="#8b5cf6" opacity="0.8">
+                    <animate attributeName="opacity" values="0.3;1;0.3" dur="1.8s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="895" cy="63" r="3" fill="#8b5cf6" opacity="0.8">
+                    <animate attributeName="opacity" values="0.3;1;0.3" dur="2.2s" repeatCount="indefinite"/>
+                </circle>
+            </svg>
+        </div>
+
+        <!-- Header Content Layer -->
+        <div class="l8-header-content parallax-layer" data-speed="1">
+            <div class="l8-header-title">
+                <div class="l8-icon">&#129302;</div>
+                <div>
+                    <h1 class="l8-title">AI Agent</h1>
+                    <p class="l8-subtitle">AI-Powered Assistant for Data Analysis & Operations</p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="l8-module-tabs">

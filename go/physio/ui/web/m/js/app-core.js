@@ -47,6 +47,9 @@
                 this.applyPermissionFilter();
             }
 
+            // Apply portal-based service filtering (mirrors desktop portal HTML files)
+            this.applyPortalFilter();
+
             this.initSidebar();
 
             var refreshBtn = document.getElementById('refresh-btn');
@@ -218,6 +221,43 @@
             const initFn = initFunctions[section];
             if (initFn && typeof window[initFn] === 'function') {
                 window[initFn]();
+            }
+        },
+
+        applyPortalFilter() {
+            var portal = sessionStorage.getItem('userPortal') || '';
+            if (!portal || portal === 'app.html') return; // admin — no filtering
+
+            // Define which services each portal can see (matches desktop portal HTML files)
+            var PORTAL_SERVICES = {
+                'client-app.html':    ['clients'],
+                'therapist-app.html': ['therapists', 'clients', 'boostapp']
+            };
+            var PORTAL_SIDEBAR = {
+                'client-app.html':    ['physio', 'aia'],
+                'therapist-app.html': ['physio', 'aia']
+            };
+
+            var allowed = PORTAL_SERVICES[portal];
+            var allowedSidebar = PORTAL_SIDEBAR[portal];
+            if (!allowed) return;
+
+            // Filter sidebar items
+            if (allowedSidebar) {
+                document.querySelectorAll('.sidebar-item[data-module]').forEach(function(item) {
+                    var mod = item.dataset.module;
+                    if (mod && allowedSidebar.indexOf(mod) === -1) {
+                        item.style.display = 'none';
+                    }
+                });
+            }
+
+            // Filter nav config services — remove disallowed services from config
+            var nc = window.LAYER8M_NAV_CONFIG;
+            if (nc && nc.physio && nc.physio.services && nc.physio.services.management) {
+                nc.physio.services.management = nc.physio.services.management.filter(function(svc) {
+                    return allowed.indexOf(svc.key) !== -1;
+                });
             }
         },
 

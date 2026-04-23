@@ -182,6 +182,7 @@ message PlanExercise {
   int32           order_index      = 8;
   int32           circuit_number   = 9;
   string          circuit_label    = 10;
+  PhysioLoadType  load_type        = 11;
 }
 
 // Embedded in ProgressLog
@@ -569,6 +570,7 @@ message ExerciseSwapLog {
   SwapDirection       direction        = 6;
   int64               swap_date        = 7;
   string              therapist_id     = 8;
+  string              description      = 9;
   l8common.AuditInfo  audit_info       = 30;
 }
 
@@ -578,7 +580,27 @@ message ExerciseSwapLogList {
 }
 
 // ──────────────────────────────────────────────
-// Head Therapist Dashboard (stored, refresh via POST)
+// Status Override Log (audit trail for manual overrides)
+// ──────────────────────────────────────────────
+
+message StatusOverrideLog {
+  string              override_id    = 1;
+  string              client_id      = 2;
+  string              changed_by     = 3;
+  SessionStatus       from_status    = 4;
+  SessionStatus       to_status      = 5;
+  int64               change_date    = 6;
+  string              reason         = 7;
+  l8common.AuditInfo  audit_info     = 30;
+}
+
+message StatusOverrideLogList {
+  repeated StatusOverrideLog list = 1;
+  l8api.L8MetaData metadata       = 2;
+}
+
+// ──────────────────────────────────────────────
+// Head Therapist Dashboard (in-memory aggregation, AlmOverlay pattern)
 // ──────────────────────────────────────────────
 
 message HeadThDashRow {
@@ -593,6 +615,7 @@ message HeadThDashRow {
   SessionStatus       last_session_status   = 9;
   SessionStatus       override_status       = 10;
   int32               swap_count            = 11;
+  string              status_reason         = 12;
   l8common.AuditInfo  audit_info            = 30;
 }
 
