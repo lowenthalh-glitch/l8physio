@@ -36,6 +36,22 @@
             authFetch(apiPrefix() + '/50/BstpCal?body=' + query)
             .then(function(data) {
                 var all = data.list || [];
+
+                // Only show appointments within 2 weeks from today
+                var now = new Date();
+                now.setHours(0, 0, 0, 0);
+                var twoWeeksLater = new Date(now);
+                twoWeeksLater.setDate(twoWeeksLater.getDate() + 14);
+                twoWeeksLater.setHours(23, 59, 59, 999);
+                var nowMs = now.getTime();
+                var cutoffMs = twoWeeksLater.getTime();
+
+                all = all.filter(function(e) {
+                    if (!e.startTime) return false;
+                    var t = new Date(e.startTime).getTime();
+                    return !isNaN(t) && t >= nowMs && t <= cutoffMs;
+                });
+
                 var matched = all.filter(function(e) {
                     if (e.physioClientId && e.physioClientId === client.clientId) return true;
                     if (client.boostappId && Array.isArray(e.participants)) {
@@ -51,9 +67,9 @@
                     return;
                 }
 
-                // Sort newest first
+                // Sort soonest first
                 matched.sort(function(a, b) {
-                    return (b.startTime || '').localeCompare(a.startTime || '');
+                    return (a.startTime || '').localeCompare(b.startTime || '');
                 });
 
                 // Build status lookup for this client's participation

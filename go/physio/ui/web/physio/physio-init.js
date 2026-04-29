@@ -39,6 +39,21 @@
                     }, 50);
                     return;
                 }
+                if (serviceKey === 'boostapp') {
+                    var sectionEl = window.Physio._state && window.Physio._state.sectionEl;
+                    if (sectionEl) {
+                        sectionEl.querySelectorAll('.l8-service-view').forEach(function(v) {
+                            v.classList.toggle('active', v.dataset.service === 'boostapp');
+                        });
+                        sectionEl.querySelectorAll('.l8-subnav-item').forEach(function(a) {
+                            a.classList.toggle('active', a.dataset.service === 'boostapp');
+                        });
+                    }
+                    setTimeout(function() {
+                        _loadBoostappTable('management-boostapp-table-container');
+                    }, 50);
+                    return;
+                }
                 if (serviceKey === 'builder') {
                     var sectionEl = window.Physio._state && window.Physio._state.sectionEl;
                     if (sectionEl) {
@@ -388,6 +403,50 @@
             }
         })
         .catch(function(err) { Layer8DNotification.error('Error: ' + err.message); });
+    }
+
+    function _boostappDateRange() {
+        var now = new Date();
+        var end = new Date(now);
+        end.setDate(end.getDate() + 14);
+        function fmt(d) {
+            var y = d.getFullYear();
+            var m = ('0' + (d.getMonth() + 1)).slice(-2);
+            var dd = ('0' + d.getDate()).slice(-2);
+            return y + '-' + m + '-' + dd;
+        }
+        return { from: fmt(now), to: fmt(end) };
+    }
+
+    function _loadBoostappTable(containerId) {
+        var el = document.getElementById(containerId);
+        if (!el || typeof Layer8DTable === 'undefined') return;
+
+        var cols = PhysioManagement.columns.BoostappCalendarEvent || [];
+        var range = _boostappDateRange();
+
+        var table = new Layer8DTable({
+            containerId: containerId,
+            endpoint: Layer8DConfig.resolveEndpoint('/50/BstpCal'),
+            modelName: 'BoostappCalendarEvent',
+            columns: cols,
+            primaryKey: 'eventId',
+            pageSize: 10,
+            serverSide: true,
+            baseWhereClause: 'startTime>=' + range.from + ' and startTime<=' + range.to,
+            sortable: true,
+            filterable: true,
+            showActions: false,
+            onRowClick: function(item) {
+                if (window.Physio && window.Physio._showDetailsModal) {
+                    window.Physio._showDetailsModal({ model: 'BoostappCalendarEvent' }, item, item.eventId);
+                }
+            }
+        });
+        table.init();
+        if (window.Physio && window.Physio._state) {
+            window.Physio._state.serviceTables['management-boostapp'] = table;
+        }
     }
 
     function _loadSwapLogTable(containerId, clientId) {

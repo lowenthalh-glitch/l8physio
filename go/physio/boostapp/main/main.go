@@ -8,6 +8,7 @@ import (
 	"github.com/saichler/l8bus/go/overlay/vnic"
 	l8c "github.com/saichler/l8common/go/common"
 	"github.com/saichler/l8physio/go/physio/boostapp"
+	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8physio/go/physio/common"
 	"github.com/saichler/l8physio/go/physio/services"
 	"github.com/saichler/l8physio/go/types/physio"
@@ -81,6 +82,8 @@ func runSyncLoop(client *boostapp.Client, nic ifs.IVNic, res ifs.IResources, int
 }
 
 func syncOnce(client *boostapp.Client, nic ifs.IVNic, res ifs.IResources) {
+	deleteOldEvents(nic)
+
 	start, end := syncDateRange()
 	log("--- Sync starting: " + start + " to " + end + " ---")
 
@@ -127,13 +130,39 @@ func syncOnce(client *boostapp.Client, nic ifs.IVNic, res ifs.IResources) {
 
 func syncDateRange() (string, string) {
 	now := time.Now()
-	weekday := int(now.Weekday())
-	sunday := now.AddDate(0, 0, -weekday)
-	saturday := sunday.AddDate(0, 0, 6)
-	if weekday >= 4 {
-		saturday = saturday.AddDate(0, 0, 7)
+	end := now.AddDate(0, 0, 14)
+	return now.Format("2006-01-02"), end.Format("2006-01-02")
+}
+
+func deleteOldEvents(nic ifs.IVNic) {
+	today := time.Now().Format("2006-01-02")
+	entities, err := l8c.GetEntities(boostapp.ServiceName, boostapp.ServiceArea, &physio.BoostappCalendarEvent{}, nic)
+	if err != nil {
+		log("WARN: could not fetch events for cleanup: " + err.Error())
+		return
 	}
-	return sunday.Format("2006-01-02"), saturday.Format("2006-01-02")
+	deleted := 0
+	for _, e := range entities {
+		evt, ok := e.(*physio.BoostappCalendarEvent)
+		if !ok || evt.StartTime == "" {
+			continue
+		}
+		if evt.StartTime < today {
+			handler, hOk := l8c.ServiceHandler(boostapp.ServiceName, boostapp.ServiceArea, nic)
+			if !hOk {
+				break
+			}
+			resp := handler.Delete(object.New(nil, evt), nic)
+			if resp.Error() != nil {
+				log("  WARN: failed to delete old event " + evt.EventId + ": " + resp.Error().Error())
+			} else {
+				deleted++
+			}
+		}
+	}
+	if deleted > 0 {
+		log("Cleaned up " + strconv.Itoa(deleted) + " past events")
+	}
 }
 
 func fetchParticipantsForEvents(client *boostapp.Client, events []*physio.BoostappCalendarEvent) {
