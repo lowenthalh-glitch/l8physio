@@ -4,17 +4,17 @@ go 1.26.1
 
 require (
 	github.com/saichler/l8agent v0.0.0-20260404041519-33c923998e3c
-	github.com/saichler/l8bus v0.0.0-20260426032250-7d34418825a0
-	github.com/saichler/l8collector/go v0.0.0-20260429131218-e953e1c7fdf7
-	github.com/saichler/l8common v0.0.0-20260418165146-c466b5204bd5
+	github.com/saichler/l8bus v0.0.0-20260502134429-70d48e7ee58c
+	github.com/saichler/l8collector/go v0.0.0-20260504222255-89f7f2989b98
+	github.com/saichler/l8common v0.0.0-20260503204002-5c40d4cc042f
 	github.com/saichler/l8events v0.0.0-20260326140304-4e54a1195008
-	github.com/saichler/l8parser v0.0.0-20260429131134-afaf2ecec825
+	github.com/saichler/l8parser v0.0.0-20260504014757-63e78ee52fb3
 	github.com/saichler/l8pollaris v0.0.0-20260418233826-378ba5e9453a
-	github.com/saichler/l8services v0.0.0-20260426032214-4df514457e11
+	github.com/saichler/l8services v0.0.0-20260502134457-c10c201185cc
 	github.com/saichler/l8srlz v0.0.0-20260322124809-505a0d08f95d
-	github.com/saichler/l8types v0.0.0-20260419163606-4750d0cd36e2
-	github.com/saichler/l8utils v0.0.0-20260426024101-88d41a6b1943
-	github.com/saichler/l8web v0.0.0-20260414013916-c8c72b83721d
+	github.com/saichler/l8types v0.0.0-20260504131009-ef710cbdc3d1
+	github.com/saichler/l8utils v0.0.0-20260504134450-edf8a9907236
+	github.com/saichler/l8web v0.0.0-20260502183355-93884cadd3af
 	google.golang.org/protobuf v1.36.12-0.20260120151049-f2248ac996af
 )
 
@@ -38,10 +38,10 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/saichler/l8logfusion v0.0.0-20260320120056-3a3617eed28f // indirect
-	github.com/saichler/l8orm v0.0.0-20260425043220-78e9b42b67da // indirect
-	github.com/saichler/l8ql v0.0.0-20260426044151-a58aa7f009dd // indirect
+	github.com/saichler/l8orm v0.0.0-20260502160314-aeb86d23e209 // indirect
+	github.com/saichler/l8ql v0.0.0-20260504131851-f19ce8fbae71 // indirect
 	github.com/saichler/l8reflect v0.0.0-20260414115258-300dd0000aca // indirect
-	github.com/saichler/probler v0.0.0-20260429122841-f44dbcb2d47e // indirect
+	github.com/saichler/probler v0.0.0-20260503163813-67f1064ecefe // indirect
 	github.com/spf13/pflag v1.0.9 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	go.yaml.in/yaml/v2 v2.4.3 // indirect

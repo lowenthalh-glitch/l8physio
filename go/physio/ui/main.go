@@ -1,25 +1,20 @@
 package main
 
 import (
-	"github.com/saichler/l8bus/go/overlay/vnic"
-	l8c "github.com/saichler/l8common/go/common"
 	"github.com/saichler/l8agent/go/types/l8agent"
+	"github.com/saichler/l8common/go/common"
+	l8c "github.com/saichler/l8common/go/common"
 	"github.com/saichler/l8events/go/types/l8events"
-	"github.com/saichler/l8physio/go/physio/aia"
-	"github.com/saichler/l8physio/go/physio/common"
 	"github.com/saichler/l8physio/go/types/physio"
-	"github.com/saichler/l8services/go/services/csvexport"
-	"github.com/saichler/l8services/go/services/filestore"
 	"github.com/saichler/l8types/go/ifs"
-	"github.com/saichler/l8utils/go/utils/ipsegment"
-	"github.com/saichler/l8web/go/web/server"
-	"strconv"
 )
 
 func main() {
-	startWebServer(2774, "/data/physio")
+	svr := common.CreateWebServer("web", registerPhysioTypes)
+	svr.Start()
 }
 
+/*
 func startWebServer(port int, cert string) {
 	serverConfig := &server.RestServerConfig{
 		Host:           ipsegment.MachineIP,
@@ -33,7 +28,7 @@ func startWebServer(port int, cert string) {
 		panic(err)
 	}
 
-	resources := common.CreateResources("web-" + strconv.Itoa(port), false)
+	resources := common.CreateResources("web-"+strconv.Itoa(port), false)
 
 	registerPhysioTypes(resources)
 
@@ -53,7 +48,7 @@ func startWebServer(port int, cert string) {
 
 	nic.Resources().Logger().Info("Physio Web Server Started!")
 	svr.Start()
-}
+}*/
 
 func registerPhysioTypes(resources ifs.IResources) {
 	// Agent types
