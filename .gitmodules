@@ -1,3 +1,0 @@
-[submodule "go/physio/ui/web/l8ui"]
-	path = go/physio/ui/web/l8ui
-	url = https://github.com/saichler/l8ui.git
