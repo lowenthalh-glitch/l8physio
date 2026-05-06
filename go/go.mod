@@ -5,7 +5,7 @@ go 1.26.1
 require (
 	github.com/saichler/l8agent v0.0.0-20260404041519-33c923998e3c
 	github.com/saichler/l8bus v0.0.0-20260502134429-70d48e7ee58c
-	github.com/saichler/l8collector/go v0.0.0-20260505134039-62a919ebc206
+	github.com/saichler/l8collector/go v0.0.0-20260505154850-af5711154743
 	github.com/saichler/l8common v0.0.0-20260505024122-8e5ad212b06b
 	github.com/saichler/l8events v0.0.0-20260326140304-4e54a1195008
 	github.com/saichler/l8parser v0.0.0-20260504014757-63e78ee52fb3
@@ -37,7 +37,7 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/saichler/l8logfusion v0.0.0-20260320120056-3a3617eed28f // indirect
-	github.com/saichler/l8orm v0.0.0-20260502160314-aeb86d23e209 // indirect
+	github.com/saichler/l8orm v0.0.0-20260505134642-266c2aacdf3e // indirect
 	github.com/saichler/l8ql v0.0.0-20260505111526-897c5e0ff9a4 // indirect
 	github.com/saichler/l8reflect v0.0.0-20260414115258-300dd0000aca // indirect
 	github.com/saichler/l8services v0.0.0-20260505133530-95676b18110b // indirect
