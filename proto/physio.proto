@@ -292,6 +292,9 @@ message PhysioExercise {
   // Progression/regression chain — references to exercises in the same category
   string                 progression_exercise_id = 26;
   string                 regression_exercise_id  = 27;
+  // Multi-joint and multi-category support (replaces single joint/category fields 4 and 14)
+  repeated PhysioJoint            joints      = 31;
+  repeated PhysioExerciseCategory categories  = 32;
   l8common.AuditInfo          audit_info           = 30;
 }
 

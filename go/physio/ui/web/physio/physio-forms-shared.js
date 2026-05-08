@@ -28,7 +28,7 @@
                 PhysioExercise: f.form('Exercise', [
                     f.section('Exercise Details', [
                         ...f.text('name',            'Name',        true),
-                        ...f.select('category',      'Category',    enums.EXERCISE_CATEGORY),
+                        ...f.multiselect('categories', 'Categories', enums.EXERCISE_CATEGORY),
                         ...f.select('bodyRegion',    'Body Region', enums.BODY_REGION),
                         ...f.textarea('description', 'Description'),
                         ...f.textarea('exerciseAim', 'Exercise Aim'),
@@ -39,7 +39,7 @@
                         ...f.reference('regressionExerciseId',  'Regression (easier)',  'PhysioExercise')
                     ]),
                     f.section('Protocol Classification', [
-                        ...f.select('joint',        'Joint',         enums.JOINT),
+                        ...f.multiselect('joints',   'Joints',        enums.JOINT),
                         ...f.select('posture',      'Posture Type',  enums.POSTURE),
                         ...f.select('phase',        'Phase',         enums.PHYSIO_PHASE),
                         ...f.select('exerciseType', 'Type',          enums.EXERCISE_TYPE),
