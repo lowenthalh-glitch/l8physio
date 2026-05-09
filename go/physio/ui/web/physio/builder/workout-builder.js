@@ -137,7 +137,7 @@
         try {
             var allFetched = [];
             for (var ji = 0; ji < uniqueJoints.length; ji++) {
-                var query = 'select * from PhysioExercise where joint=' + uniqueJoints[ji] + ' limit 500';
+                var query = 'select * from PhysioExercise where joints=' + uniqueJoints[ji] + ' limit 500';
                 var url   = _apiPrefix() + '/50/PhyExercis?body=' + encodeURIComponent(JSON.stringify({ text: query }));
                 var resp  = await fetch(url, { headers: _authHeaders() });
                 if (!resp.ok) {
@@ -158,7 +158,7 @@
                 if (seen[ex.exerciseId]) return;
                 for (var pi = 0; pi < protocols.length; pi++) {
                     var p = protocols[pi];
-                    if (ex.posture === p.posture && ex.joint === p.joint) {
+                    if (ex.posture === p.posture && ex.joints && ex.joints.indexOf(p.joint) !== -1) {
                         seen[ex.exerciseId] = true;
                         exercises.push(ex);
                         break;
