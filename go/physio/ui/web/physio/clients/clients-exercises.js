@@ -189,6 +189,19 @@
         _renderPlanTable: function(plan, planExercises, exerciseMap, container) {
             var self = this;
 
+            if (!self._originals) {
+                self._originals = {};
+                (planExercises || []).forEach(function(pe) {
+                    self._originals[pe.exerciseId] = {
+                        sets:        parseInt(pe.sets, 10) || 0,
+                        reps:        parseInt(pe.reps, 10) || 0,
+                        notes:       pe.notes || '',
+                        loadType:    parseInt(pe.loadType, 10) || 0,
+                        holdSeconds: parseInt(pe.holdSeconds, 10) || 0
+                    };
+                });
+            }
+
             // Plan header
             var statusLabels = { 1: 'Draft', 2: 'Active', 3: 'Completed', 4: 'Cancelled' };
             var statusCls    = { 1: 'physio-plan-status-draft', 2: 'physio-plan-status-active', 3: 'physio-plan-status-done', 4: 'physio-plan-status-done' };
@@ -217,6 +230,14 @@
                 ...col.custom('loadType', 'Load', function(item) {
                     return PhysioPlanActions.loadTypeSelect(item.loadType, 'physio-load-select', ' data-eid="' + Layer8DUtils.escapeHtml(item.exerciseId) + '"');
                 }, { sortKey: false }),
+                ...col.custom('holdSeconds', 'Time', function(item) {
+                    var enabled = (item.loadType === 8 || item.loadType === 9);
+                    var eid = Layer8DUtils.escapeHtml(item.exerciseId);
+                    return '<span style="display:inline-flex;align-items:center;gap:2px;white-space:nowrap;">'
+                         + '<input type="number" min="0" class="physio-time-input" data-eid="' + eid + '" value="' + (item.holdSeconds || 0) + '" ' + (enabled ? '' : 'disabled') + ' style="width:48px;padding:2px 4px;border:1px solid var(--layer8d-border);border-radius:3px;' + (enabled ? '' : 'background:var(--layer8d-bg-light);color:var(--layer8d-text-muted);') + '">'
+                         + '<span style="font-size:11px;color:var(--layer8d-text-muted);">s</span>'
+                         + '</span>';
+                }, { sortKey: false }),
                 ...col.col('notes', 'Notes'),
                 ...col.custom('_progReg', '', function(item) {
                     var eid = Layer8DUtils.escapeHtml(item.exerciseId);
@@ -229,6 +250,9 @@
                     if (fullEx.progressionExerciseId) {
                         var progName = ((self._exerciseMap || {})[fullEx.progressionExerciseId] || {}).name || 'harder';
                         btns += '<button class="physio-progress-btn" data-eid="' + eid + '" title="Progress to: ' + Layer8DUtils.escapeHtml(progName) + '" style="cursor:pointer;background:none;border:none;font-size:16px;color:var(--layer8d-success);">+</button>';
+                    }
+                    if (fullEx.rotationGroupId) {
+                        btns += '<button class="physio-rotate-btn" data-eid="' + eid + '" title="Rotate" style="cursor:pointer;background:none;border:none;font-size:14px;">↻</button>';
                     }
                     return btns || '';
                 }, { sortKey: false }),
@@ -275,6 +299,8 @@
                         if (prog) { e.stopPropagation(); self._swapExercise(prog.dataset.eid, 'progression'); return; }
                         var reg = e.target.closest('.physio-regress-btn');
                         if (reg) { e.stopPropagation(); self._swapExercise(reg.dataset.eid, 'regression'); return; }
+                        var rot = e.target.closest('.physio-rotate-btn');
+                        if (rot) { e.stopPropagation(); self._openRotatePopup(rot.dataset.eid); return; }
                         var up = e.target.closest('.physio-move-up');
                         if (up) { e.stopPropagation(); self._moveExercise(cn, up.dataset.eid, -1); return; }
                         var down = e.target.closest('.physio-move-down');
@@ -286,10 +312,18 @@
                     });
                     w.addEventListener('change', function(e) {
                         var sel = e.target.closest('.physio-load-select');
-                        if (!sel) return;
-                        var eid = sel.dataset.eid;
-                        var pe = (self._currentPlan.exercises || []).filter(function(ex) { return ex.exerciseId === eid; })[0];
-                        if (pe) { pe.loadType = parseInt(sel.value, 10) || 0; self._savePlan(); }
+                        if (sel) {
+                            var eid = sel.dataset.eid;
+                            var pe = (self._currentPlan.exercises || []).filter(function(ex) { return ex.exerciseId === eid; })[0];
+                            if (pe) { pe.loadType = parseInt(sel.value, 10) || 0; self._savePlan(); }
+                            return;
+                        }
+                        var time = e.target.closest('.physio-time-input');
+                        if (time) {
+                            var teid = time.dataset.eid;
+                            var tpe = (self._currentPlan.exercises || []).filter(function(ex) { return ex.exerciseId === teid; })[0];
+                            if (tpe) { tpe.holdSeconds = parseInt(time.value, 10) || 0; self._savePlan(); }
+                        }
                     });
                 })(wrap, cNum);
 
@@ -317,6 +351,9 @@
 
         _savePlan: function() {
             var self = this;
+            if (self._originals && self._currentPlan && self._exerciseMap) {
+                PhysioPlanActions.logChanges(self._currentPlan, self._currentPlan.exercises || [], self._exerciseMap, self._originals);
+            }
             PhysioPlanActions.save(self._currentPlan, function() {
                 var result = self._buildCircuitRows(self._currentPlan.exercises, self._exerciseMap || {});
                 Object.keys(self._circuitTables).forEach(function(key) {
@@ -383,6 +420,14 @@
             if (!pe) return;
             var result = PhysioPlanActions.swap(self._exerciseMap, pe, direction, self._currentPlan.planId, self._currentPlan.clientId);
             if (result) self._savePlan();
+        },
+
+        _openRotatePopup: function(exerciseId) {
+            var self = this;
+            if (!self._currentPlan || !self._exerciseMap) return;
+            var pe = (self._currentPlan.exercises || []).filter(function(e) { return e.exerciseId === exerciseId; })[0];
+            if (!pe) return;
+            PhysioPlanActions.openRotatePopup(self._exerciseMap, pe, self._planJoint, self._currentPlan.planId, self._currentPlan.clientId, function() { self._savePlan(); });
         },
 
         _showVideoPopup: function(exerciseId) {

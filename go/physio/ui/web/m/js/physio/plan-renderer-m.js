@@ -93,6 +93,9 @@
                     var progName = (exMap[fullEx.progressionExerciseId] || {}).name || 'harder';
                     actions += '<button class="mpr-progress" data-row="' + rowIdx + '" title="' + Layer8DUtils.escapeHtml(progName) + '" style="padding:4px 8px;border:1px solid var(--layer8d-success);border-radius:4px;background:none;color:var(--layer8d-success);font-size:14px;cursor:pointer;">+</button>';
                 }
+                if (fullEx.rotationGroupId) {
+                    actions += '<button class="mpr-rotate" data-row="' + rowIdx + '" title="Rotate" style="padding:4px 8px;border:1px solid var(--layer8d-border);border-radius:4px;background:none;font-size:14px;cursor:pointer;">↻</button>';
+                }
                 actions += '<button class="mpr-up" data-row="' + rowIdx + '" style="padding:4px 6px;border:1px solid var(--layer8d-border);border-radius:4px;background:none;cursor:pointer;">\u25b2</button>';
                 actions += '<button class="mpr-down" data-row="' + rowIdx + '" style="padding:4px 6px;border:1px solid var(--layer8d-border);border-radius:4px;background:none;cursor:pointer;">\u25bc</button>';
                 actions += '<button class="mpr-video" data-eid="' + eid + '" style="padding:4px 6px;border:1px solid var(--layer8d-border);border-radius:4px;background:none;cursor:pointer;">\u25b6</button>';
@@ -104,9 +107,10 @@
                 html += '<div style="border:1px solid var(--layer8d-border);border-top:none;padding:10px 12px;background:var(--layer8d-bg-white);">' +
                     '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">' +
                     '<span style="font-weight:600;font-size:14px;">' + Layer8DUtils.escapeHtml(row.name) + '</span>' + typeBadge + '</div>' +
-                    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;">' +
+                    '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:6px;">' +
                     '<div><label style="font-size:11px;color:var(--layer8d-text-muted);">Sets</label><input type="number" class="mpr-sets" data-row="' + rowIdx + '" value="' + Layer8DUtils.escapeHtml(String(row.sets)) + '" style="' + iStyle + '"></div>' +
                     '<div><label style="font-size:11px;color:var(--layer8d-text-muted);">Reps</label><input type="text" class="mpr-reps" data-row="' + rowIdx + '" value="' + Layer8DUtils.escapeHtml(String(row.reps)) + '" style="' + iStyle + '"></div>' +
+                    '<div><label style="font-size:11px;color:var(--layer8d-text-muted);">Time (s)</label><input type="number" min="0" class="mpr-time" data-row="' + rowIdx + '" value="' + (row.holdSeconds || 0) + '" ' + ((row.loadType === 8 || row.loadType === 9) ? '' : 'disabled') + ' style="' + iStyle + ((row.loadType === 8 || row.loadType === 9) ? '' : 'background:var(--layer8d-bg-light);color:var(--layer8d-text-muted);') + '"></div>' +
                     '</div>' +
                     '<div style="margin-bottom:6px;"><label style="font-size:11px;color:var(--layer8d-text-muted);">Load</label>' + loadSelect + '</div>' +
                     '<div style="margin-bottom:6px;"><label style="font-size:11px;color:var(--layer8d-text-muted);">Notes</label><input type="text" class="mpr-notes" data-row="' + rowIdx + '" value="' + Layer8DUtils.escapeHtml(row.notes) + '" style="' + iStyle + '"></div>' +
@@ -132,6 +136,7 @@
             container.querySelectorAll('.mpr-reps').forEach(function(i) { var pe = st.flatRows[parseInt(i.dataset.row)]; if (pe) { st.originals[pe.exerciseId] = st.originals[pe.exerciseId] || {}; st.originals[pe.exerciseId].reps = parseInt(i.value, 10) || 0; } });
             container.querySelectorAll('.mpr-notes').forEach(function(i) { var pe = st.flatRows[parseInt(i.dataset.row)]; if (pe) { st.originals[pe.exerciseId] = st.originals[pe.exerciseId] || {}; st.originals[pe.exerciseId].notes = i.value.trim(); } });
             container.querySelectorAll('.mpr-load').forEach(function(i) { var pe = st.flatRows[parseInt(i.dataset.row)]; if (pe) { st.originals[pe.exerciseId] = st.originals[pe.exerciseId] || {}; st.originals[pe.exerciseId].loadType = parseInt(i.value, 10) || 0; } });
+            container.querySelectorAll('.mpr-time').forEach(function(i) { var pe = st.flatRows[parseInt(i.dataset.row)]; if (pe) { st.originals[pe.exerciseId] = st.originals[pe.exerciseId] || {}; st.originals[pe.exerciseId].holdSeconds = parseInt(i.value, 10) || 0; } });
         }
 
         if (window.PhysioClientExerciseInfo) PhysioClientExerciseInfo.loadAuthImages(container);
@@ -148,6 +153,7 @@
         container.querySelectorAll('.mpr-reps').forEach(function(i) { var pe = st.flatRows[parseInt(i.dataset.row)]; if (pe) pe.reps = parseInt(i.value, 10) || 0; });
         container.querySelectorAll('.mpr-notes').forEach(function(i) { var pe = st.flatRows[parseInt(i.dataset.row)]; if (pe) pe.notes = i.value.trim(); });
         container.querySelectorAll('.mpr-load').forEach(function(i) { var pe = st.flatRows[parseInt(i.dataset.row)]; if (pe) pe.loadType = parseInt(i.value, 10) || 0; });
+        container.querySelectorAll('.mpr-time').forEach(function(i) { var pe = st.flatRows[parseInt(i.dataset.row)]; if (pe) pe.holdSeconds = parseInt(i.value, 10) || 0; });
     }
 
     function _rerender(container) {
@@ -169,6 +175,14 @@
         if (prog) { e.stopPropagation(); _collectEdits(container); var pe = st.flatRows[parseInt(prog.dataset.row)]; if (pe) { PA.swap(st.exMap, pe, 'progression', st.plan.planId, st.plan.clientId); _rerender(container); } return; }
         var reg = t.closest('.mpr-regress');
         if (reg) { e.stopPropagation(); _collectEdits(container); var rpe = st.flatRows[parseInt(reg.dataset.row)]; if (rpe) { PA.swap(st.exMap, rpe, 'regression', st.plan.planId, st.plan.clientId); _rerender(container); } return; }
+
+        var rot = t.closest('.mpr-rotate');
+        if (rot) {
+            e.stopPropagation(); _collectEdits(container);
+            var rotPe = st.flatRows[parseInt(rot.dataset.row)];
+            if (rotPe) PA.openRotatePopup(st.exMap, rotPe, st.planJoint, st.plan.planId, st.plan.clientId, function() { _rerender(container); });
+            return;
+        }
 
         var del = t.closest('.mpr-delete');
         if (del) {

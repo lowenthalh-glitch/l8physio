@@ -237,6 +237,7 @@
                 '<th style="padding:6px 10px;text-align:left;width:90px;">Load</th>' +
                 '<th style="padding:6px 10px;text-align:left;width:70px;">Sets</th>' +
                 '<th style="padding:6px 10px;text-align:left;width:70px;">Reps</th>' +
+                '<th style="padding:6px 10px;text-align:left;width:80px;">Time</th>' +
                 '<th style="padding:6px 10px;text-align:left;">Notes</th>' +
                 '<th style="padding:6px 4px;width:120px;"></th>' +
                 '</tr></thead><tbody>';
@@ -252,6 +253,9 @@
                 if (fullEx.progressionExerciseId) {
                     var progName = (exMap[fullEx.progressionExerciseId] || {}).name || 'harder';
                     progRegBtns += '<button class="session-progress-btn" data-row="' + rowIdx + '" title="Progress to: ' + Layer8DUtils.escapeHtml(progName) + '" style="' + btnStyle + 'font-size:16px;color:var(--layer8d-success);">+</button>';
+                }
+                if (fullEx.rotationGroupId) {
+                    progRegBtns += '<button class="session-rotate-btn" data-row="' + rowIdx + '" title="Rotate" style="' + btnStyle + 'font-size:14px;">↻</button>';
                 }
                 // Action buttons: move, video, image, delete
                 var actionBtns = '<button class="session-move-up" data-row="' + rowIdx + '" title="Move up" style="' + btnStyle + '">\u25b2</button>' +
@@ -274,6 +278,7 @@
                     '<td style="padding:6px 10px;">' + loadDropdown + '</td>' +
                     '<td style="padding:6px 10px;"><input type="number" class="session-edit-sets" data-row="' + rowIdx + '" value="' + Layer8DUtils.escapeHtml(String(row.sets)) + '" style="' + inputStyle + '"></td>' +
                     '<td style="padding:6px 10px;"><input type="text" class="session-edit-reps" data-row="' + rowIdx + '" value="' + Layer8DUtils.escapeHtml(String(row.reps)) + '" style="' + inputStyle + '"></td>' +
+                    '<td style="padding:6px 10px;"><span style="display:inline-flex;align-items:center;gap:2px;white-space:nowrap;"><input type="number" min="0" class="session-edit-time" data-row="' + rowIdx + '" value="' + (row.holdSeconds || 0) + '" ' + ((row.loadType === 8 || row.loadType === 9) ? '' : 'disabled') + ' style="width:48px;padding:4px 6px;border:1px solid var(--layer8d-border);border-radius:4px;font-size:13px;' + ((row.loadType === 8 || row.loadType === 9) ? '' : 'background:var(--layer8d-bg-light);color:var(--layer8d-text-muted);') + '"><span style="font-size:11px;color:var(--layer8d-text-muted);">s</span></span></td>' +
                     '<td style="padding:6px 10px;"><input type="text" class="session-edit-notes" data-row="' + rowIdx + '" value="' + Layer8DUtils.escapeHtml(row.notes) + '" style="' + notesStyle + '"></td>' +
                     '<td style="padding:6px 4px;white-space:nowrap;">' + actionBtns + '</td></tr>';
                 rowIdx++;
@@ -329,6 +334,14 @@
                     st.originals[pe.exerciseId].loadType = parseInt(sel.value, 10) || 0;
                 }
             });
+            container.querySelectorAll('.session-edit-time').forEach(function(input) {
+                var idx = parseInt(input.dataset.row, 10);
+                var pe = st.flatRows[idx];
+                if (pe) {
+                    if (!st.originals[pe.exerciseId]) st.originals[pe.exerciseId] = {};
+                    st.originals[pe.exerciseId].holdSeconds = parseInt(input.value, 10) || 0;
+                }
+            });
         }
 
         // Load authenticated images
@@ -360,6 +373,10 @@
         container.querySelectorAll('.session-edit-load').forEach(function(sel) {
             var idx = parseInt(sel.dataset.row, 10);
             if (st.flatRows[idx]) st.flatRows[idx].loadType = parseInt(sel.value, 10) || 0;
+        });
+        container.querySelectorAll('.session-edit-time').forEach(function(input) {
+            var idx = parseInt(input.dataset.row, 10);
+            if (st.flatRows[idx]) st.flatRows[idx].holdSeconds = parseInt(input.value, 10) || 0;
         });
     }
 
@@ -393,6 +410,15 @@
         if (prog) { e.stopPropagation(); _collectEdits(container); var pi = parseInt(prog.dataset.row, 10); var ppe = st.flatRows[pi]; if (ppe) { PA.swap(st.exMap, ppe, 'progression', st.plan.planId, st.plan.clientId); _rerender(container); } return; }
         var reg = t.closest('.session-regress-btn');
         if (reg) { e.stopPropagation(); _collectEdits(container); var ri = parseInt(reg.dataset.row, 10); var rpe = st.flatRows[ri]; if (rpe) { PA.swap(st.exMap, rpe, 'regression', st.plan.planId, st.plan.clientId); _rerender(container); } return; }
+
+        var rot = t.closest('.session-rotate-btn');
+        if (rot) {
+            e.stopPropagation(); _collectEdits(container);
+            var roti = parseInt(rot.dataset.row, 10);
+            var rotPe = st.flatRows[roti];
+            if (rotPe) PA.openRotatePopup(st.exMap, rotPe, st.planJoint, st.plan.planId, st.plan.clientId, function() { _rerender(container); });
+            return;
+        }
 
         // Delete
         var del = t.closest('.session-delete-btn');

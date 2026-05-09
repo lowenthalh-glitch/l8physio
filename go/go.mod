@@ -4,8 +4,8 @@ go 1.26.1
 
 require (
 	github.com/saichler/l8agent v0.0.0-20260404041519-33c923998e3c
-	github.com/saichler/l8bus v0.0.0-20260502134429-70d48e7ee58c
-	github.com/saichler/l8collector/go v0.0.0-20260505154850-af5711154743
+	github.com/saichler/l8bus v0.0.0-20260507121220-fb7db984917c
+	github.com/saichler/l8collector/go v0.0.0-20260507134452-757a06242a06
 	github.com/saichler/l8common v0.0.0-20260505024122-8e5ad212b06b
 	github.com/saichler/l8events v0.0.0-20260326140304-4e54a1195008
 	github.com/saichler/l8parser v0.0.0-20260504014757-63e78ee52fb3
@@ -40,9 +40,9 @@ require (
 	github.com/saichler/l8orm v0.0.0-20260505134642-266c2aacdf3e // indirect
 	github.com/saichler/l8ql v0.0.0-20260505111526-897c5e0ff9a4 // indirect
 	github.com/saichler/l8reflect v0.0.0-20260414115258-300dd0000aca // indirect
-	github.com/saichler/l8services v0.0.0-20260505133530-95676b18110b // indirect
-	github.com/saichler/l8web v0.0.0-20260505133712-ee45fabf8749 // indirect
-	github.com/saichler/probler v0.0.0-20260503163813-67f1064ecefe // indirect
+	github.com/saichler/l8services v0.0.0-20260507104132-1658bd7baa30 // indirect
+	github.com/saichler/l8web v0.0.0-20260507121231-b649a58c0155 // indirect
+	github.com/saichler/probler v0.0.0-20260507133856-92e7f3b6f1e1 // indirect
 	github.com/spf13/pflag v1.0.9 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	go.yaml.in/yaml/v2 v2.4.3 // indirect

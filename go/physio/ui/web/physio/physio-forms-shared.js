@@ -36,7 +36,8 @@
                     ]),
                     f.section('Progression / Regression', [
                         ...f.reference('progressionExerciseId', 'Progression (harder)', 'PhysioExercise'),
-                        ...f.reference('regressionExerciseId',  'Regression (easier)',  'PhysioExercise')
+                        ...f.reference('regressionExerciseId',  'Regression (easier)',  'PhysioExercise'),
+                        ...f.text('rotationGroupId',            'Rotation Group')
                     ]),
                     f.section('Protocol Classification', [
                         ...f.select('joint',        'Joint',         enums.JOINT),

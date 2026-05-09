@@ -164,6 +164,7 @@ enum SwapDirection {
   SWAP_DIRECTION_UNSPECIFIED = 0;
   SWAP_DIRECTION_PROGRESSION = 1;
   SWAP_DIRECTION_REGRESSION  = 2;
+  SWAP_DIRECTION_ROTATION    = 3;
 }
 
 // ──────────────────────────────────────────────
@@ -292,6 +293,8 @@ message PhysioExercise {
   // Progression/regression chain — references to exercises in the same category
   string                 progression_exercise_id = 26;
   string                 regression_exercise_id  = 27;
+  // Rotation grouping — exercises sharing this id are mutually swappable
+  string                 rotation_group_id       = 28;
   l8common.AuditInfo          audit_info           = 30;
 }
 

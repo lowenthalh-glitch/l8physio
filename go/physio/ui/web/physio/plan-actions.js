@@ -106,6 +106,68 @@
                 _notify('warning', 'No ' + direction + ' exercise defined.');
                 return null;
             }
+            return this._applyExerciseChange(exMap, pe, newId, direction === 'progression' ? 1 : 2, planId, clientId);
+        },
+
+        // Rotate exercise to a therapist-picked alternative within the rotation group.
+        // Logs to ExSwapLog with direction=3 (rotation). Returns new exerciseId.
+        rotate: function(exMap, pe, newId, planId, clientId) {
+            return this._applyExerciseChange(exMap, pe, newId, 3, planId, clientId);
+        },
+
+        // Return alternatives in the same rotation group with matching joint, excluding the current exercise.
+        findAlternatives: function(exMap, pe, planJoint) {
+            var fullEx = exMap[pe.exerciseId] || {};
+            var groupId = fullEx.rotationGroupId;
+            if (!groupId) return [];
+            var out = [];
+            Object.keys(exMap).forEach(function(id) {
+                if (id === pe.exerciseId) return;
+                var ex = exMap[id];
+                if (ex.rotationGroupId !== groupId) return;
+                if (planJoint != null && ex.joint !== planJoint) return;
+                out.push(ex);
+            });
+            out.sort(function(a, b) { return (a.name || '').localeCompare(b.name || ''); });
+            return out;
+        },
+
+        // Open a popup listing rotation alternatives. On pick, calls PA.rotate then onRotated().
+        // Dispatches Layer8DPopup vs Layer8MPopup based on what's available.
+        openRotatePopup: function(exMap, pe, planJoint, planId, clientId, onRotated) {
+            var self = this;
+            var alts = self.findAlternatives(exMap, pe, planJoint);
+            if (alts.length === 0) {
+                _notify('warning', 'No rotation alternatives available.');
+                return;
+            }
+            var bodyHtml = '<div style="padding:12px;display:flex;flex-direction:column;gap:8px;">';
+            alts.forEach(function(ex) {
+                bodyHtml += '<button class="pa-rotate-pick" data-eid="' + Layer8DUtils.escapeAttr(ex.exerciseId) + '" style="padding:10px;text-align:left;border:1px solid var(--layer8d-border);border-radius:6px;background:var(--layer8d-bg-white);cursor:pointer;font-size:14px;">' + Layer8DUtils.escapeHtml(ex.name || ex.exerciseId) + '</button>';
+            });
+            bodyHtml += '</div>';
+            var isMobile = (typeof Layer8DPopup === 'undefined');
+            var Popup = isMobile ? Layer8MPopup : Layer8DPopup;
+            Popup.show({
+                title: 'Rotate exercise',
+                content: bodyHtml,
+                size: isMobile ? 'full' : 'medium',
+                showFooter: false,
+                onShow: function(popup) {
+                    var body = popup && popup.body ? popup.body : popup;
+                    body.addEventListener('click', function(e) {
+                        var btn = e.target.closest('.pa-rotate-pick');
+                        if (!btn) return;
+                        self.rotate(exMap, pe, btn.dataset.eid, planId, clientId);
+                        Popup.close();
+                        if (typeof onRotated === 'function') onRotated();
+                    });
+                }
+            });
+        },
+
+        _applyExerciseChange: function(exMap, pe, newId, directionInt, planId, clientId) {
+            var fullEx = exMap[pe.exerciseId] || {};
             var newEx = exMap[newId] || {};
             var oldName = fullEx.name || pe.exerciseId;
             var newName = newEx.name || newId;
@@ -115,7 +177,6 @@
             if (newEx.defaultSets) pe.sets = newEx.defaultSets;
             if (newEx.defaultReps) pe.reps = newEx.defaultReps;
 
-            // Log the swap
             fetch(_apiPrefix() + '/50/ExSwapLog', {
                 method: 'POST',
                 headers: Object.assign({}, _headers(), { 'Content-Type': 'application/json' }),
@@ -124,7 +185,7 @@
                     planId: planId,
                     oldExerciseId: fullEx.exerciseId,
                     newExerciseId: newId,
-                    direction: direction === 'progression' ? 1 : 2,
+                    direction: directionInt,
                     swapDate: Math.floor(Date.now() / 1000),
                     therapistId: sessionStorage.getItem('currentUser') || '',
                     description: '[' + cLabel + '] ' + oldName + ' \u2192 ' + newName
@@ -223,6 +284,7 @@
                 name: ex.name || pe.exerciseId || '\u2014',
                 sets: pe.sets || ex.defaultSets || '',
                 reps: pe.reps || ex.defaultRepsDisplay || String(ex.defaultReps || '') || '',
+                holdSeconds: pe.holdSeconds || ex.defaultHoldSeconds || 0,
                 notes: pe.notes || '',
                 exerciseType: ex.exerciseType || 0,
                 loadType: pe.loadType || ex.loadType || 0,
@@ -234,8 +296,8 @@
             };
         },
 
-        // Log plan exercise changes (sets/reps/load/notes) to ExSwapLog.
-        // originals: { exerciseId: { sets, reps, notes, loadType } }
+        // Log plan exercise changes (sets/reps/load/notes/time) to ExSwapLog.
+        // originals: { exerciseId: { sets, reps, notes, loadType, holdSeconds } }
         // exercises: plan exercises array (after _collectEdits)
         logChanges: function(plan, exercises, exMap, originals) {
             if (!originals || !exercises || !plan) return;
@@ -249,10 +311,12 @@
                 var curReps = parseInt(pe.reps, 10) || 0;
                 var curNotes = pe.notes || '';
                 var curLoad = parseInt(pe.loadType, 10) || 0;
+                var curTime = parseInt(pe.holdSeconds, 10) || 0;
                 var changes = [];
                 if (curSets !== orig.sets) changes.push('Sets: ' + orig.sets + ' \u2192 ' + curSets);
                 if (curReps !== orig.reps) changes.push('Reps: ' + orig.reps + ' \u2192 ' + curReps);
                 if (curLoad !== (orig.loadType || 0)) changes.push('Load: ' + (LOAD_LABELS[orig.loadType] || orig.loadType || 'None') + ' \u2192 ' + (LOAD_LABELS[curLoad] || curLoad || 'None'));
+                if (curTime !== (orig.holdSeconds || 0)) changes.push('Time: ' + (orig.holdSeconds || 0) + 's \u2192 ' + curTime + 's');
                 if (curNotes !== orig.notes) changes.push('Notes changed');
                 if (changes.length === 0) return;
                 var desc = '[' + cLabel + '] ' + exName + ' \u2014 ' + changes.join(', ');
@@ -267,7 +331,7 @@
                         description: desc
                     })
                 }).catch(function(err) { console.warn('Failed to log plan change:', err); });
-                originals[pe.exerciseId] = { sets: curSets, reps: curReps, notes: curNotes, loadType: curLoad };
+                originals[pe.exerciseId] = { sets: curSets, reps: curReps, notes: curNotes, loadType: curLoad, holdSeconds: curTime };
             });
         }
     };

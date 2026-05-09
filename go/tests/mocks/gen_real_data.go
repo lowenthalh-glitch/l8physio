@@ -119,6 +119,13 @@ func generateRehabBankExercises() []*physio.PhysioExercise {
 		{"Reactive balance tap", "7-8", "6-10 / 20 sec", "פונקציונלי / תגובתי", fun, gen, pron, p3, variable, dbM},
 	}
 
+	rotGroups := map[int]string{
+		2: "shoulder-mob-p2", 3: "shoulder-mob-p2",
+		25: "knee-rehab-p1", 26: "knee-rehab-p1",
+		27: "knee-rehab-p2", 28: "knee-rehab-p2",
+		31: "knee-str-p2", 32: "knee-str-p2", 33: "knee-str-p2",
+	}
+
 	result := make([]*physio.PhysioExercise, len(defs))
 	for i, d := range defs {
 		result[i] = &physio.PhysioExercise{
@@ -133,6 +140,7 @@ func generateRehabBankExercises() []*physio.PhysioExercise {
 			Effort:             d.effort,
 			DefaultRepsDisplay: d.repsDisplay,
 			LoadNotes:          d.loadNotes,
+			RotationGroupId:    rotGroups[i],
 			IsActive:           true,
 			AuditInfo:          lm.CreateAuditInfo(),
 		}
