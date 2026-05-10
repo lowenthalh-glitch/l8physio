@@ -28,8 +28,8 @@ func generateRehabProtocols() []*physio.PhysioProtocol {
 	bw := physio.PhysioLoadType_PHYSIO_LOAD_TYPE_BODYWEIGHT
 	bandL := physio.PhysioLoadType_PHYSIO_LOAD_TYPE_BAND_LIGHT
 	bandM := physio.PhysioLoadType_PHYSIO_LOAD_TYPE_BAND_MEDIUM
-	dbM := physio.PhysioLoadType_PHYSIO_LOAD_TYPE_DUMBBELL_MED
-	dbH := physio.PhysioLoadType_PHYSIO_LOAD_TYPE_DUMBBELL_HEAVY
+	dbM := physio.PhysioLoadType_PHYSIO_LOAD_TYPE_DUMBBELL
+	dbH := physio.PhysioLoadType_PHYSIO_LOAD_TYPE_DUMBBELL
 	_ = dbH
 
 	return []*physio.PhysioProtocol{

@@ -197,7 +197,8 @@
                         reps:        parseInt(pe.reps, 10) || 0,
                         notes:       pe.notes || '',
                         loadType:    parseInt(pe.loadType, 10) || 0,
-                        holdSeconds: parseInt(pe.holdSeconds, 10) || 0
+                        holdSeconds: parseInt(pe.holdSeconds, 10) || 0,
+                        weightKg:    parseInt(pe.weightKg, 10) || 0
                     };
                 });
             }
@@ -230,12 +231,16 @@
                 ...col.custom('loadType', 'Load', function(item) {
                     return PhysioPlanActions.loadTypeSelect(item.loadType, 'physio-load-select', ' data-eid="' + Layer8DUtils.escapeHtml(item.exerciseId) + '"');
                 }, { sortKey: false }),
-                ...col.custom('holdSeconds', 'Time', function(item) {
-                    var enabled = (item.loadType === 8 || item.loadType === 9);
+                ...col.custom('_value', 'Value', function(item) {
+                    var lt = item.loadType;
+                    var field = lt === 5 ? 'weightKg' : ((lt === 8 || lt === 9) ? 'holdSeconds' : '');
+                    var suffix = lt === 5 ? 'kg' : ((lt === 8 || lt === 9) ? 's' : '');
+                    var val = field ? (item[field] || 0) : 0;
+                    var enabled = !!field;
                     var eid = Layer8DUtils.escapeHtml(item.exerciseId);
                     return '<span style="display:inline-flex;align-items:center;gap:2px;white-space:nowrap;">'
-                         + '<input type="number" min="0" class="physio-time-input" data-eid="' + eid + '" value="' + (item.holdSeconds || 0) + '" ' + (enabled ? '' : 'disabled') + ' style="width:48px;padding:2px 4px;border:1px solid var(--layer8d-border);border-radius:3px;' + (enabled ? '' : 'background:var(--layer8d-bg-light);color:var(--layer8d-text-muted);') + '">'
-                         + '<span style="font-size:11px;color:var(--layer8d-text-muted);">s</span>'
+                         + '<input type="number" min="0" class="physio-value-input" data-eid="' + eid + '" data-field="' + field + '" value="' + val + '" ' + (enabled ? '' : 'disabled') + ' style="width:48px;padding:2px 4px;border:1px solid var(--layer8d-border);border-radius:3px;' + (enabled ? '' : 'background:var(--layer8d-bg-light);color:var(--layer8d-text-muted);') + '">'
+                         + '<span style="font-size:11px;color:var(--layer8d-text-muted);">' + suffix + '</span>'
                          + '</span>';
                 }, { sortKey: false }),
                 ...col.col('notes', 'Notes'),
@@ -318,11 +323,12 @@
                             if (pe) { pe.loadType = parseInt(sel.value, 10) || 0; self._savePlan(); }
                             return;
                         }
-                        var time = e.target.closest('.physio-time-input');
-                        if (time) {
-                            var teid = time.dataset.eid;
-                            var tpe = (self._currentPlan.exercises || []).filter(function(ex) { return ex.exerciseId === teid; })[0];
-                            if (tpe) { tpe.holdSeconds = parseInt(time.value, 10) || 0; self._savePlan(); }
+                        var val = e.target.closest('.physio-value-input');
+                        if (val) {
+                            var veid = val.dataset.eid;
+                            var field = val.dataset.field;
+                            var vpe = (self._currentPlan.exercises || []).filter(function(ex) { return ex.exerciseId === veid; })[0];
+                            if (vpe && field) { vpe[field] = parseInt(val.value, 10) || 0; self._savePlan(); }
                         }
                     });
                 })(wrap, cNum);

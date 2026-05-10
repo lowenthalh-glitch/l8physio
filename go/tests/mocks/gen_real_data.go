@@ -45,8 +45,8 @@ func generateRehabBankExercises() []*physio.PhysioExercise {
 	bw := physio.PhysioLoadType_PHYSIO_LOAD_TYPE_BODYWEIGHT
 	bandL := physio.PhysioLoadType_PHYSIO_LOAD_TYPE_BAND_LIGHT
 	bandM := physio.PhysioLoadType_PHYSIO_LOAD_TYPE_BAND_MEDIUM
-	dbM := physio.PhysioLoadType_PHYSIO_LOAD_TYPE_DUMBBELL_MED
-	dbH := physio.PhysioLoadType_PHYSIO_LOAD_TYPE_DUMBBELL_HEAVY
+	dbM := physio.PhysioLoadType_PHYSIO_LOAD_TYPE_DUMBBELL
+	dbH := physio.PhysioLoadType_PHYSIO_LOAD_TYPE_DUMBBELL
 
 	// name, effort, repsDisplay, loadNotes, category, joint, posture, phase, type, loadType
 	defs := []rbDef{

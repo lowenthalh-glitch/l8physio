@@ -237,7 +237,7 @@
                 '<th style="padding:6px 10px;text-align:left;width:90px;">Load</th>' +
                 '<th style="padding:6px 10px;text-align:left;width:70px;">Sets</th>' +
                 '<th style="padding:6px 10px;text-align:left;width:70px;">Reps</th>' +
-                '<th style="padding:6px 10px;text-align:left;width:80px;">Time</th>' +
+                '<th style="padding:6px 10px;text-align:left;width:80px;">Value</th>' +
                 '<th style="padding:6px 10px;text-align:left;">Notes</th>' +
                 '<th style="padding:6px 4px;width:120px;"></th>' +
                 '</tr></thead><tbody>';
@@ -278,7 +278,14 @@
                     '<td style="padding:6px 10px;">' + loadDropdown + '</td>' +
                     '<td style="padding:6px 10px;"><input type="number" class="session-edit-sets" data-row="' + rowIdx + '" value="' + Layer8DUtils.escapeHtml(String(row.sets)) + '" style="' + inputStyle + '"></td>' +
                     '<td style="padding:6px 10px;"><input type="text" class="session-edit-reps" data-row="' + rowIdx + '" value="' + Layer8DUtils.escapeHtml(String(row.reps)) + '" style="' + inputStyle + '"></td>' +
-                    '<td style="padding:6px 10px;"><span style="display:inline-flex;align-items:center;gap:2px;white-space:nowrap;"><input type="number" min="0" class="session-edit-time" data-row="' + rowIdx + '" value="' + (row.holdSeconds || 0) + '" ' + ((row.loadType === 8 || row.loadType === 9) ? '' : 'disabled') + ' style="width:48px;padding:4px 6px;border:1px solid var(--layer8d-border);border-radius:4px;font-size:13px;' + ((row.loadType === 8 || row.loadType === 9) ? '' : 'background:var(--layer8d-bg-light);color:var(--layer8d-text-muted);') + '"><span style="font-size:11px;color:var(--layer8d-text-muted);">s</span></span></td>' +
+                    (function() {
+                        var lt = row.loadType;
+                        var field = lt === 5 ? 'weightKg' : ((lt === 8 || lt === 9) ? 'holdSeconds' : '');
+                        var suffix = lt === 5 ? 'kg' : ((lt === 8 || lt === 9) ? 's' : '');
+                        var val = field ? (row[field] || 0) : 0;
+                        var enabled = !!field;
+                        return '<td style="padding:6px 10px;"><span style="display:inline-flex;align-items:center;gap:2px;white-space:nowrap;"><input type="number" min="0" class="session-edit-value" data-row="' + rowIdx + '" data-field="' + field + '" value="' + val + '" ' + (enabled ? '' : 'disabled') + ' style="width:48px;padding:4px 6px;border:1px solid var(--layer8d-border);border-radius:4px;font-size:13px;' + (enabled ? '' : 'background:var(--layer8d-bg-light);color:var(--layer8d-text-muted);') + '"><span style="font-size:11px;color:var(--layer8d-text-muted);">' + suffix + '</span></span></td>';
+                    })() +
                     '<td style="padding:6px 10px;"><input type="text" class="session-edit-notes" data-row="' + rowIdx + '" value="' + Layer8DUtils.escapeHtml(row.notes) + '" style="' + notesStyle + '"></td>' +
                     '<td style="padding:6px 4px;white-space:nowrap;">' + actionBtns + '</td></tr>';
                 rowIdx++;
@@ -334,12 +341,12 @@
                     st.originals[pe.exerciseId].loadType = parseInt(sel.value, 10) || 0;
                 }
             });
-            container.querySelectorAll('.session-edit-time').forEach(function(input) {
+            container.querySelectorAll('.session-edit-value').forEach(function(input) {
                 var idx = parseInt(input.dataset.row, 10);
                 var pe = st.flatRows[idx];
-                if (pe) {
+                if (pe && input.dataset.field) {
                     if (!st.originals[pe.exerciseId]) st.originals[pe.exerciseId] = {};
-                    st.originals[pe.exerciseId].holdSeconds = parseInt(input.value, 10) || 0;
+                    st.originals[pe.exerciseId][input.dataset.field] = parseInt(input.value, 10) || 0;
                 }
             });
         }
@@ -374,9 +381,10 @@
             var idx = parseInt(sel.dataset.row, 10);
             if (st.flatRows[idx]) st.flatRows[idx].loadType = parseInt(sel.value, 10) || 0;
         });
-        container.querySelectorAll('.session-edit-time').forEach(function(input) {
+        container.querySelectorAll('.session-edit-value').forEach(function(input) {
             var idx = parseInt(input.dataset.row, 10);
-            if (st.flatRows[idx]) st.flatRows[idx].holdSeconds = parseInt(input.value, 10) || 0;
+            var field = input.dataset.field;
+            if (st.flatRows[idx] && field) st.flatRows[idx][field] = parseInt(input.value, 10) || 0;
         });
     }
 

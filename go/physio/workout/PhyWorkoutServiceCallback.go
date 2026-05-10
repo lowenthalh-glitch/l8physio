@@ -136,6 +136,7 @@ func buildCircuit(cat physio.PhysioExerciseCategory, pool []*physio.PhysioExerci
 			Effort:     ex.Effort,
 			LoadNotes:  ex.LoadNotes,
 			IsFixed:    ex.ExerciseType == physio.PhysioExerciseType_PHYSIO_EXERCISE_TYPE_FIXED,
+			WeightKg:   ex.WeightKg,
 		})
 	}
 	return circuit

@@ -3,7 +3,7 @@
     window.PhysioManagement = window.PhysioManagement || {};
 
     const factory = window.Layer8EnumFactory;
-    const { renderEnum, renderEnumList, createStatusRenderer } = Layer8DRenderers;
+    const { renderEnum, createStatusRenderer } = Layer8DRenderers;
 
     const EXERCISE_CATEGORY = factory.simple([
         'Unspecified', 'Mobility', 'Rehab', 'Strength', 'Functional',
@@ -31,7 +31,7 @@
 
     const LOAD_TYPE = factory.simple([
         'Unspecified', 'Bodyweight', 'Band Light', 'Band Medium', 'Band Heavy',
-        'Dumbbell Light', 'Dumbbell Medium', 'Dumbbell Heavy', 'Iso Hold', 'Control'
+        'Dumbbell', '', '', 'Iso Hold', 'Control'
     ]);
 
     const POSTURE = factory.simple([
@@ -62,6 +62,4 @@
     PhysioManagement.render.loadType         = (v) => renderEnum(v, LOAD_TYPE.enum);
     PhysioManagement.render.posture          = (v) => renderEnum(v, POSTURE.enum);
     PhysioManagement.render.joint            = (v) => renderEnum(v, JOINT.enum);
-    PhysioManagement.render.joints           = (v) => renderEnumList(v, JOINT.enum);
-    PhysioManagement.render.categories       = (v) => renderEnumList(v, EXERCISE_CATEGORY.enum);
 })();

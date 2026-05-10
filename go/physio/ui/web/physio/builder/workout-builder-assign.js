@@ -190,7 +190,9 @@
                         notes:          slot.notes || '',
                         orderIndex:     idx++,
                         circuitNumber:  circuit.num,
-                        circuitLabel:   circuit.label || ''
+                        circuitLabel:   circuit.label || '',
+                        loadType:       slot.loadType || 0,
+                        weightKg:       slot.weightKg || 0
                     });
                 });
             });

@@ -33,6 +33,7 @@
             Object.keys(LOAD_TYPE).forEach(function(k) {
                 var v = parseInt(k, 10);
                 var label = LOAD_TYPE[k];
+                if (!label) return;
                 if (label === 'Unspecified') label = '\u2014';
                 html += '<option value="' + v + '"' + (v === (selectedVal || 0) ? ' selected' : '') + '>' + label + '</option>';
             });
@@ -269,7 +270,8 @@
                 orderIndex: maxOrder + 1,
                 circuitNumber: circuitNumber,
                 circuitLabel: CATEGORY_LABELS[circuitNumber] || ('Circuit ' + circuitNumber),
-                loadType: ex.loadType || 0
+                loadType: ex.loadType || 0,
+                weightKg: ex.weightKg || 0
             };
             exercises.push(pe);
             return pe;
@@ -285,6 +287,7 @@
                 sets: pe.sets || ex.defaultSets || '',
                 reps: pe.reps || ex.defaultRepsDisplay || String(ex.defaultReps || '') || '',
                 holdSeconds: pe.holdSeconds || ex.defaultHoldSeconds || 0,
+                weightKg: pe.weightKg || ex.weightKg || 0,
                 notes: pe.notes || '',
                 exerciseType: ex.exerciseType || 0,
                 loadType: pe.loadType || ex.loadType || 0,
@@ -312,11 +315,13 @@
                 var curNotes = pe.notes || '';
                 var curLoad = parseInt(pe.loadType, 10) || 0;
                 var curTime = parseInt(pe.holdSeconds, 10) || 0;
+                var curWt = parseInt(pe.weightKg, 10) || 0;
                 var changes = [];
                 if (curSets !== orig.sets) changes.push('Sets: ' + orig.sets + ' \u2192 ' + curSets);
                 if (curReps !== orig.reps) changes.push('Reps: ' + orig.reps + ' \u2192 ' + curReps);
                 if (curLoad !== (orig.loadType || 0)) changes.push('Load: ' + (LOAD_LABELS[orig.loadType] || orig.loadType || 'None') + ' \u2192 ' + (LOAD_LABELS[curLoad] || curLoad || 'None'));
                 if (curTime !== (orig.holdSeconds || 0)) changes.push('Time: ' + (orig.holdSeconds || 0) + 's \u2192 ' + curTime + 's');
+                if (curWt !== (orig.weightKg || 0)) changes.push('Weight: ' + (orig.weightKg || 0) + 'kg \u2192 ' + curWt + 'kg');
                 if (curNotes !== orig.notes) changes.push('Notes changed');
                 if (changes.length === 0) return;
                 var desc = '[' + cLabel + '] ' + exName + ' \u2014 ' + changes.join(', ');
@@ -331,7 +336,7 @@
                         description: desc
                     })
                 }).catch(function(err) { console.warn('Failed to log plan change:', err); });
-                originals[pe.exerciseId] = { sets: curSets, reps: curReps, notes: curNotes, loadType: curLoad, holdSeconds: curTime };
+                originals[pe.exerciseId] = { sets: curSets, reps: curReps, notes: curNotes, loadType: curLoad, holdSeconds: curTime, weightKg: curWt };
             });
         }
     };

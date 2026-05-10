@@ -149,7 +149,8 @@
                     orderIndex: idx + 1,
                     circuitNumber: c.category || c.number,
                     circuitLabel: CATEGORY_LABELS[c.category] || ('Circuit ' + c.number),
-                    loadType: slot.exercise ? (slot.exercise.loadType || 0) : 0
+                    loadType: slot.exercise ? (slot.exercise.loadType || 0) : 0,
+                    weightKg: slot.exercise ? (slot.exercise.weightKg || 0) : 0
                 });
             });
         });

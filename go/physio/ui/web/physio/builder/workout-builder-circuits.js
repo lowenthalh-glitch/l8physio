@@ -45,14 +45,13 @@
 
         protocols.forEach(function(proto) {
             var protoExs = allExercises.filter(function(ex) {
-                if (ex.posture !== proto.posture) return false;
-                if (!ex.joints || ex.joints.indexOf(proto.joint) === -1) return false;
+                if (ex.posture !== proto.posture || ex.joint !== proto.joint) return false;
                 var p = ex.phase || 0;
                 return p === 0 || p <= phaseInt;
             });
 
             CATEGORY_ORDER.forEach(function(cat) {
-                var catExs   = protoExs.filter(function(ex) { return ex.categories && ex.categories.indexOf(cat) !== -1; });
+                var catExs   = protoExs.filter(function(ex) { return ex.category === cat; });
                 var fixed    = catExs.filter(function(ex) { return ex.exerciseType === 1; });
                 var variable = catExs.filter(function(ex) { return ex.exerciseType === 2; });
                 if (fixed.length === 0 && variable.length === 0) return;
