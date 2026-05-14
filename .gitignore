@@ -2,3 +2,5 @@ vendor
 .claude
 .idea
 dist
+demo/
+logs/
