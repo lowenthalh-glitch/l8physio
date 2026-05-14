@@ -4,3 +4,4 @@ vendor
 dist
 demo/
 logs/
+watchdog.pid
