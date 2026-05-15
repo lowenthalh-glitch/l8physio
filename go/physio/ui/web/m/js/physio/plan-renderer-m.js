@@ -51,6 +51,17 @@
         .catch(function() { container.innerHTML = '<div style="padding:16px;color:var(--layer8d-error);">Failed to load exercises</div>'; });
     }
 
+    var MPR_INPUT_STYLE = 'width:100%;padding:6px;border:1px solid var(--layer8d-border);border-radius:4px;font-size:13px;';
+
+    function _valueDivHTML(row, rowIdx) {
+        var lt = row.loadType;
+        var field = lt === 5 ? 'weightKg' : ((lt === 8 || lt === 9) ? 'holdSeconds' : '');
+        var label = lt === 5 ? 'Value (kg)' : ((lt === 8 || lt === 9) ? 'Value (s)' : 'Value');
+        var val = field ? (row[field] || 0) : 0;
+        var enabled = !!field;
+        return '<div><label style="font-size:11px;color:var(--layer8d-text-muted);">' + label + '</label><input type="number" min="0" class="mpr-value" data-row="' + rowIdx + '" data-field="' + field + '" value="' + val + '" ' + (enabled ? '' : 'disabled') + ' style="' + MPR_INPUT_STYLE + (enabled ? '' : 'background:var(--layer8d-bg-light);color:var(--layer8d-text-muted);') + '"></div>';
+    }
+
     // ── Render circuits as mobile cards ───────────────────────────────
     function _renderCircuits(container, plan, exercises, exMap) {
         var PA = window.PhysioPlanActions;
@@ -107,19 +118,14 @@
                 html += '<div style="border:1px solid var(--layer8d-border);border-top:none;padding:10px 12px;background:var(--layer8d-bg-white);">' +
                     '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">' +
                     '<span style="font-weight:600;font-size:14px;">' + Layer8DUtils.escapeHtml(row.name) + '</span>' + typeBadge + '</div>' +
-                    (function() {
-                        var lt = row.loadType;
-                        var field = lt === 5 ? 'weightKg' : ((lt === 8 || lt === 9) ? 'holdSeconds' : '');
-                        var label = lt === 5 ? 'Value (kg)' : ((lt === 8 || lt === 9) ? 'Value (s)' : 'Value');
-                        var val = field ? (row[field] || 0) : 0;
-                        var enabled = !!field;
-                        return '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:6px;">' +
-                            '<div><label style="font-size:11px;color:var(--layer8d-text-muted);">Sets</label><input type="number" class="mpr-sets" data-row="' + rowIdx + '" value="' + Layer8DUtils.escapeHtml(String(row.sets)) + '" style="' + iStyle + '"></div>' +
-                            '<div><label style="font-size:11px;color:var(--layer8d-text-muted);">Reps</label><input type="text" class="mpr-reps" data-row="' + rowIdx + '" value="' + Layer8DUtils.escapeHtml(String(row.reps)) + '" style="' + iStyle + '"></div>' +
-                            '<div><label style="font-size:11px;color:var(--layer8d-text-muted);">' + label + '</label><input type="number" min="0" class="mpr-value" data-row="' + rowIdx + '" data-field="' + field + '" value="' + val + '" ' + (enabled ? '' : 'disabled') + ' style="' + iStyle + (enabled ? '' : 'background:var(--layer8d-bg-light);color:var(--layer8d-text-muted);') + '"></div>' +
-                            '</div>';
-                    })() +
-                    '<div style="margin-bottom:6px;"><label style="font-size:11px;color:var(--layer8d-text-muted);">Load</label>' + loadSelect + '</div>' +
+                    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;">' +
+                    '<div><label style="font-size:11px;color:var(--layer8d-text-muted);">Load</label>' + loadSelect + '</div>' +
+                    _valueDivHTML(row, rowIdx) +
+                    '</div>' +
+                    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;">' +
+                    '<div><label style="font-size:11px;color:var(--layer8d-text-muted);">Sets</label><input type="number" class="mpr-sets" data-row="' + rowIdx + '" value="' + Layer8DUtils.escapeHtml(String(row.sets)) + '" style="' + iStyle + '"></div>' +
+                    '<div><label style="font-size:11px;color:var(--layer8d-text-muted);">Reps</label><input type="text" class="mpr-reps" data-row="' + rowIdx + '" value="' + Layer8DUtils.escapeHtml(String(row.reps)) + '" style="' + iStyle + '"></div>' +
+                    '</div>' +
                     '<div style="margin-bottom:6px;"><label style="font-size:11px;color:var(--layer8d-text-muted);">Notes</label><input type="text" class="mpr-notes" data-row="' + rowIdx + '" value="' + Layer8DUtils.escapeHtml(row.notes) + '" style="' + iStyle + '"></div>' +
                     '<div style="display:flex;gap:6px;flex-wrap:wrap;">' + actions + '</div></div>';
                 rowIdx++;
@@ -151,7 +157,22 @@
         if (needsInit) {
             container._planHandlerAttached = true;
             container.addEventListener('click', _handleClick);
+            container.addEventListener('change', _handleChange);
         }
+    }
+
+    function _handleChange(e) {
+        var sel = e.target.closest('.mpr-load');
+        if (!sel) return;
+        var container = e.currentTarget;
+        var st = _getState(container);
+        var rowIdx = parseInt(sel.dataset.row, 10);
+        var pe = st.flatRows[rowIdx];
+        if (!pe) return;
+        pe.loadType = parseInt(sel.value, 10) || 0;
+        var valInput = container.querySelector('.mpr-value[data-row="' + rowIdx + '"]');
+        var valDiv = valInput ? valInput.parentNode : null;
+        if (valDiv) valDiv.outerHTML = _valueDivHTML(pe, rowIdx);
     }
 
     function _collectEdits(container) {

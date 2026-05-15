@@ -198,6 +198,18 @@
         return container._sessionState;
     }
 
+    function _valueCellInner(row, rowIdx) {
+        var lt = row.loadType;
+        var field = lt === 5 ? 'weightKg' : ((lt === 8 || lt === 9) ? 'holdSeconds' : '');
+        var suffix = lt === 5 ? 'kg' : ((lt === 8 || lt === 9) ? 's' : '');
+        var val = field ? (row[field] || 0) : 0;
+        var enabled = !!field;
+        return '<span style="display:inline-flex;align-items:center;gap:2px;white-space:nowrap;">'
+             + '<input type="number" min="0" class="session-edit-value" data-row="' + rowIdx + '" data-field="' + field + '" value="' + val + '" ' + (enabled ? '' : 'disabled') + ' style="width:48px;padding:4px 6px;border:1px solid var(--layer8d-border);border-radius:4px;font-size:13px;' + (enabled ? '' : 'background:var(--layer8d-bg-light);color:var(--layer8d-text-muted);') + '">'
+             + '<span style="font-size:11px;color:var(--layer8d-text-muted);">' + suffix + '</span>'
+             + '</span>';
+    }
+
     function _renderPlanCircuits(container, plan, exercises, exMap) {
         var PA = window.PhysioPlanActions;
         var CATEGORY_LABELS = PA.CATEGORY_LABELS;
@@ -235,9 +247,9 @@
                 '<th style="padding:6px 10px;text-align:left;">Exercise</th>' +
                 '<th style="padding:6px 10px;text-align:left;width:70px;">Type</th>' +
                 '<th style="padding:6px 10px;text-align:left;width:90px;">Load</th>' +
+                '<th style="padding:6px 10px;text-align:left;width:80px;">Value</th>' +
                 '<th style="padding:6px 10px;text-align:left;width:70px;">Sets</th>' +
                 '<th style="padding:6px 10px;text-align:left;width:70px;">Reps</th>' +
-                '<th style="padding:6px 10px;text-align:left;width:80px;">Value</th>' +
                 '<th style="padding:6px 10px;text-align:left;">Notes</th>' +
                 '<th style="padding:6px 4px;width:120px;"></th>' +
                 '</tr></thead><tbody>';
@@ -276,16 +288,9 @@
                     '<td style="padding:6px 10px;">' + Layer8DUtils.escapeHtml(row.name) + ' ' + progRegBtns + '</td>' +
                     '<td style="padding:6px 10px;">' + typeBadge + '</td>' +
                     '<td style="padding:6px 10px;">' + loadDropdown + '</td>' +
+                    '<td style="padding:6px 10px;">' + _valueCellInner(row, rowIdx) + '</td>' +
                     '<td style="padding:6px 10px;"><input type="number" class="session-edit-sets" data-row="' + rowIdx + '" value="' + Layer8DUtils.escapeHtml(String(row.sets)) + '" style="' + inputStyle + '"></td>' +
                     '<td style="padding:6px 10px;"><input type="text" class="session-edit-reps" data-row="' + rowIdx + '" value="' + Layer8DUtils.escapeHtml(String(row.reps)) + '" style="' + inputStyle + '"></td>' +
-                    (function() {
-                        var lt = row.loadType;
-                        var field = lt === 5 ? 'weightKg' : ((lt === 8 || lt === 9) ? 'holdSeconds' : '');
-                        var suffix = lt === 5 ? 'kg' : ((lt === 8 || lt === 9) ? 's' : '');
-                        var val = field ? (row[field] || 0) : 0;
-                        var enabled = !!field;
-                        return '<td style="padding:6px 10px;"><span style="display:inline-flex;align-items:center;gap:2px;white-space:nowrap;"><input type="number" min="0" class="session-edit-value" data-row="' + rowIdx + '" data-field="' + field + '" value="' + val + '" ' + (enabled ? '' : 'disabled') + ' style="width:48px;padding:4px 6px;border:1px solid var(--layer8d-border);border-radius:4px;font-size:13px;' + (enabled ? '' : 'background:var(--layer8d-bg-light);color:var(--layer8d-text-muted);') + '"><span style="font-size:11px;color:var(--layer8d-text-muted);">' + suffix + '</span></span></td>';
-                    })() +
                     '<td style="padding:6px 10px;"><input type="text" class="session-edit-notes" data-row="' + rowIdx + '" value="' + Layer8DUtils.escapeHtml(row.notes) + '" style="' + notesStyle + '"></td>' +
                     '<td style="padding:6px 4px;white-space:nowrap;">' + actionBtns + '</td></tr>';
                 rowIdx++;
@@ -360,7 +365,22 @@
         if (needsInit) {
             container._sessionHandlerAttached = true;
             container.addEventListener('click', _handleContainerClick);
+            container.addEventListener('change', _handleContainerChange);
         }
+    }
+
+    function _handleContainerChange(e) {
+        var sel = e.target.closest('.session-edit-load');
+        if (!sel) return;
+        var container = e.currentTarget;
+        var st = _getState(container);
+        var rowIdx = parseInt(sel.dataset.row, 10);
+        var pe = st.flatRows[rowIdx];
+        if (!pe) return;
+        pe.loadType = parseInt(sel.value, 10) || 0;
+        var valInput = container.querySelector('.session-edit-value[data-row="' + rowIdx + '"]');
+        var valTd = valInput ? valInput.closest('td') : null;
+        if (valTd) valTd.innerHTML = _valueCellInner(pe, rowIdx);
     }
 
     function _collectEdits(container) {
