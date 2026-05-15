@@ -299,6 +299,9 @@ message PhysioExercise {
   string                 rotation_group_id       = 28;
   int32                  weight_kg               = 29;
   l8common.AuditInfo          audit_info           = 30;
+  // Multi-joint and multi-category support (supersedes single fields 4 and 14)
+  repeated PhysioJoint            joints      = 31;
+  repeated PhysioExerciseCategory categories  = 32;
 }
 
 message PhysioExerciseList {

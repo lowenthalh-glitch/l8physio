@@ -25,5 +25,12 @@ func validatePhyExercis(e interface{}, vnic ifs.IVNic) error {
 	if err := l8c.ValidateRequired(entity.Name, "Name"); err != nil {
 		return err
 	}
+	// Backward compat: migrate single joint/category to repeated lists
+	if len(entity.Joints) == 0 && entity.Joint != physio.PhysioJoint_PHYSIO_JOINT_UNSPECIFIED {
+		entity.Joints = []physio.PhysioJoint{entity.Joint}
+	}
+	if len(entity.Categories) == 0 && entity.Category != physio.PhysioExerciseCategory_PHYSIO_EXERCISE_CATEGORY_UNSPECIFIED {
+		entity.Categories = []physio.PhysioExerciseCategory{entity.Category}
+	}
 	return nil
 }
