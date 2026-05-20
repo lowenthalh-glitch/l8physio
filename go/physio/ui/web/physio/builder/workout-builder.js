@@ -158,7 +158,8 @@
                 if (seen[ex.exerciseId]) return;
                 for (var pi = 0; pi < protocols.length; pi++) {
                     var p = protocols[pi];
-                    if (ex.posture === p.posture && ex.joints && ex.joints.indexOf(p.joint) !== -1) {
+                    var exPostures = (ex.postures && ex.postures.length) ? ex.postures : (ex.posture ? [ex.posture] : []);
+                    if (exPostures.indexOf(p.posture) !== -1 && ex.joints && ex.joints.indexOf(p.joint) !== -1) {
                         seen[ex.exerciseId] = true;
                         exercises.push(ex);
                         break;

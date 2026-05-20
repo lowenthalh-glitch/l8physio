@@ -45,7 +45,8 @@
 
         protocols.forEach(function(proto) {
             var protoExs = allExercises.filter(function(ex) {
-                if (ex.posture !== proto.posture) return false;
+                var exPostures = (ex.postures && ex.postures.length) ? ex.postures : (ex.posture ? [ex.posture] : []);
+                if (exPostures.indexOf(proto.posture) === -1) return false;
                 if (!ex.joints || ex.joints.indexOf(proto.joint) === -1) return false;
                 var p = ex.phase || 0;
                 return p === 0 || p <= phaseInt;
