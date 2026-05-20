@@ -317,6 +317,7 @@ func generateClientExercises() []*physio.PhysioExercise {
 			Category:         d.category,
 			Joint:            d.joint,
 			Posture:          d.posture,
+			Postures:         []physio.PhysioPosture{d.posture},
 			Phase:            d.phase,
 			ExerciseType:     d.exType,
 			LoadType:         d.loadType,
