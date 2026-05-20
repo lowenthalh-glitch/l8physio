@@ -15,7 +15,7 @@
         ...col.enum('loadType',       'Load',        null, render.loadType,          enums.LOAD_TYPE),
         ...col.col('effort',             'Effort (RPE)'),
         ...col.col('defaultRepsDisplay', 'Reps'),
-        ...col.multiEnum('posture',       'Posture Type', null, render.posture, enums.POSTURE),
+        ...col.multiEnum('postures',      'Posture Type', null, render.posture, enums.POSTURE),
         ...col.col('exerciseAim',        'Aim'),
         ...col.col('equipment',          'Equipment'),
         ...col.boolean('isActive',       'Active'),

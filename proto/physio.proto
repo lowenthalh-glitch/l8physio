@@ -302,6 +302,8 @@ message PhysioExercise {
   // Multi-joint and multi-category support (supersedes single fields 4 and 14)
   repeated PhysioJoint            joints      = 31;
   repeated PhysioExerciseCategory categories  = 32;
+  // Multi-posture support (supersedes single field 15)
+  repeated PhysioPosture          postures    = 33;
 }
 
 message PhysioExerciseList {

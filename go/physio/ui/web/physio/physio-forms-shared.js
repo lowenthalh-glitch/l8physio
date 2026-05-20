@@ -40,7 +40,7 @@
                     ]),
                     f.section('Protocol Classification', [
                         ...f.multiselect('joints',  'Joints',        enums.JOINT),
-                        ...f.multiselect('posture',  'Posture Type',  enums.POSTURE),
+                        ...f.multiselect('postures', 'Posture Type',  enums.POSTURE),
                         ...f.select('phase',        'Phase',         enums.PHYSIO_PHASE),
                         ...f.select('exerciseType', 'Type',          enums.EXERCISE_TYPE),
                         ...f.select('loadType',     'Load Type',     enums.LOAD_TYPE),
