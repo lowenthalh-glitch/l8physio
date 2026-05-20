@@ -430,6 +430,36 @@
             html += '</div>';
             output.innerHTML = html;
             _attachEvents(output);
+        },
+
+        // Auto-commit any edit rows still open in the DOM before saving.
+        commitOpenEdits: function(output) {
+            if (!output) return;
+            output.querySelectorAll('.wb-edit-row').forEach(function(tr) {
+                var ci    = parseInt(tr.dataset.circuit, 10);
+                var si    = parseInt(tr.dataset.slot,    10);
+                var exSel = tr.querySelector('.wb-edit-exercise');
+                if (!exSel || !exSel.value) return;
+                var circuits = window.PhysioWorkoutBuilder._lastCircuits || [];
+                if (!circuits[ci]) return;
+                var allEx        = window.PhysioWorkoutCircuits._allExercises || [];
+                var chosen       = allEx.filter(function(ex) { return ex.exerciseId === exSel.value; })[0];
+                var existingSlot = circuits[ci].slots[si];
+                var exType       = existingSlot ? existingSlot.exerciseType : (chosen ? chosen.exerciseType : 2);
+                var setsEl       = tr.querySelector('.wb-edit-sets');
+                var repsEl       = tr.querySelector('.wb-edit-reps');
+                var notesEl      = tr.querySelector('.wb-edit-notes');
+                circuits[ci].slots[si] = {
+                    exerciseId:   exSel.value,
+                    exerciseType: exType,
+                    name:         chosen ? (chosen.name || exSel.value) : exSel.value,
+                    sets:         parseInt(setsEl  ? setsEl.value  : '0', 10) || 0,
+                    reps:         parseInt(repsEl  ? repsEl.value  : '0', 10) || 0,
+                    repsDisplay:  chosen ? (chosen.defaultRepsDisplay || '') : '',
+                    notes:        notesEl ? notesEl.value.trim() : '',
+                    exercise:     chosen || null
+                };
+            });
         }
     };
 
