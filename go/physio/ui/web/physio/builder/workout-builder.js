@@ -187,6 +187,7 @@
             );
             window.PhysioWorkoutBuilder._lastCircuits  = circuits;
             window.PhysioWorkoutBuilder._lastProtocols = protocols;
+            window.PhysioWorkoutBuilder._lastPhase     = parseInt(phase, 10) || 0;
 
             window.PhysioWorkoutCircuits.renderAll(output, circuits);
 

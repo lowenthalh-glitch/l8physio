@@ -121,14 +121,31 @@
         ].join('');
     }
 
+    function _buildPool(circuitIndex, exerciseType) {
+        var allEx     = window.PhysioWorkoutCircuits._allExercises || [];
+        var lastPhase = window.PhysioWorkoutBuilder._lastPhase || 0;
+        var circuits  = window.PhysioWorkoutBuilder._lastCircuits || [];
+        var cat       = circuits[circuitIndex] ? circuits[circuitIndex].category : 0;
+        return allEx.filter(function(ex) {
+            if (ex.exerciseType !== exerciseType) return false;
+            if (cat) {
+                var exCats = (ex.categories && ex.categories.length) ? ex.categories : (ex.category ? [ex.category] : []);
+                if (exCats.indexOf(cat) === -1) return false;
+            }
+            if (lastPhase) {
+                var exPhase = ex.phase || 0;
+                if (exPhase !== 0 && exPhase > lastPhase) return false;
+            }
+            return true;
+        });
+    }
+
     function _renderEditRow(slot, rowIndex, circuitIndex) {
         var enums       = (window.PhysioManagement && window.PhysioManagement.enums) || {};
         var typeLabel   = slot ? (slot.exerciseType === 1 ? 'Fixed' : 'Variable') : '';
         var exerciseType = slot ? slot.exerciseType : 2;
 
-        // Build exercise options from cached pool filtered to same type
-        var allEx  = window.PhysioWorkoutCircuits._allExercises || [];
-        var pool   = allEx.filter(function(ex) { return ex.exerciseType === exerciseType; });
+        var pool = _buildPool(circuitIndex, exerciseType);
         var exOpts = pool.map(function(ex) {
             var sel = (slot && ex.exerciseId === slot.exerciseId) ? ' selected' : '';
             return '<option value="' + Layer8DUtils.escapeHtml(ex.exerciseId) + '"' + sel + '>' +
@@ -371,8 +388,7 @@
 
     // Render an edit row for a brand-new slot of a given type (no existing slot data)
     function _renderEditRowForType(rowIndex, circuitIndex, exerciseType) {
-        var allEx  = window.PhysioWorkoutCircuits._allExercises || [];
-        var pool   = allEx.filter(function(ex) { return ex.exerciseType === exerciseType; });
+        var pool = _buildPool(circuitIndex, exerciseType);
         var exOpts = pool.map(function(ex) {
             return '<option value="' + Layer8DUtils.escapeHtml(ex.exerciseId) + '">' +
                 Layer8DUtils.escapeHtml(ex.name || ex.exerciseId) + '</option>';
