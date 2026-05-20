@@ -14,7 +14,7 @@
     self._addExerciseToCircuit = function(circuitNumber) {
         var PA = window.PhysioPlanActions;
         var exMap = self._exerciseMap || {};
-        var available = PA.availableForCircuit(self._currentPlan.exercises || [], exMap, circuitNumber, self._planJoint, self._planPosture);
+        var available = PA.availableForCircuit(self._currentPlan.exercises || [], exMap, circuitNumber, self._planJoints, self._planPostures, self._planPhase);
         var options = available.length === 0
             ? '<option value="">No exercises available</option>'
             : '<option value="">-- Select --</option>' + available.map(function(ex) {

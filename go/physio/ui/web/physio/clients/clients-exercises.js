@@ -12,8 +12,9 @@
 
         _currentPlan: null,
         _exerciseMap: null,          // cached full exercise data for info tab
-        _planJoint: null,            // joint from the plan's first exercise
-        _planPosture: null,          // posture from the plan's first exercise
+        _planJoints: null,           // joints from the plan's first exercise
+        _planPostures: null,         // postures from the plan's first exercise
+        _planPhase: null,            // phase from the plan's first exercise
         _circuitTables: {},          // map of category -> Layer8DTable instance
 
         open: function(clientId) {
@@ -155,14 +156,11 @@
                         exerciseMap[ex.exerciseId] = ex;
                     });
 
-                    // Detect plan's joint/posture from first exercise (for add-exercise filtering)
+                    // Detect plan's joints/postures/phase from first exercise (for add-exercise filtering)
                     var seed = exerciseMap[exercises[0].exerciseId];
-                    self._planJoint = null;
-                    self._planPosture = null;
-                    if (seed) {
-                        self._planJoint = seed.joint;
-                        self._planPosture = seed.posture;
-                    }
+                    self._planJoints   = seed ? ((seed.joints   && seed.joints.length)   ? seed.joints   : (seed.joint   ? [seed.joint]   : null)) : null;
+                    self._planPostures = seed ? ((seed.postures && seed.postures.length) ? seed.postures : (seed.posture ? [seed.posture] : null)) : null;
+                    self._planPhase    = seed ? (seed.phase || null) : null;
                     self._exerciseMap = exerciseMap;
                     self._renderPlanTable(plan, exercises, exerciseMap, container);
                     if (infoContainer) self._renderExerciseInfo(plan, exercises, exerciseMap, infoContainer);
@@ -433,7 +431,7 @@
             if (!self._currentPlan || !self._exerciseMap) return;
             var pe = (self._currentPlan.exercises || []).filter(function(e) { return e.exerciseId === exerciseId; })[0];
             if (!pe) return;
-            PhysioPlanActions.openRotatePopup(self._exerciseMap, pe, self._planJoint, self._currentPlan.planId, self._currentPlan.clientId, function() { self._savePlan(); });
+            PhysioPlanActions.openRotatePopup(self._exerciseMap, pe, self._planJoints, self._currentPlan.planId, self._currentPlan.clientId, function() { self._savePlan(); });
         },
 
         _showVideoPopup: function(exerciseId) {

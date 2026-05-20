@@ -117,7 +117,7 @@
         },
 
         // Return alternatives in the same rotation group with matching joint, excluding the current exercise.
-        findAlternatives: function(exMap, pe, planJoint) {
+        findAlternatives: function(exMap, pe, planJoints) {
             var fullEx = exMap[pe.exerciseId] || {};
             var groupId = fullEx.rotationGroupId;
             if (!groupId) return [];
@@ -126,7 +126,10 @@
                 if (id === pe.exerciseId) return;
                 var ex = exMap[id];
                 if (ex.rotationGroupId !== groupId) return;
-                if (planJoint != null && ex.joint !== planJoint) return;
+                if (planJoints && planJoints.length) {
+                    var exJoints = (ex.joints && ex.joints.length) ? ex.joints : (ex.joint ? [ex.joint] : []);
+                    if (!exJoints.some(function(j) { return planJoints.indexOf(j) !== -1; })) return;
+                }
                 out.push(ex);
             });
             out.sort(function(a, b) { return (a.name || '').localeCompare(b.name || ''); });
@@ -135,9 +138,9 @@
 
         // Open a popup listing rotation alternatives. On pick, calls PA.rotate then onRotated().
         // Dispatches Layer8DPopup vs Layer8MPopup based on what's available.
-        openRotatePopup: function(exMap, pe, planJoint, planId, clientId, onRotated) {
+        openRotatePopup: function(exMap, pe, planJoints, planId, clientId, onRotated) {
             var self = this;
-            var alts = self.findAlternatives(exMap, pe, planJoint);
+            var alts = self.findAlternatives(exMap, pe, planJoints);
             if (alts.length === 0) {
                 _notify('warning', 'No rotation alternatives available.');
                 return;
@@ -242,15 +245,34 @@
 
         // Build filtered list of available exercises for adding to a circuit.
         // Returns array of { exerciseId, name } objects.
-        availableForCircuit: function(exercises, exMap, circuitNumber, planJoint, planPosture) {
+        availableForCircuit: function(exercises, exMap, circuitNumber, planJoints, planPostures, planPhase) {
             var existing = exercises.filter(function(e) {
                 return (e.circuitNumber || 0) === circuitNumber;
             }).map(function(e) { return e.exerciseId; });
 
             return Object.values(exMap).filter(function(ex) {
-                if (ex.category !== circuitNumber) return false;
-                if (planJoint != null && ex.joint !== planJoint) return false;
-                if (planPosture != null && ex.posture !== planPosture) return false;
+                // Category: use categories array, fall back to single category field
+                var exCats = (ex.categories && ex.categories.length) ? ex.categories : (ex.category ? [ex.category] : []);
+                if (exCats.indexOf(circuitNumber) === -1) return false;
+
+                // Joint: exercise must share at least one joint with the plan
+                if (planJoints && planJoints.length) {
+                    var exJoints = (ex.joints && ex.joints.length) ? ex.joints : (ex.joint ? [ex.joint] : []);
+                    if (!exJoints.some(function(j) { return planJoints.indexOf(j) !== -1; })) return false;
+                }
+
+                // Posture: exercise must share at least one posture with the plan
+                if (planPostures && planPostures.length) {
+                    var exPostures = (ex.postures && ex.postures.length) ? ex.postures : (ex.posture ? [ex.posture] : []);
+                    if (!exPostures.some(function(p) { return planPostures.indexOf(p) !== -1; })) return false;
+                }
+
+                // Phase: exercise phase 0 = unspecified (always included); otherwise must be <= plan phase
+                if (planPhase && planPhase !== 0) {
+                    var exPhase = ex.phase || 0;
+                    if (exPhase !== 0 && exPhase > planPhase) return false;
+                }
+
                 return existing.indexOf(ex.exerciseId) === -1;
             });
         },

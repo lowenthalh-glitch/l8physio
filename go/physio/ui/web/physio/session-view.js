@@ -178,11 +178,12 @@
         .then(function(data) {
             var exMap = {};
             (data.list || []).forEach(function(ex) { exMap[ex.exerciseId] = ex; });
-            // Detect plan's joint/posture from first exercise (for add-exercise filtering)
+            // Detect plan's joints/postures/phase from first exercise (for add-exercise filtering)
             var st = _getState(container);
             var seed = exercises.length > 0 ? exMap[exercises[0].exerciseId] : null;
-            st.planJoint = seed ? seed.joint : null;
-            st.planPosture = seed ? seed.posture : null;
+            st.planJoints   = seed ? ((seed.joints   && seed.joints.length)   ? seed.joints   : (seed.joint   ? [seed.joint]   : null)) : null;
+            st.planPostures = seed ? ((seed.postures && seed.postures.length) ? seed.postures : (seed.posture ? [seed.posture] : null)) : null;
+            st.planPhase    = seed ? (seed.phase || null) : null;
             _renderPlanCircuits(container, plan, exercises, exMap);
         })
         .catch(function() {
@@ -444,7 +445,7 @@
             e.stopPropagation(); _collectEdits(container);
             var roti = parseInt(rot.dataset.row, 10);
             var rotPe = st.flatRows[roti];
-            if (rotPe) PA.openRotatePopup(st.exMap, rotPe, st.planJoint, st.plan.planId, st.plan.clientId, function() { _rerender(container); });
+            if (rotPe) PA.openRotatePopup(st.exMap, rotPe, st.planJoints, st.plan.planId, st.plan.clientId, function() { _rerender(container); });
             return;
         }
 
@@ -505,7 +506,7 @@
         if (add) {
             e.stopPropagation(); _collectEdits(container);
             var aCNum = parseInt(add.dataset.circuit, 10);
-            var available = PA.availableForCircuit(st.exercises, st.exMap, aCNum, st.planJoint, st.planPosture);
+            var available = PA.availableForCircuit(st.exercises, st.exMap, aCNum, st.planJoints, st.planPostures, st.planPhase);
             var opts = available.length === 0
                 ? '<option value="">No exercises available</option>'
                 : '<option value="">-- Select --</option>' + available.map(function(ex) {
