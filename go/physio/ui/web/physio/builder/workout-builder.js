@@ -202,8 +202,6 @@
             output.appendChild(assignBar);
 
             assignBar.querySelector('.wb-assign-btn').addEventListener('click', function() {
-                // Commit any edit rows still open before saving
-                window.PhysioWorkoutCircuits.commitOpenEdits(output);
                 if (window.PhysioWorkoutBuilder._mode === 'edit') {
                     var fn = window.PhysioWorkoutBuilder._updatePlan;
                     if (fn) fn();

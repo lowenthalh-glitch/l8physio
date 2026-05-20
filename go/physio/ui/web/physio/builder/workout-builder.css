@@ -131,6 +131,11 @@
     letter-spacing: 0.03em;
 }
 
+/* Scrollable wrapper so action column never gets clipped */
+.wb-table-scroll {
+    overflow-x: auto;
+}
+
 /* Table inside circuit */
 .wb-table {
     width: 100%;
@@ -393,6 +398,16 @@
     padding: 4px 4px;
 }
 
+.wb-action-col-edit {
+    width: 140px;
+    white-space: nowrap;
+    padding: 4px 6px;
+}
+
+.wb-action-col-edit .layer8d-btn {
+    margin-right: 4px;
+}
+
 .wb-action-btn {
     background: none;
     border: none;
@@ -436,24 +451,6 @@
     min-width: 140px;
 }
 
-/* Save / Cancel buttons in edit row — larger click target, colored */
-.wb-edit-row .wb-edit-save,
-.wb-edit-row .wb-edit-cancel {
-    font-size: 16px;
-    width: 28px;
-    height: 28px;
-    line-height: 28px;
-    padding: 0;
-}
-
-.wb-edit-row .wb-edit-save {
-    color: var(--layer8d-success, #22c55e);
-    font-weight: 700;
-}
-
-.wb-edit-row .wb-edit-cancel {
-    color: var(--layer8d-error, #ef4444);
-}
 
 /* Add row bar at circuit bottom */
 .wb-add-row-bar {

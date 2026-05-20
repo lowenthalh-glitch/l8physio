@@ -169,9 +169,9 @@
               '<td><input type="text" class="wb-edit-input wb-edit-notes" value="' + Layer8DUtils.escapeHtml(notesVal) + '" placeholder="Notes" style="width:100px"></td>',
               '<td><span class="wb-badge ' + (exerciseType === 1 ? 'wb-badge-fixed' : 'wb-badge-var') + '">' + typeLabel + '</span></td>',
               '<td class="wb-move-btns"></td>',
-              '<td class="wb-action-col">',
-                '<button class="wb-action-btn wb-edit-save" title="Save">\u2713</button>',
-                '<button class="wb-action-btn wb-edit-cancel" title="Cancel">\u00d7</button>',
+              '<td class="wb-action-col wb-action-col-edit">',
+                '<button class="layer8d-btn layer8d-btn-primary layer8d-btn-small wb-edit-save">Save</button>',
+                '<button class="layer8d-btn layer8d-btn-secondary layer8d-btn-small wb-edit-cancel">Cancel</button>',
               '</td>',
             '</tr>'
         ].join('');
@@ -187,12 +187,14 @@
         return [
             '<div class="wb-circuit" id="wb-circuit-' + circuitIndex + '">',
               '<div class="wb-circuit-header">Circuit ' + circuit.num + ' \u2014 ' + circuit.label + '</div>',
-              '<table class="wb-table">',
-                '<thead><tr>',
-                  '<th>#</th><th>Exercise</th><th>Sets</th><th>Reps</th><th>Notes</th><th>Type</th><th></th><th></th>',
-                '</tr></thead>',
-                '<tbody>' + rows + '</tbody>',
-              '</table>',
+              '<div class="wb-table-scroll">',
+                '<table class="wb-table">',
+                  '<thead><tr>',
+                    '<th>#</th><th>Exercise</th><th>Sets</th><th>Reps</th><th>Notes</th><th>Type</th><th></th><th></th>',
+                  '</tr></thead>',
+                  '<tbody>' + rows + '</tbody>',
+                '</table>',
+              '</div>',
               '<div class="wb-add-row-bar">',
                 '<button class="layer8d-btn layer8d-btn-secondary layer8d-btn-small wb-add-fixed" data-circuit="' + circuitIndex + '">+ Add Fixed</button>',
                 '<button class="layer8d-btn layer8d-btn-secondary layer8d-btn-small wb-add-variable" data-circuit="' + circuitIndex + '">+ Add Variable</button>',
@@ -409,9 +411,9 @@
               '<td><input type="text" class="wb-edit-input wb-edit-notes" placeholder="Notes" style="width:100px"></td>',
               '<td><span class="wb-badge ' + typeCls + '">' + typeLabel + '</span></td>',
               '<td class="wb-move-btns"></td>',
-              '<td class="wb-action-col">',
-                '<button class="wb-action-btn wb-edit-save" title="Save">\u2713</button>',
-                '<button class="wb-action-btn wb-edit-cancel" title="Cancel">\u00d7</button>',
+              '<td class="wb-action-col wb-action-col-edit">',
+                '<button class="layer8d-btn layer8d-btn-primary layer8d-btn-small wb-edit-save">Save</button>',
+                '<button class="layer8d-btn layer8d-btn-secondary layer8d-btn-small wb-edit-cancel">Cancel</button>',
               '</td>',
             '</tr>'
         ].join('');
@@ -430,36 +432,6 @@
             html += '</div>';
             output.innerHTML = html;
             _attachEvents(output);
-        },
-
-        // Auto-commit any edit rows still open in the DOM before saving.
-        commitOpenEdits: function(output) {
-            if (!output) return;
-            output.querySelectorAll('.wb-edit-row').forEach(function(tr) {
-                var ci    = parseInt(tr.dataset.circuit, 10);
-                var si    = parseInt(tr.dataset.slot,    10);
-                var exSel = tr.querySelector('.wb-edit-exercise');
-                if (!exSel || !exSel.value) return;
-                var circuits = window.PhysioWorkoutBuilder._lastCircuits || [];
-                if (!circuits[ci]) return;
-                var allEx        = window.PhysioWorkoutCircuits._allExercises || [];
-                var chosen       = allEx.filter(function(ex) { return ex.exerciseId === exSel.value; })[0];
-                var existingSlot = circuits[ci].slots[si];
-                var exType       = existingSlot ? existingSlot.exerciseType : (chosen ? chosen.exerciseType : 2);
-                var setsEl       = tr.querySelector('.wb-edit-sets');
-                var repsEl       = tr.querySelector('.wb-edit-reps');
-                var notesEl      = tr.querySelector('.wb-edit-notes');
-                circuits[ci].slots[si] = {
-                    exerciseId:   exSel.value,
-                    exerciseType: exType,
-                    name:         chosen ? (chosen.name || exSel.value) : exSel.value,
-                    sets:         parseInt(setsEl  ? setsEl.value  : '0', 10) || 0,
-                    reps:         parseInt(repsEl  ? repsEl.value  : '0', 10) || 0,
-                    repsDisplay:  chosen ? (chosen.defaultRepsDisplay || '') : '',
-                    notes:        notesEl ? notesEl.value.trim() : '',
-                    exercise:     chosen || null
-                };
-            });
         }
     };
 
