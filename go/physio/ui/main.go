@@ -4,7 +4,7 @@ import (
 	"github.com/saichler/l8agent/go/types/l8agent"
 	"github.com/saichler/l8common/go/common"
 	l8c "github.com/saichler/l8common/go/common"
-	"github.com/saichler/l8events/go/types/l8events"
+	"github.com/saichler/l8types/go/types/l8events"
 	"github.com/saichler/l8physio/go/types/physio"
 	"github.com/saichler/l8types/go/ifs"
 )

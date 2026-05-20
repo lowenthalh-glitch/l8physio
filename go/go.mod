@@ -7,12 +7,12 @@ require (
 	github.com/saichler/l8bus v0.0.0-20260507121220-fb7db984917c
 	github.com/saichler/l8collector/go v0.0.0-20260514214534-7b3cc2bd96e2
 	github.com/saichler/l8common v0.0.0-20260505024122-8e5ad212b06b
-	github.com/saichler/l8events v0.0.0-20260326140304-4e54a1195008
+	github.com/saichler/l8events v0.0.0-20260517163932-d2d1abd736f8
 	github.com/saichler/l8parser v0.0.0-20260504014757-63e78ee52fb3
 	github.com/saichler/l8pollaris v0.0.0-20260418233826-378ba5e9453a
 	github.com/saichler/l8srlz v0.0.0-20260322124809-505a0d08f95d
-	github.com/saichler/l8types v0.0.0-20260505122705-baebc9fce998
-	github.com/saichler/l8utils v0.0.0-20260505131226-f546f8717d26
+	github.com/saichler/l8types v0.0.0-20260517162613-bf0348cedf0e
+	github.com/saichler/l8utils v0.0.0-20260517163445-ab88911f8894
 	google.golang.org/protobuf v1.36.12-0.20260120151049-f2248ac996af
 )
 
