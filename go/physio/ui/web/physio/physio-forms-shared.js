@@ -29,7 +29,6 @@
                     f.section('Exercise Details', [
                         ...f.text('name',            'Name',        true),
                         ...f.multiselect('categories', 'Categories', enums.EXERCISE_CATEGORY),
-                        ...f.select('bodyRegion',    'Body Region', enums.BODY_REGION),
                         ...f.textarea('description', 'Description'),
                         ...f.textarea('exerciseAim', 'Exercise Aim'),
                         ...f.checkbox('isActive',    'Active')
@@ -41,7 +40,7 @@
                     ]),
                     f.section('Protocol Classification', [
                         ...f.multiselect('joints',  'Joints',        enums.JOINT),
-                        ...f.select('posture',      'Posture Type',  enums.POSTURE),
+                        ...f.multiselect('posture',  'Posture Type',  enums.POSTURE),
                         ...f.select('phase',        'Phase',         enums.PHYSIO_PHASE),
                         ...f.select('exerciseType', 'Type',          enums.EXERCISE_TYPE),
                         ...f.select('loadType',     'Load Type',     enums.LOAD_TYPE),
