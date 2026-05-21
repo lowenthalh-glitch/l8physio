@@ -6,6 +6,25 @@ const sections = {
     system:  'sections/system.html'
 };
 
+function updateHash(sectionName, serviceKey) {
+    if (serviceKey) { window.location.hash = sectionName + '/' + serviceKey; }
+    else { window.location.hash = sectionName; }
+}
+
+function getHashParts() {
+    var hash = window.location.hash.replace('#', '');
+    var parts = hash.split('/');
+    return { section: parts[0] || '', service: parts[1] || '' };
+}
+
+document.addEventListener('click', function(e) {
+    var navItem = e.target.closest('.l8-subnav-item');
+    if (navItem && navItem.dataset.service) {
+        var hashParts = getHashParts();
+        if (hashParts.section) updateHash(hashParts.section, navItem.dataset.service);
+    }
+});
+
 const sectionInitializers = {
     physio: () => {
         if (typeof initializePhysio === 'function') initializePhysio();
@@ -19,6 +38,7 @@ const sectionInitializers = {
 };
 
 function loadSection(sectionName) {
+    updateHash(sectionName, '');
     const contentArea = document.getElementById('content-area');
     const sectionFile = sections[sectionName];
 

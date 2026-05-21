@@ -113,10 +113,23 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     } catch (e) { console.warn('Failed to load permissions:', e); }
 
-    loadSection('physio');
+    const hashParts = typeof getHashParts === 'function' ? getHashParts() : { section: '', service: '' };
+    const initSection = hashParts.section && sections[hashParts.section] ? hashParts.section : 'physio';
+    loadSection(initSection);
+    if (hashParts.service) {
+        setTimeout(function() {
+            const navItem = document.querySelector('.l8-subnav-item[data-service="' + hashParts.service + '"]');
+            if (navItem) navItem.click();
+        }, 500);
+    }
 
     const navLinks = document.querySelectorAll('.nav-link');
     navLinks.forEach(link => {
+        const section = link.getAttribute('data-section');
+        if (section === initSection) {
+            navLinks.forEach(l => l.classList.remove('active'));
+            link.classList.add('active');
+        }
         link.addEventListener('click', function(e) {
             e.preventDefault();
             navLinks.forEach(l => l.classList.remove('active'));
