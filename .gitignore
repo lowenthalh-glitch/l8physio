@@ -3,5 +3,7 @@ vendor
 .idea
 dist
 demo/
+go/demo.tar
+go/main
 logs/
 watchdog.pid
