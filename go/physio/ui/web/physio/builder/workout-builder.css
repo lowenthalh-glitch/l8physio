@@ -23,6 +23,11 @@
     margin-bottom: 16px;
 }
 
+.wb-proto-block .wb-controls {
+    border-radius: 8px 8px 0 0;
+    margin-bottom: 0;
+}
+
 .wb-ctrl {
     display: flex;
     flex-direction: column;
@@ -75,13 +80,72 @@
 }
 
 .wb-extra-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
     padding: 10px 16px;
     background: var(--layer8d-bg-light);
     border: 1px solid var(--layer8d-border);
     border-radius: 6px;
+}
+
+.wb-extra-row-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Circuit picker (per-protocol multi-select with per-circuit counts) */
+.wb-circuit-picker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    padding: 10px 20px 4px;
+    margin-top: -8px;
+    margin-bottom: 16px;
+    background: var(--layer8d-bg-light);
+    border: 1px solid var(--layer8d-border);
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+}
+
+.wb-extra-row .wb-circuit-picker {
+    padding: 10px 0 0;
+    margin: 8px 0 0;
+    background: transparent;
+    border: none;
+    border-top: 1px dashed var(--layer8d-border);
+    border-radius: 0;
+}
+
+.wb-circuit-pick {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--layer8d-text-dark);
+    cursor: pointer;
+}
+
+.wb-circuit-pick input[type="checkbox"] {
+    cursor: pointer;
+}
+
+.wb-circuit-name {
+    min-width: 72px;
+}
+
+.wb-circuit-count {
+    width: 56px;
+    padding: 4px 6px;
+    border: 1px solid var(--layer8d-border);
+    border-radius: 4px;
+    background: var(--layer8d-bg-white);
+    color: var(--layer8d-text-dark);
+    font-size: 13px;
+}
+
+.wb-circuit-count:disabled {
+    background: var(--layer8d-bg-light);
+    color: var(--layer8d-text-muted);
+    cursor: not-allowed;
 }
 
 .wb-extra-row-label {

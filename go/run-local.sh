@@ -70,7 +70,7 @@ sleep 5
 echo "Starting physio-web..."
 ./web_demo &
 sleep 2
-
+./boostapp_demo &
 echo ""
 echo "=========================================="
 echo " Physio is running!"
@@ -88,7 +88,7 @@ echo ""
 echo "Mock data uploaded successfully."
 
 echo "Starting boostapp-sync (15-minute interval)..."
-./boostapp_demo &
+#./boostapp_demo &
 sleep 2
 
 echo "Press Enter to stop all services and clean up..."

@@ -10,8 +10,6 @@
         ...col.col('name',            'Name'),
         ...col.multiEnum('categories', 'Categories', null, render.exerciseCategory, enums.EXERCISE_CATEGORY),
         ...col.multiEnum('joints',     'Joints',     null, render.joint,            enums.JOINT),
-        ...col.status('phase',        'Phase',       null, render.phase,             enums.PHYSIO_PHASE),
-        ...col.status('exerciseType', 'Type',        null, render.exerciseType,      enums.EXERCISE_TYPE),
         ...col.enum('loadType',       'Load',        null, render.loadType,          enums.LOAD_TYPE),
         ...col.col('effort',             'Effort (RPE)'),
         ...col.col('defaultRepsDisplay', 'Reps'),

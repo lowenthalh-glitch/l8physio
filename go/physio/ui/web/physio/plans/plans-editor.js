@@ -99,9 +99,7 @@
     function _openEditorPopup(plan, protocol, onRefresh) {
         var preset = {
             posture: protocol ? protocol.posture : 0,
-            joint:   protocol ? protocol.joint   : 0,
-            phase:   1,
-            volume:  plan.volume || 3
+            joint:   protocol ? protocol.joint   : 0
         };
 
         Layer8DPopup.show({

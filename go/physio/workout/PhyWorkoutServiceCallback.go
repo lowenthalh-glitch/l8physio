@@ -30,18 +30,16 @@ func buildWorkoutOnPost(e interface{}, action ifs.Action, vnic ifs.IVNic) error 
 		return nil
 	}
 	entity := e.(*physio.GeneratedWorkout)
-	// Fetch all exercises matching joint + posture + phase
+	// Fetch all exercises matching joint + posture
 	filter := &physio.PhysioExercise{
 		Joint:   entity.Joint,
 		Posture: entity.Posture,
-		Phase:   entity.Phase,
 	}
 	allRaw, err := l8c.GetEntities(exercises.ServiceName, exercises.ServiceArea, filter, vnic)
 	if err != nil || len(allRaw) == 0 {
-		// Try without posture filter — fall back to joint + phase only
+		// Try without posture filter — fall back to joint only
 		filter2 := &physio.PhysioExercise{
 			Joint: entity.Joint,
-			Phase: entity.Phase,
 		}
 		allRaw, err = l8c.GetEntities(exercises.ServiceName, exercises.ServiceArea, filter2, vnic)
 		if err != nil {
@@ -95,34 +93,20 @@ func buildWorkoutOnPost(e interface{}, action ifs.Action, vnic ifs.IVNic) error 
 	return nil
 }
 
-// buildCircuit selects up to 2 Fixed exercises + volume Variable exercises from the pool.
+// buildCircuit selects up to (2 + volume) exercises from the pool at random.
 func buildCircuit(cat physio.PhysioExerciseCategory, pool []*physio.PhysioExercise, volume int) *physio.WorkoutCircuit {
 	circuit := &physio.WorkoutCircuit{Category: cat}
 
-	var fixed []*physio.PhysioExercise
-	var variable []*physio.PhysioExercise
-	for _, ex := range pool {
-		if ex.ExerciseType == physio.PhysioExerciseType_PHYSIO_EXERCISE_TYPE_FIXED {
-			fixed = append(fixed, ex)
-		} else {
-			variable = append(variable, ex)
-		}
+	shuffled := make([]*physio.PhysioExercise, len(pool))
+	copy(shuffled, pool)
+	rand.Shuffle(len(shuffled), func(i, j int) { shuffled[i], shuffled[j] = shuffled[j], shuffled[i] })
+
+	limit := 2 + volume
+	if limit > len(shuffled) {
+		limit = len(shuffled)
 	}
 
-	// Shuffle variable pool for variety
-	rand.Shuffle(len(variable), func(i, j int) { variable[i], variable[j] = variable[j], variable[i] })
-
-	// Select up to 2 fixed + volume variable
-	selected := make([]*physio.PhysioExercise, 0, 2+volume)
-	if len(fixed) > 2 {
-		fixed = fixed[:2]
-	}
-	selected = append(selected, fixed...)
-	for i := 0; i < volume && i < len(variable); i++ {
-		selected = append(selected, variable[i])
-	}
-
-	for _, ex := range selected {
+	for _, ex := range shuffled[:limit] {
 		reps := ex.DefaultRepsDisplay
 		if reps == "" {
 			reps = "10-12"
@@ -135,7 +119,6 @@ func buildCircuit(cat physio.PhysioExerciseCategory, pool []*physio.PhysioExerci
 			LoadType:   ex.LoadType,
 			Effort:     ex.Effort,
 			LoadNotes:  ex.LoadNotes,
-			IsFixed:    ex.ExerciseType == physio.PhysioExerciseType_PHYSIO_EXERCISE_TYPE_FIXED,
 			WeightKg:   ex.WeightKg,
 		})
 	}

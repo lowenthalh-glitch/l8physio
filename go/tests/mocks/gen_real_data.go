@@ -7,15 +7,13 @@ import (
 
 // generateRehabBankExercises returns the 62 classified exercises from the client's
 // rehab_protocol_builder_with_prescription_v2.xlsx Exercise Bank sheet.
-// These exercises have full classification: joint, posture, category, phase, type, load.
+// These exercises have full classification: joint, posture, category, load.
 func generateRehabBankExercises() []*physio.PhysioExercise {
 	type rbDef struct {
 		name, effort, repsDisplay, loadNotes string
 		cat                                  physio.PhysioExerciseCategory
 		joint                                physio.PhysioJoint
 		posture                              physio.PhysioPosture
-		phase                                physio.PhysioPhase
-		exType                               physio.PhysioExerciseType
 		loadType                             physio.PhysioLoadType
 	}
 
@@ -34,13 +32,6 @@ func generateRehabBankExercises() []*physio.PhysioExercise {
 	valg := physio.PhysioPosture_PHYSIO_POSTURE_VALGUS
 	pron := physio.PhysioPosture_PHYSIO_POSTURE_PRONATION
 
-	p1 := physio.PhysioPhase_PHYSIO_PHASE_1
-	p2 := physio.PhysioPhase_PHYSIO_PHASE_2
-	p3 := physio.PhysioPhase_PHYSIO_PHASE_3
-
-	fixed := physio.PhysioExerciseType_PHYSIO_EXERCISE_TYPE_FIXED
-	variable := physio.PhysioExerciseType_PHYSIO_EXERCISE_TYPE_VARIABLE
-
 	ctrl := physio.PhysioLoadType_PHYSIO_LOAD_TYPE_CONTROL
 	bw := physio.PhysioLoadType_PHYSIO_LOAD_TYPE_BODYWEIGHT
 	bandL := physio.PhysioLoadType_PHYSIO_LOAD_TYPE_BAND_LIGHT
@@ -48,75 +39,75 @@ func generateRehabBankExercises() []*physio.PhysioExercise {
 	dbM := physio.PhysioLoadType_PHYSIO_LOAD_TYPE_DUMBBELL
 	dbH := physio.PhysioLoadType_PHYSIO_LOAD_TYPE_DUMBBELL
 
-	// name, effort, repsDisplay, loadNotes, category, joint, posture, phase, type, loadType
+	// name, effort, repsDisplay, loadNotes, category, joint, posture, loadType
 	defs := []rbDef{
 		// Shoulder / Kyphosis
-		{"Thoracic extension foam roller", "5-6", "8-10 / 20-30 sec", "איכות תנועה לפני עומס", mob, sho, kyph, p1, fixed, ctrl},
-		{"Pec stretch wall", "5-6", "8-10 / 20-30 sec", "איכות תנועה לפני עומס", mob, sho, kyph, p1, fixed, ctrl},
-		{"Open book rotation", "5-6", "10-12 / 20-30 sec", "איכות תנועה לפני עומס", mob, sho, kyph, p2, variable, ctrl},
-		{"Wall slides", "5-6", "10-12 / 20-30 sec", "איכות תנועה לפני עומס", mob, sho, kyph, p2, variable, ctrl},
-		{"Band shoulder dislocate", "6-7", "10-12 / 20-30 sec", "איכות תנועה לפני עומס", mob, sho, kyph, p3, variable, ctrl},
-		{"Scapular setting", "5-6", "10-12", "כאב ≤ 3/10", rehab, sho, kyph, p1, fixed, bandL},
-		{"Serratus punches", "5-6", "10-12", "כאב ≤ 3/10", rehab, sho, kyph, p1, fixed, bandL},
-		{"Wall slides with lift off", "6-7", "10-12", "שליטה מלאה", rehab, sho, kyph, p2, variable, bandM},
-		{"Y raise prone", "6-7", "10-12", "שליטה מלאה", rehab, sho, kyph, p2, variable, bandM},
-		{"Lower trap raises", "6-7", "8-10", "דיוק לפני עומס", rehab, sho, kyph, p3, variable, bandM},
-		{"Seated row band", "5-6", "10-12", "עומס קל", str, sho, kyph, p1, fixed, bw},
-		{"Face pull", "6-7", "8-12", "מאתגר אך נקי", str, sho, kyph, p2, fixed, dbM},
-		{"Dumbbell row", "6-7", "8-12", "מאתגר אך נקי", str, sho, kyph, p2, variable, dbM},
-		{"External rotation band", "6-7", "8-12", "מאתגר אך נקי", str, sho, kyph, p2, variable, dbM},
-		{"Cable row heavy", "7-8", "6-10", "ללא פיצוי", str, sho, kyph, p3, variable, dbH},
-		{"Band pull + hold", "5-6", "20-30 sec / 8-10", "יציבות בסיסית", fun, sho, kyph, p1, variable, bw},
-		{"Row to press", "6-7", "8-12", "שליטה דינמית", fun, sho, kyph, p2, variable, bandM},
-		{"Overhead control carry", "6-7", "8-12", "שליטה דינמית", fun, sho, kyph, p2, variable, bandM},
-		{"Push pull dynamic", "7-8", "6-10 / 20 sec", "פונקציונלי / תגובתי", fun, sho, kyph, p3, variable, dbM},
-		{"Med ball throw light", "7-8", "6-10 / 20 sec", "פונקציונלי / תגובתי", fun, sho, kyph, p3, variable, dbM},
+		{"Thoracic extension foam roller", "5-6", "8-10 / 20-30 sec", "איכות תנועה לפני עומס", mob, sho, kyph, ctrl},
+		{"Pec stretch wall", "5-6", "8-10 / 20-30 sec", "איכות תנועה לפני עומס", mob, sho, kyph, ctrl},
+		{"Open book rotation", "5-6", "10-12 / 20-30 sec", "איכות תנועה לפני עומס", mob, sho, kyph, ctrl},
+		{"Wall slides", "5-6", "10-12 / 20-30 sec", "איכות תנועה לפני עומס", mob, sho, kyph, ctrl},
+		{"Band shoulder dislocate", "6-7", "10-12 / 20-30 sec", "איכות תנועה לפני עומס", mob, sho, kyph, ctrl},
+		{"Scapular setting", "5-6", "10-12", "כאב ≤ 3/10", rehab, sho, kyph, bandL},
+		{"Serratus punches", "5-6", "10-12", "כאב ≤ 3/10", rehab, sho, kyph, bandL},
+		{"Wall slides with lift off", "6-7", "10-12", "שליטה מלאה", rehab, sho, kyph, bandM},
+		{"Y raise prone", "6-7", "10-12", "שליטה מלאה", rehab, sho, kyph, bandM},
+		{"Lower trap raises", "6-7", "8-10", "דיוק לפני עומס", rehab, sho, kyph, bandM},
+		{"Seated row band", "5-6", "10-12", "עומס קל", str, sho, kyph, bw},
+		{"Face pull", "6-7", "8-12", "מאתגר אך נקי", str, sho, kyph, dbM},
+		{"Dumbbell row", "6-7", "8-12", "מאתגר אך נקי", str, sho, kyph, dbM},
+		{"External rotation band", "6-7", "8-12", "מאתגר אך נקי", str, sho, kyph, dbM},
+		{"Cable row heavy", "7-8", "6-10", "ללא פיצוי", str, sho, kyph, dbH},
+		{"Band pull + hold", "5-6", "20-30 sec / 8-10", "יציבות בסיסית", fun, sho, kyph, bw},
+		{"Row to press", "6-7", "8-12", "שליטה דינמית", fun, sho, kyph, bandM},
+		{"Overhead control carry", "6-7", "8-12", "שליטה דינמית", fun, sho, kyph, bandM},
+		{"Push pull dynamic", "7-8", "6-10 / 20 sec", "פונקציונלי / תגובתי", fun, sho, kyph, dbM},
+		{"Med ball throw light", "7-8", "6-10 / 20 sec", "פונקציונלי / תגובתי", fun, sho, kyph, dbM},
 		// Knee / Valgus
-		{"Adductor stretch", "5-6", "8-10 / 20-30 sec", "איכות תנועה לפני עומס", mob, kne, valg, p1, fixed, ctrl},
-		{"Ankle dorsiflexion stretch", "5-6", "8-10 / 20-30 sec", "איכות תנועה לפני עומס", mob, kne, valg, p1, fixed, ctrl},
-		{"Hip opener stretch", "5-6", "10-12 / 20-30 sec", "איכות תנועה לפני עומס", mob, kne, valg, p2, variable, ctrl},
-		{"Dynamic lunge stretch", "5-6", "10-12 / 20-30 sec", "איכות תנועה לפני עומס", mob, kne, valg, p2, variable, ctrl},
-		{"Deep squat hold", "6-7", "10-12 / 20-30 sec", "איכות תנועה לפני עומס", mob, kne, valg, p3, variable, ctrl},
-		{"Clam shell", "5-6", "10-12", "כאב ≤ 3/10", rehab, kne, valg, p1, fixed, bandL},
-		{"Side walk band", "5-6", "10-12", "כאב ≤ 3/10", rehab, kne, valg, p1, fixed, bandL},
-		{"Single leg balance", "6-7", "10-12", "שליטה מלאה", rehab, kne, valg, p2, variable, bandM},
-		{"Step down control", "6-7", "10-12", "שליטה מלאה", rehab, kne, valg, p2, variable, bandM},
-		{"Single leg reach", "6-7", "8-10", "דיוק לפני עומס", rehab, kne, valg, p3, variable, bandM},
-		{"Hip thrust", "5-6", "10-12", "עומס קל", str, kne, valg, p1, fixed, bw},
-		{"Static squat", "6-7", "8-12", "מאתגר אך נקי", str, kne, valg, p2, fixed, dbM},
-		{"Split squat", "6-7", "8-12", "מאתגר אך נקי", str, kne, valg, p2, variable, dbM},
-		{"Step up", "6-7", "8-12", "מאתגר אך נקי", str, kne, valg, p2, variable, dbM},
-		{"Single leg squat", "7-8", "6-10", "ללא פיצוי", str, kne, valg, p3, variable, dbH},
-		{"Balance hold", "5-6", "20-30 sec / 8-10", "יציבות בסיסית", fun, kne, valg, p1, variable, bw},
-		{"Step pattern", "6-7", "8-12", "שליטה דינמית", fun, kne, valg, p2, variable, bandM},
-		{"Lateral movement", "6-7", "8-12", "שליטה דינמית", fun, kne, valg, p2, variable, bandM},
-		{"Jump landing drill", "7-8", "6-10 / 20 sec", "פונקציונלי / תגובתי", fun, kne, valg, p3, variable, dbM},
-		{"Reactive hop", "7-8", "6-10 / 20 sec", "פונקציונלי / תגובתי", fun, kne, valg, p3, variable, dbM},
+		{"Adductor stretch", "5-6", "8-10 / 20-30 sec", "איכות תנועה לפני עומס", mob, kne, valg, ctrl},
+		{"Ankle dorsiflexion stretch", "5-6", "8-10 / 20-30 sec", "איכות תנועה לפני עומס", mob, kne, valg, ctrl},
+		{"Hip opener stretch", "5-6", "10-12 / 20-30 sec", "איכות תנועה לפני עומס", mob, kne, valg, ctrl},
+		{"Dynamic lunge stretch", "5-6", "10-12 / 20-30 sec", "איכות תנועה לפני עומס", mob, kne, valg, ctrl},
+		{"Deep squat hold", "6-7", "10-12 / 20-30 sec", "איכות תנועה לפני עומס", mob, kne, valg, ctrl},
+		{"Clam shell", "5-6", "10-12", "כאב ≤ 3/10", rehab, kne, valg, bandL},
+		{"Side walk band", "5-6", "10-12", "כאב ≤ 3/10", rehab, kne, valg, bandL},
+		{"Single leg balance", "6-7", "10-12", "שליטה מלאה", rehab, kne, valg, bandM},
+		{"Step down control", "6-7", "10-12", "שליטה מלאה", rehab, kne, valg, bandM},
+		{"Single leg reach", "6-7", "8-10", "דיוק לפני עומס", rehab, kne, valg, bandM},
+		{"Hip thrust", "5-6", "10-12", "עומס קל", str, kne, valg, bw},
+		{"Static squat", "6-7", "8-12", "מאתגר אך נקי", str, kne, valg, dbM},
+		{"Split squat", "6-7", "8-12", "מאתגר אך נקי", str, kne, valg, dbM},
+		{"Step up", "6-7", "8-12", "מאתגר אך נקי", str, kne, valg, dbM},
+		{"Single leg squat", "7-8", "6-10", "ללא פיצוי", str, kne, valg, dbH},
+		{"Balance hold", "5-6", "20-30 sec / 8-10", "יציבות בסיסית", fun, kne, valg, bw},
+		{"Step pattern", "6-7", "8-12", "שליטה דינמית", fun, kne, valg, bandM},
+		{"Lateral movement", "6-7", "8-12", "שליטה דינמית", fun, kne, valg, bandM},
+		{"Jump landing drill", "7-8", "6-10 / 20 sec", "פונקציונלי / תגובתי", fun, kne, valg, dbM},
+		{"Reactive hop", "7-8", "6-10 / 20 sec", "פונקציונלי / תגובתי", fun, kne, valg, dbM},
 		// General / Kyphosis
-		{"Thoracic breathing opener", "5-6", "8-10 / 20-30 sec", "איכות תנועה לפני עומס", mob, gen, kyph, p1, fixed, ctrl},
-		{"Wall chest opener", "5-6", "8-10 / 20-30 sec", "איכות תנועה לפני עומס", mob, gen, kyph, p1, fixed, ctrl},
-		{"Open book flow", "5-6", "10-12 / 20-30 sec", "איכות תנועה לפני עומס", mob, gen, kyph, p2, variable, ctrl},
-		{"Band pull apart", "5-6", "10-12", "כאב ≤ 3/10", rehab, gen, kyph, p1, fixed, bandL},
-		{"Serratus wall reach", "6-7", "10-12", "שליטה מלאה", rehab, gen, kyph, p2, variable, bandM},
-		{"Supported row", "5-6", "10-12", "עומס קל", str, gen, kyph, p1, fixed, bw},
-		{"Face pull light", "6-7", "8-12", "מאתגר אך נקי", str, gen, kyph, p2, variable, dbM},
-		{"Carry with posture control", "7-8", "6-10 / 20 sec", "פונקציונלי / תגובתי", fun, gen, kyph, p3, variable, dbM},
+		{"Thoracic breathing opener", "5-6", "8-10 / 20-30 sec", "איכות תנועה לפני עומס", mob, gen, kyph, ctrl},
+		{"Wall chest opener", "5-6", "8-10 / 20-30 sec", "איכות תנועה לפני עומס", mob, gen, kyph, ctrl},
+		{"Open book flow", "5-6", "10-12 / 20-30 sec", "איכות תנועה לפני עומס", mob, gen, kyph, ctrl},
+		{"Band pull apart", "5-6", "10-12", "כאב ≤ 3/10", rehab, gen, kyph, bandL},
+		{"Serratus wall reach", "6-7", "10-12", "שליטה מלאה", rehab, gen, kyph, bandM},
+		{"Supported row", "5-6", "10-12", "עומס קל", str, gen, kyph, bw},
+		{"Face pull light", "6-7", "8-12", "מאתגר אך נקי", str, gen, kyph, dbM},
+		{"Carry with posture control", "7-8", "6-10 / 20 sec", "פונקציונלי / תגובתי", fun, gen, kyph, dbM},
 		// General / Lordosis
-		{"90/90 pelvic reset", "5-6", "8-10 / 20-30 sec", "איכות תנועה לפני עומס", mob, gen, lord, p1, fixed, ctrl},
-		{"Hip flexor stretch", "5-6", "8-10 / 20-30 sec", "איכות תנועה לפני עומס", mob, gen, lord, p1, fixed, ctrl},
-		{"Posterior pelvic tilt drill", "5-6", "10-12", "כאב ≤ 3/10", rehab, gen, lord, p1, fixed, bandL},
-		{"Dead bug basic", "6-7", "10-12", "שליטה מלאה", rehab, gen, lord, p2, variable, bandM},
-		{"Glute bridge", "5-6", "10-12", "עומס קל", str, gen, lord, p1, fixed, bw},
-		{"Hamstring curl ball", "6-7", "8-12", "מאתגר אך נקי", str, gen, lord, p2, variable, dbM},
-		{"Farmer carry controlled", "7-8", "6-10 / 20 sec", "פונקציונלי / תגובתי", fun, gen, lord, p3, variable, dbM},
+		{"90/90 pelvic reset", "5-6", "8-10 / 20-30 sec", "איכות תנועה לפני עומס", mob, gen, lord, ctrl},
+		{"Hip flexor stretch", "5-6", "8-10 / 20-30 sec", "איכות תנועה לפני עומס", mob, gen, lord, ctrl},
+		{"Posterior pelvic tilt drill", "5-6", "10-12", "כאב ≤ 3/10", rehab, gen, lord, bandL},
+		{"Dead bug basic", "6-7", "10-12", "שליטה מלאה", rehab, gen, lord, bandM},
+		{"Glute bridge", "5-6", "10-12", "עומס קל", str, gen, lord, bw},
+		{"Hamstring curl ball", "6-7", "8-12", "מאתגר אך נקי", str, gen, lord, dbM},
+		{"Farmer carry controlled", "7-8", "6-10 / 20 sec", "פונקציונלי / תגובתי", fun, gen, lord, dbM},
 		// General / Pronation
-		{"Foot tripod drill", "5-6", "8-10 / 20-30 sec", "איכות תנועה לפני עומס", mob, gen, pron, p1, fixed, ctrl},
-		{"Calf stretch wall", "5-6", "8-10 / 20-30 sec", "איכות תנועה לפני עומס", mob, gen, pron, p1, fixed, ctrl},
-		{"Arch control hold", "5-6", "10-12", "כאב ≤ 3/10", rehab, gen, pron, p1, fixed, bandL},
-		{"Single leg balance arch", "6-7", "10-12", "שליטה מלאה", rehab, gen, pron, p2, variable, bandM},
-		{"Calf raise controlled", "5-6", "10-12", "עומס קל", str, gen, pron, p1, fixed, bw},
-		{"Tibialis raise wall", "6-7", "8-12", "מאתגר אך נקי", str, gen, pron, p2, variable, dbM},
-		{"Reactive balance tap", "7-8", "6-10 / 20 sec", "פונקציונלי / תגובתי", fun, gen, pron, p3, variable, dbM},
+		{"Foot tripod drill", "5-6", "8-10 / 20-30 sec", "איכות תנועה לפני עומס", mob, gen, pron, ctrl},
+		{"Calf stretch wall", "5-6", "8-10 / 20-30 sec", "איכות תנועה לפני עומס", mob, gen, pron, ctrl},
+		{"Arch control hold", "5-6", "10-12", "כאב ≤ 3/10", rehab, gen, pron, bandL},
+		{"Single leg balance arch", "6-7", "10-12", "שליטה מלאה", rehab, gen, pron, bandM},
+		{"Calf raise controlled", "5-6", "10-12", "עומס קל", str, gen, pron, bw},
+		{"Tibialis raise wall", "6-7", "8-12", "מאתגר אך נקי", str, gen, pron, dbM},
+		{"Reactive balance tap", "7-8", "6-10 / 20 sec", "פונקציונלי / תגובתי", fun, gen, pron, dbM},
 	}
 
 	rotGroups := map[int]string{
@@ -135,8 +126,6 @@ func generateRehabBankExercises() []*physio.PhysioExercise {
 			Joint:              d.joint,
 			Posture:            d.posture,
 			Postures:           []physio.PhysioPosture{d.posture},
-			Phase:              d.phase,
-			ExerciseType:       d.exType,
 			LoadType:           d.loadType,
 			Effort:             d.effort,
 			DefaultRepsDisplay: d.repsDisplay,

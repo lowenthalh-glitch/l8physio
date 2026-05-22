@@ -8,21 +8,15 @@
         return (POSTURE_CODES[posture] || '?') + '-' + (JOINT_CODES[joint] || '?');
     }
 
-    function _enumLabel(val, map) {
-        if (!map) return val || '—';
-        return map[val] || '—';
-    }
-
     function _setsRepsDisplay(val, displayVal) {
         if (displayVal) return displayVal;
         if (val != null && val !== 0) return String(val);
-        return '\u2014';
+        return '—';
     }
 
     function _toSlot(ex) {
         return {
             exerciseId:   ex.exerciseId,
-            exerciseType: ex.exerciseType,
             name:         ex.name || ex.exerciseId || '—',
             sets:         ex.defaultSets  || 0,
             reps:         ex.defaultReps  || 0,
@@ -35,42 +29,53 @@
     // ── Assemble circuits ──────────────────────────────────────────────────────
 
     var CATEGORY_LABELS = { 1: 'Mobility', 2: 'Rehab', 3: 'Strength', 4: 'Functional' };
-    var CATEGORY_ORDER  = [1, 2, 3, 4];
 
-    function _assembleCircuits(allExercises, protocols, _unused, phase, volume) {
-        var phaseInt      = parseInt(phase,  10);
-        var variableSlots = parseInt(volume, 10) - 2;
-        var circuits      = [];
-        var num           = 0;
+    // Build circuits from per-protocol circuit specs. Each protocol carries:
+    //   { posture, joint, circuits: [{ category, count }, ...] }
+    // Exercises picked into a circuit are excluded from all later circuits (dedup across plan).
+    // If a circuit can't be filled, remaining slots are left null so the therapist sees the gap.
+    function _assembleCircuits(allExercises, protocols) {
+        var circuits = [];
+        var num      = 0;
+        var used     = {};
 
-        protocols.forEach(function(proto) {
+        (protocols || []).forEach(function(proto) {
+            if (!proto.circuits || proto.circuits.length === 0) return;
+
             var protoExs = allExercises.filter(function(ex) {
                 var exPostures = (ex.postures && ex.postures.length) ? ex.postures : (ex.posture ? [ex.posture] : []);
                 if (exPostures.indexOf(proto.posture) === -1) return false;
                 if (!ex.joints || ex.joints.indexOf(proto.joint) === -1) return false;
-                var p = ex.phase || 0;
-                return p === 0 || p <= phaseInt;
+                return true;
             });
 
-            CATEGORY_ORDER.forEach(function(cat) {
-                var catExs   = protoExs.filter(function(ex) { return ex.categories && ex.categories.indexOf(cat) !== -1; });
-                var fixed    = catExs.filter(function(ex) { return ex.exerciseType === 1; });
-                var variable = catExs.filter(function(ex) { return ex.exerciseType === 2; });
-                if (fixed.length === 0 && variable.length === 0) return;
+            proto.circuits.forEach(function(spec) {
+                var cat   = spec.category;
+                var count = spec.count > 0 ? spec.count : 1;
+
+                var catExs = protoExs.filter(function(ex) {
+                    if (used[ex.exerciseId]) return false;
+                    return ex.categories && ex.categories.indexOf(cat) !== -1;
+                });
 
                 num++;
                 var slots = [];
-                slots.push(fixed[0] ? _toSlot(fixed[0]) : null);
-                slots.push(fixed[1] ? _toSlot(fixed[1]) : null);
-                for (var j = 0; j < variableSlots; j++) {
-                    slots.push(variable[j] ? _toSlot(variable[j]) : null);
+                for (var j = 0; j < count; j++) {
+                    if (catExs[j]) {
+                        used[catExs[j].exerciseId] = true;
+                        slots.push(_toSlot(catExs[j]));
+                    } else {
+                        slots.push(null);
+                    }
                 }
 
                 var code = _protocolCode(proto.posture, proto.joint);
                 circuits.push({
                     num:          num,
-                    label:        code + ' \u2014 ' + CATEGORY_LABELS[cat],
+                    label:        code + ' — ' + CATEGORY_LABELS[cat],
                     protocolCode: code,
+                    posture:      proto.posture,
+                    joint:        proto.joint,
                     category:     cat,
                     slots:        slots
                 });
@@ -86,15 +91,11 @@
         if (!slot) {
             return '<tr class="wb-empty-row" data-circuit="' + circuitIndex + '" data-slot="' + rowIndex + '">' +
                 '<td class="wb-num">' + (rowIndex + 1) + '</td>' +
-                '<td colspan="6" class="wb-empty-cell">\u2014</td>' +
+                '<td colspan="5" class="wb-empty-cell">—</td>' +
                 '<td class="wb-move-btns"></td>' +
                 '<td class="wb-action-col"></td>' +
                 '</tr>';
         }
-
-        var enums     = (window.PhysioManagement && window.PhysioManagement.enums) || {};
-        var typeLabel = slot.exerciseType === 1 ? 'Fixed' : 'Variable';
-        var typeCls   = slot.exerciseType === 1 ? 'wb-badge-fixed' : 'wb-badge-var';
 
         var circuits  = window.PhysioWorkoutBuilder._lastCircuits || [];
         var slots     = circuits[circuitIndex] ? circuits[circuitIndex].slots : [];
@@ -108,53 +109,66 @@
               '<td class="wb-sets">' + _setsRepsDisplay(slot.sets) + '</td>',
               '<td class="wb-reps">' + _setsRepsDisplay(slot.reps, slot.repsDisplay) + '</td>',
               '<td class="wb-load">' + Layer8DUtils.escapeHtml(slot.notes || '') + '</td>',
-              '<td><span class="wb-badge ' + typeCls + '">' + typeLabel + '</span></td>',
               '<td class="wb-move-btns">',
-                (canUp   ? '<button class="wb-move-up"   title="Move up">\u25b2</button>'   : '<span class="wb-move-ph"></span>'),
-                (canDown ? '<button class="wb-move-down" title="Move down">\u25bc</button>' : '<span class="wb-move-ph"></span>'),
+                (canUp   ? '<button class="wb-move-up"   title="Move up">▲</button>'   : '<span class="wb-move-ph"></span>'),
+                (canDown ? '<button class="wb-move-down" title="Move down">▼</button>' : '<span class="wb-move-ph"></span>'),
               '</td>',
               '<td class="wb-action-col">',
-                '<button class="wb-action-btn wb-edit-btn" title="Edit">\u270f\ufe0f</button>',
+                '<button class="wb-action-btn wb-edit-btn" title="Edit">✏️</button>',
                 '<button class="wb-action-btn wb-delete-btn" title="Delete">\u{1f5d1}</button>',
               '</td>',
             '</tr>'
         ].join('');
     }
 
-    function _buildPool(circuitIndex, exerciseType) {
-        var allEx     = window.PhysioWorkoutCircuits._allExercises || [];
-        var lastPhase = window.PhysioWorkoutBuilder._lastPhase || 0;
-        var circuits  = window.PhysioWorkoutBuilder._lastCircuits || [];
-        var cat       = circuits[circuitIndex] ? circuits[circuitIndex].category : 0;
+    function _buildPool(circuitIndex, currentExerciseId) {
+        var allEx    = window.PhysioWorkoutCircuits._allExercises || [];
+        var circuits = window.PhysioWorkoutBuilder._lastCircuits || [];
+        var circuit  = circuits[circuitIndex];
+        var cat      = circuit ? circuit.category : 0;
+        var posture  = circuit ? circuit.posture  : 0;
+        var joint    = circuit ? circuit.joint    : 0;
+
+        // Collect exercise IDs already picked anywhere in the plan, except the slot being edited.
+        var picked = {};
+        circuits.forEach(function(c) {
+            (c.slots || []).forEach(function(s) {
+                if (s && s.exerciseId && s.exerciseId !== currentExerciseId) {
+                    picked[s.exerciseId] = true;
+                }
+            });
+        });
+
         return allEx.filter(function(ex) {
-            if (ex.exerciseType !== exerciseType) return false;
+            if (picked[ex.exerciseId]) return false;
             if (cat) {
                 var exCats = (ex.categories && ex.categories.length) ? ex.categories : (ex.category ? [ex.category] : []);
                 if (exCats.indexOf(cat) === -1) return false;
             }
-            if (lastPhase) {
-                var exPhase = ex.phase || 0;
-                if (exPhase !== 0 && exPhase > lastPhase) return false;
+            if (posture) {
+                var exPostures = (ex.postures && ex.postures.length) ? ex.postures : (ex.posture ? [ex.posture] : []);
+                if (exPostures.indexOf(posture) === -1) return false;
+            }
+            if (joint) {
+                if (!ex.joints || ex.joints.indexOf(joint) === -1) return false;
             }
             return true;
         });
     }
 
     function _renderEditRow(slot, rowIndex, circuitIndex) {
-        var enums       = (window.PhysioManagement && window.PhysioManagement.enums) || {};
-        var typeLabel   = slot ? (slot.exerciseType === 1 ? 'Fixed' : 'Variable') : '';
-        var exerciseType = slot ? slot.exerciseType : 2;
-
-        var pool = _buildPool(circuitIndex, exerciseType);
+        var pool = _buildPool(circuitIndex, slot ? slot.exerciseId : null);
         var exOpts = pool.map(function(ex) {
             var sel = (slot && ex.exerciseId === slot.exerciseId) ? ' selected' : '';
             return '<option value="' + Layer8DUtils.escapeHtml(ex.exerciseId) + '"' + sel + '>' +
                 Layer8DUtils.escapeHtml(ex.name || ex.exerciseId) + '</option>';
         }).join('');
 
-        var setsVal  = slot ? (slot.sets  || '') : '';
-        var repsVal  = slot ? (slot.reps  || '') : '';
-        var notesVal = slot ? (slot.notes || '') : '';
+        // For a new (empty) slot, pre-fill sets/reps/notes from the first option in the pool.
+        var defaultEx = slot ? null : (pool[0] || null);
+        var setsVal   = slot ? (slot.sets  || '') : (defaultEx ? (defaultEx.defaultSets || '') : '');
+        var repsVal   = slot ? (slot.reps  || '') : (defaultEx ? (defaultEx.defaultReps || '') : '');
+        var notesVal  = slot ? (slot.notes || '') : (defaultEx ? (defaultEx.loadNotes   || '') : '');
 
         return [
             '<tr class="wb-edit-row" data-circuit="' + circuitIndex + '" data-slot="' + rowIndex + '">',
@@ -164,10 +178,9 @@
                   exOpts || '<option value="">— No exercises available —</option>',
                 '</select>',
               '</td>',
-              '<td><input type="number" class="wb-edit-input wb-edit-sets" value="' + setsVal + '" placeholder="Sets" min="0" style="width:52px"></td>',
-              '<td><input type="number" class="wb-edit-input wb-edit-reps" value="' + repsVal + '" placeholder="Reps" min="0" style="width:52px"></td>',
+              '<td><input type="number" class="wb-edit-input wb-edit-sets" value="' + setsVal + '" placeholder="Sets" min="0" style="width:80px"></td>',
+              '<td><input type="number" class="wb-edit-input wb-edit-reps" value="' + repsVal + '" placeholder="Reps" min="0" style="width:80px"></td>',
               '<td><input type="text" class="wb-edit-input wb-edit-notes" value="' + Layer8DUtils.escapeHtml(notesVal) + '" placeholder="Notes" style="width:100px"></td>',
-              '<td><span class="wb-badge ' + (exerciseType === 1 ? 'wb-badge-fixed' : 'wb-badge-var') + '">' + typeLabel + '</span></td>',
               '<td class="wb-move-btns"></td>',
               '<td class="wb-action-col wb-action-col-edit">',
                 '<button class="layer8d-btn layer8d-btn-primary layer8d-btn-small wb-edit-save">Save</button>',
@@ -186,18 +199,17 @@
 
         return [
             '<div class="wb-circuit" id="wb-circuit-' + circuitIndex + '">',
-              '<div class="wb-circuit-header">Circuit ' + circuit.num + ' \u2014 ' + circuit.label + '</div>',
+              '<div class="wb-circuit-header">Circuit ' + circuit.num + ' — ' + circuit.label + '</div>',
               '<div class="wb-table-scroll">',
                 '<table class="wb-table">',
                   '<thead><tr>',
-                    '<th>#</th><th>Exercise</th><th>Sets</th><th>Reps</th><th>Notes</th><th>Type</th><th></th><th></th>',
+                    '<th>#</th><th>Exercise</th><th>Sets</th><th>Reps</th><th>Notes</th><th></th><th></th>',
                   '</tr></thead>',
                   '<tbody>' + rows + '</tbody>',
                 '</table>',
               '</div>',
               '<div class="wb-add-row-bar">',
-                '<button class="layer8d-btn layer8d-btn-secondary layer8d-btn-small wb-add-fixed" data-circuit="' + circuitIndex + '">+ Add Fixed</button>',
-                '<button class="layer8d-btn layer8d-btn-secondary layer8d-btn-small wb-add-variable" data-circuit="' + circuitIndex + '">+ Add Variable</button>',
+                '<button class="layer8d-btn layer8d-btn-secondary layer8d-btn-small wb-add-exercise" data-circuit="' + circuitIndex + '">+ Add Exercise</button>',
               '</div>',
             '</div>'
         ].join('');
@@ -226,15 +238,6 @@
         var cur = slots[slotIdx];
         var tgt = slots[target];
 
-        if (dir === -1 && cur.exerciseType === 2 && tgt.exerciseType === 1) {
-            Layer8DNotification.warning('Variable exercises cannot be placed above Fixed exercises.');
-            return;
-        }
-        if (dir === 1 && cur.exerciseType === 1 && tgt.exerciseType === 2) {
-            Layer8DNotification.warning('Fixed exercises cannot be placed below Variable exercises.');
-            return;
-        }
-
         slots[slotIdx] = tgt;
         slots[target]  = cur;
         _rerenderCircuit(output, circuitIdx);
@@ -253,6 +256,23 @@
             if (!tr) return;
             var saveBtn = tr.querySelector('.wb-edit-save');
             if (saveBtn) saveBtn.click();
+        });
+
+        // Exercise picker change: refill sets/reps/notes from the picked exercise's defaults
+        output.addEventListener('change', function(e) {
+            var sel = e.target.closest('.wb-edit-exercise');
+            if (!sel) return;
+            var tr = sel.closest('.wb-edit-row');
+            if (!tr) return;
+            var allEx  = window.PhysioWorkoutCircuits._allExercises || [];
+            var chosen = allEx.filter(function(ex) { return ex.exerciseId === sel.value; })[0];
+            if (!chosen) return;
+            var setsEl  = tr.querySelector('.wb-edit-sets');
+            var repsEl  = tr.querySelector('.wb-edit-reps');
+            var notesEl = tr.querySelector('.wb-edit-notes');
+            if (setsEl)  setsEl.value  = chosen.defaultSets || '';
+            if (repsEl)  repsEl.value  = chosen.defaultReps || '';
+            if (notesEl) notesEl.value = chosen.loadNotes   || '';
         });
 
         output.addEventListener('click', function(e) {
@@ -305,12 +325,9 @@
 
                 var allEx3 = window.PhysioWorkoutCircuits._allExercises || [];
                 var chosen = allEx3.filter(function(ex) { return ex.exerciseId === exSel.value; })[0];
-                var existingSlot = circuits3[ci3].slots[si3];
-                var exType = existingSlot ? existingSlot.exerciseType : (chosen ? chosen.exerciseType : 2);
 
                 circuits3[ci3].slots[si3] = {
                     exerciseId:   exSel.value,
-                    exerciseType: exType,
                     name:         chosen ? (chosen.name || exSel.value) : exSel.value,
                     sets:         parseInt(setsEl.value,  10) || 0,
                     reps:         parseInt(repsEl.value,  10) || 0,
@@ -349,74 +366,22 @@
                 return;
             }
 
-            // Add Fixed
-            var addFixed = e.target.closest('.wb-add-fixed');
-            if (addFixed) {
-                var ci6 = parseInt(addFixed.dataset.circuit, 10);
+            // Add Exercise
+            var addEx = e.target.closest('.wb-add-exercise');
+            if (addEx) {
+                var ci6 = parseInt(addEx.dataset.circuit, 10);
                 var circuits6 = window.PhysioWorkoutBuilder._lastCircuits || [];
                 if (!circuits6[ci6]) return;
                 var newIdx = circuits6[ci6].slots.length;
                 circuits6[ci6].slots.push(null); // placeholder so row index is stable
                 _rerenderCircuit(output, ci6);
-                // Open edit form on the new row immediately
-                var newTr = output.querySelector('#wb-circuit-' + ci6 + ' tbody tr:last-child');
-                if (newTr) {
-                    // Last row is the add-bar, get last tbody tr
-                    var tbody = output.querySelector('#wb-circuit-' + ci6 + ' tbody');
-                    var allTr = tbody ? tbody.querySelectorAll('tr') : [];
-                    var lastTr = allTr[allTr.length - 1];
-                    if (lastTr) lastTr.outerHTML = _renderEditRowForType(newIdx, ci6, 1);
-                }
-                return;
-            }
-
-            // Add Variable
-            var addVar = e.target.closest('.wb-add-variable');
-            if (addVar) {
-                var ci7 = parseInt(addVar.dataset.circuit, 10);
-                var circuits7 = window.PhysioWorkoutBuilder._lastCircuits || [];
-                if (!circuits7[ci7]) return;
-                var newIdx7 = circuits7[ci7].slots.length;
-                circuits7[ci7].slots.push(null);
-                _rerenderCircuit(output, ci7);
-                var tbody7 = output.querySelector('#wb-circuit-' + ci7 + ' tbody');
-                var allTr7 = tbody7 ? tbody7.querySelectorAll('tr') : [];
-                var lastTr7 = allTr7[allTr7.length - 1];
-                if (lastTr7) lastTr7.outerHTML = _renderEditRowForType(newIdx7, ci7, 2);
+                var tbody = output.querySelector('#wb-circuit-' + ci6 + ' tbody');
+                var allTr = tbody ? tbody.querySelectorAll('tr') : [];
+                var lastTr = allTr[allTr.length - 1];
+                if (lastTr) lastTr.outerHTML = _renderEditRow(null, newIdx, ci6);
                 return;
             }
         });
-    }
-
-    // Render an edit row for a brand-new slot of a given type (no existing slot data)
-    function _renderEditRowForType(rowIndex, circuitIndex, exerciseType) {
-        var pool = _buildPool(circuitIndex, exerciseType);
-        var exOpts = pool.map(function(ex) {
-            return '<option value="' + Layer8DUtils.escapeHtml(ex.exerciseId) + '">' +
-                Layer8DUtils.escapeHtml(ex.name || ex.exerciseId) + '</option>';
-        }).join('');
-        var typeCls   = exerciseType === 1 ? 'wb-badge-fixed' : 'wb-badge-var';
-        var typeLabel = exerciseType === 1 ? 'Fixed' : 'Variable';
-
-        return [
-            '<tr class="wb-edit-row" data-circuit="' + circuitIndex + '" data-slot="' + rowIndex + '">',
-              '<td class="wb-num">' + (rowIndex + 1) + '</td>',
-              '<td>',
-                '<select class="wb-edit-input wb-edit-exercise">',
-                  exOpts || '<option value="">— No exercises available —</option>',
-                '</select>',
-              '</td>',
-              '<td><input type="number" class="wb-edit-input wb-edit-sets" placeholder="Sets" min="0" style="width:52px"></td>',
-              '<td><input type="number" class="wb-edit-input wb-edit-reps" placeholder="Reps" min="0" style="width:52px"></td>',
-              '<td><input type="text" class="wb-edit-input wb-edit-notes" placeholder="Notes" style="width:100px"></td>',
-              '<td><span class="wb-badge ' + typeCls + '">' + typeLabel + '</span></td>',
-              '<td class="wb-move-btns"></td>',
-              '<td class="wb-action-col wb-action-col-edit">',
-                '<button class="layer8d-btn layer8d-btn-primary layer8d-btn-small wb-edit-save">Save</button>',
-                '<button class="layer8d-btn layer8d-btn-secondary layer8d-btn-small wb-edit-cancel">Cancel</button>',
-              '</td>',
-            '</tr>'
-        ].join('');
     }
 
     // ── Public API ─────────────────────────────────────────────────────────────

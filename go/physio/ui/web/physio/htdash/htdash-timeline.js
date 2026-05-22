@@ -19,10 +19,17 @@
 
     // Build timeline entries from raw data arrays (platform-agnostic, no DOM).
     // Returns [{date, type, label, status, user, details}, ...] sorted newest first, deduplicated.
-    function _buildEntries(feedbacks, reports, overrides, swaps, exercises) {
+    function _buildEntries(feedbacks, reports, overrides, swaps, exercises, plans) {
         var entries = [];
         var exMap = {};
         (exercises || []).forEach(function(ex) { exMap[ex.exerciseId] = ex.name || ex.exerciseId; });
+
+        (plans || []).forEach(function(plan) {
+            var date = (plan.auditInfo && plan.auditInfo.createdAt) || plan.startDate || 0;
+            var count = (plan.exercises || []).length;
+            var details = (plan.title || '(untitled)') + ' — ' + count + ' exercise' + (count === 1 ? '' : 's');
+            entries.push({ date: date, type: 'plan', label: 'Plan Created', status: 0, user: plan.therapistId || plan.userId || '', details: details });
+        });
 
         (feedbacks || []).forEach(function(fb) {
             var details = [];
@@ -82,10 +89,11 @@
                 _query('/50/SessRpt', 'select * from SessionReport where clientId=' + clientId),
                 _query('/50/OvrdLog', 'select * from StatusOverrideLog where clientId=' + clientId),
                 _query('/50/ExSwapLog', 'select * from ExerciseSwapLog where clientId=' + clientId),
-                _query('/50/PhyExercis', 'select * from PhysioExercise limit 500')
+                _query('/50/PhyExercis', 'select * from PhysioExercise limit 500'),
+                _query('/50/PhyPlan', 'select * from TreatmentPlan where clientId=' + clientId)
             ]).then(function(results) {
                 var entries = _buildEntries(
-                    results[0].list, results[1].list, results[2].list, results[3].list, results[4].list
+                    results[0].list, results[1].list, results[2].list, results[3].list, results[4].list, results[5].list
                 );
                 callback(null, entries);
             }).catch(function(err) { callback(err, []); });
@@ -115,7 +123,10 @@
         entries.forEach(function(entry) {
             var color = STATUS_COLORS[entry.status] || 'var(--layer8d-text-muted)';
             var dateStr = entry.date ? Layer8DUtils.formatDateTime(entry.date) : '\u2014';
-            var typeIcon = entry.type === 'feedback' ? '\uD83D\uDCDD' : entry.type === 'session' ? '\uD83E\uDE7A' : '\u2699\uFE0F';
+            var typeIcon = entry.type === 'feedback' ? '\uD83D\uDCDD'
+                         : entry.type === 'session'  ? '\uD83E\uDE7A'
+                         : entry.type === 'plan'     ? '\uD83D\uDCCB'
+                         : '\u2699\uFE0F';
 
             var userTag = entry.user ? ' <span style="font-size:11px;color:var(--layer8d-text-muted);font-weight:400;">by ' + Layer8DUtils.escapeHtml(entry.user) + '</span>' : '';
 

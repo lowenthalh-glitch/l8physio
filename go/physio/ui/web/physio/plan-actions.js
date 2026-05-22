@@ -41,7 +41,7 @@
             return html;
         },
 
-        // Group exercises by circuit, sort by exerciseType (Fixed before Variable) then orderIndex, normalize indices.
+        // Group exercises by circuit, sort by orderIndex, normalize indices.
         // Returns { circuits: { cNum: [pe, ...] }, labels: { cNum: 'label' } }
         groupAndSort: function(exercises, exMap) {
             var circuits = {};
@@ -54,9 +54,6 @@
             });
             Object.keys(circuits).forEach(function(k) {
                 circuits[k].sort(function(a, b) {
-                    var aType = (exMap[a.exerciseId] || {}).exerciseType || 0;
-                    var bType = (exMap[b.exerciseId] || {}).exerciseType || 0;
-                    if (aType !== bType) return aType - bType;
                     return (a.orderIndex || 0) - (b.orderIndex || 0);
                 });
                 for (var i = 0; i < circuits[k].length; i++) {
@@ -66,26 +63,17 @@
             return { circuits: circuits, labels: labels };
         },
 
-        // Move exercise within its circuit. Returns true if moved, false if blocked.
+        // Move exercise within its circuit. Returns true if moved, false otherwise.
         move: function(exercises, exMap, pe, direction) {
             var cNum = pe.circuitNumber || 0;
             var circuitExs = exercises.filter(function(e) { return (e.circuitNumber || 0) === cNum; })
                 .sort(function(a, b) {
-                    var aT = (exMap[a.exerciseId] || {}).exerciseType || 0;
-                    var bT = (exMap[b.exerciseId] || {}).exerciseType || 0;
-                    if (aT !== bT) return aT - bT;
                     return (a.orderIndex || 0) - (b.orderIndex || 0);
                 });
             var pos = circuitExs.indexOf(pe);
             var target = pos + direction;
             if (target < 0 || target >= circuitExs.length) return false;
 
-            var curType = (exMap[pe.exerciseId] || {}).exerciseType || 0;
-            var tgtType = (exMap[circuitExs[target].exerciseId] || {}).exerciseType || 0;
-            if (curType !== tgtType) {
-                _notify('warning', 'Cannot move across Fixed/Variable boundary.');
-                return false;
-            }
             var tmp = pe.orderIndex;
             pe.orderIndex = circuitExs[target].orderIndex;
             circuitExs[target].orderIndex = tmp;
@@ -244,44 +232,68 @@
         },
 
         // Build filtered list of available exercises for adding to a circuit.
-        // Returns array of { exerciseId, name } objects.
-        availableForCircuit: function(exercises, exMap, circuitNumber, planJoints, planPostures, planPhase) {
-            var existing = exercises.filter(function(e) {
-                return (e.circuitNumber || 0) === circuitNumber;
-            }).map(function(e) { return e.exerciseId; });
+        // Filters mirror the builder's _buildPool: dedup against the whole plan, and
+        // scope category/joint/posture to the target circuit's own protocol when possible
+        // (derived from the first existing exercise in that circuit).
+        availableForCircuit: function(exercises, exMap, circuitNumber, planJoints, planPostures) {
+            // Dedup against the entire plan (every circuit), not just this one
+            var usedIds = {};
+            exercises.forEach(function(e) { if (e.exerciseId) usedIds[e.exerciseId] = true; });
+
+            var inCircuit = exercises.filter(function(e) { return (e.circuitNumber || 0) === circuitNumber; });
+            var seed      = inCircuit.length ? exMap[inCircuit[0].exerciseId] : null;
+
+            // Derive scope from the circuit's seed exercise; fall back to plan-wide / legacy
+            var scopeCategory = null;
+            var scopeJoints   = planJoints;
+            var scopePostures = planPostures;
+
+            if (seed) {
+                var seedCats = (seed.categories && seed.categories.length) ? seed.categories : (seed.category ? [seed.category] : []);
+                if (seedCats.length) scopeCategory = seedCats[0];
+                var seedJoints   = (seed.joints   && seed.joints.length)   ? seed.joints   : (seed.joint   ? [seed.joint]   : null);
+                var seedPostures = (seed.postures && seed.postures.length) ? seed.postures : (seed.posture ? [seed.posture] : null);
+                if (seedJoints)   scopeJoints   = seedJoints;
+                if (seedPostures) scopePostures = seedPostures;
+            } else if (circuitNumber >= 1 && circuitNumber <= 4) {
+                // Legacy: empty circuit on an older plan where circuitNumber == category enum
+                scopeCategory = circuitNumber;
+            }
 
             return Object.values(exMap).filter(function(ex) {
-                // Category: use categories array, fall back to single category field
-                var exCats = (ex.categories && ex.categories.length) ? ex.categories : (ex.category ? [ex.category] : []);
-                if (exCats.indexOf(circuitNumber) === -1) return false;
+                if (usedIds[ex.exerciseId]) return false;
 
-                // Joint: exercise must share at least one joint with the plan
-                if (planJoints && planJoints.length) {
+                if (scopeCategory) {
+                    var exCats = (ex.categories && ex.categories.length) ? ex.categories : (ex.category ? [ex.category] : []);
+                    if (exCats.indexOf(scopeCategory) === -1) return false;
+                }
+
+                if (scopeJoints && scopeJoints.length) {
                     var exJoints = (ex.joints && ex.joints.length) ? ex.joints : (ex.joint ? [ex.joint] : []);
-                    if (!exJoints.some(function(j) { return planJoints.indexOf(j) !== -1; })) return false;
+                    if (!exJoints.some(function(j) { return scopeJoints.indexOf(j) !== -1; })) return false;
                 }
 
-                // Posture: exercise must share at least one posture with the plan
-                if (planPostures && planPostures.length) {
+                if (scopePostures && scopePostures.length) {
                     var exPostures = (ex.postures && ex.postures.length) ? ex.postures : (ex.posture ? [ex.posture] : []);
-                    if (!exPostures.some(function(p) { return planPostures.indexOf(p) !== -1; })) return false;
+                    if (!exPostures.some(function(p) { return scopePostures.indexOf(p) !== -1; })) return false;
                 }
 
-                // Phase: exercise phase 0 = unspecified (always included); otherwise must be <= plan phase
-                if (planPhase && planPhase !== 0) {
-                    var exPhase = ex.phase || 0;
-                    if (exPhase !== 0 && exPhase > planPhase) return false;
-                }
-
-                return existing.indexOf(ex.exerciseId) === -1;
+                return true;
             });
         },
 
         // Add exercise to plan. Returns the new plan exercise object.
         addToPlan: function(exercises, exerciseId, circuitNumber, exMap) {
             var ex = exMap[exerciseId] || {};
+            // Inherit label from any existing exercise in this circuit so multi-protocol
+            // labels like "KYPH-SHO — Mobility" survive across additions.
+            var existingLabel = '';
             var maxOrder = exercises.reduce(function(mx, e) {
-                return (e.circuitNumber || 0) === circuitNumber && e.orderIndex > mx ? e.orderIndex : mx;
+                if ((e.circuitNumber || 0) === circuitNumber) {
+                    if (!existingLabel && e.circuitLabel) existingLabel = e.circuitLabel;
+                    if (e.orderIndex > mx) return e.orderIndex;
+                }
+                return mx;
             }, 0);
             var pe = {
                 planExerciseId: 'pe-' + Date.now(),
@@ -291,7 +303,7 @@
                 notes: '',
                 orderIndex: maxOrder + 1,
                 circuitNumber: circuitNumber,
-                circuitLabel: CATEGORY_LABELS[circuitNumber] || ('Circuit ' + circuitNumber),
+                circuitLabel: existingLabel || CATEGORY_LABELS[circuitNumber] || ('Circuit ' + circuitNumber),
                 loadType: ex.loadType || 0,
                 weightKg: ex.weightKg || 0
             };
@@ -311,7 +323,6 @@
                 holdSeconds: pe.holdSeconds || ex.defaultHoldSeconds || 0,
                 weightKg: pe.weightKg || ex.weightKg || 0,
                 notes: pe.notes || '',
-                exerciseType: ex.exerciseType || 0,
                 loadType: pe.loadType || ex.loadType || 0,
                 imageStoragePath: ex.imageStoragePath || '',
                 progressionExerciseId: ex.progressionExerciseId || '',

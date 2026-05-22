@@ -263,6 +263,76 @@ func (c *Client) FetchParticipants(eventID string) ([]ParticipantRaw, error) {
 	return result, nil
 }
 
+// BoostappClientInfo is a single result from /office/action/getClientsJson.php.
+type BoostappClientInfo struct {
+	ID    string `json:"id"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
+	Phone string `json:"phone"`
+}
+
+type clientsJsonResponse struct {
+	Results []BoostappClientInfo `json:"results"`
+}
+
+// FetchClientInfo looks up clients in Boostapp by name (the same endpoint
+// used by the office UI's client autocomplete). Returns all matches; callers
+// typically filter by ID to disambiguate.
+func (c *Client) FetchClientInfo(name string) ([]BoostappClientInfo, error) {
+	if err := c.EnsureSession(); err != nil {
+		return nil, err
+	}
+	q := url.QueryEscape(name)
+	body, _, err := c.RawRequest("GET", baseURL+"/office/action/getClientsJson.php?query="+q, "")
+	if err != nil {
+		return nil, err
+	}
+	var resp clientsJsonResponse
+	if err := json.Unmarshal(body, &resp); err != nil {
+		return nil, errors.New("boostapp getClientsJson parse failed: " + err.Error())
+	}
+	return resp.Results, nil
+}
+
+// RawRequest issues an authenticated request and returns (body, status, err).
+// Used by the probe tool to discover new endpoints; not used by production sync.
+func (c *Client) RawRequest(method, fullURL, formBody string) ([]byte, string, error) {
+	if err := c.EnsureSession(); err != nil {
+		return nil, "", err
+	}
+	var req *http.Request
+	var err error
+	if formBody != "" {
+		req, err = http.NewRequest(method, fullURL, strings.NewReader(formBody))
+	} else {
+		req, err = http.NewRequest(method, fullURL, nil)
+	}
+	if err != nil {
+		return nil, "", err
+	}
+	if formBody != "" {
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
+	}
+	req.Header.Set("X-Requested-With", "XMLHttpRequest")
+	req.Header.Set("Referer", baseURL+"/office/calendar.php")
+	if c.csrf != "" {
+		req.Header.Set("X-CSRF-Token", c.csrf)
+	}
+	resp, err := c.http.Do(req)
+	if err != nil {
+		return nil, "", err
+	}
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	return body, resp.Status, err
+}
+
+// FetchPopupRaw returns the raw HTML body of the characteristics-popup for an event.
+func (c *Client) FetchPopupRaw(eventID string) ([]byte, error) {
+	body, _, err := c.RawRequest("GET", baseURL+"/office/characteristics-popup.php?id="+eventID, "")
+	return body, err
+}
+
 // refreshCSRF fetches calendar.php and extracts the CSRF token.
 func (c *Client) refreshCSRF() error {
 	resp, err := c.http.Get(baseURL + "/office/calendar.php")

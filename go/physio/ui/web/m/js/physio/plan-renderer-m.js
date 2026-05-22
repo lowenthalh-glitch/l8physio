@@ -90,9 +90,6 @@
             displayCircuits[cNum].forEach(function(row) {
                 var fullEx = exMap[row.pe.exerciseId] || {};
                 var eid = Layer8DUtils.escapeHtml(row.pe.exerciseId);
-                var typeBadge = (fullEx.exerciseType === 1)
-                    ? '<span style="font-size:10px;padding:2px 6px;border-radius:3px;background:var(--layer8d-bg-light);color:var(--layer8d-text-medium);">Fixed</span>'
-                    : '<span style="font-size:10px;padding:2px 6px;border-radius:3px;background:var(--layer8d-bg-light);color:var(--layer8d-text-medium);">Variable</span>';
 
                 // Action buttons
                 var actions = '';
@@ -117,7 +114,7 @@
 
                 html += '<div style="border:1px solid var(--layer8d-border);border-top:none;padding:10px 12px;background:var(--layer8d-bg-white);">' +
                     '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">' +
-                    '<span style="font-weight:600;font-size:14px;">' + Layer8DUtils.escapeHtml(row.name) + '</span>' + typeBadge + '</div>' +
+                    '<span style="font-weight:600;font-size:14px;">' + Layer8DUtils.escapeHtml(row.name) + '</span></div>' +
                     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;">' +
                     '<div><label style="font-size:11px;color:var(--layer8d-text-muted);">Load</label>' + loadSelect + '</div>' +
                     _valueDivHTML(row, rowIdx) +

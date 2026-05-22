@@ -11,14 +11,14 @@ import (
 	"github.com/saichler/l8physio/go/types/physio"
 )
 
-func generateHomeFeedbacks(store *MockDataStore) []*physio.HomeFeedback {
-	if len(store.PhysioClientIDs) == 0 {
+func generateHomeFeedbacks(clientIds, therapistIds []string) []*physio.HomeFeedback {
+	if len(clientIds) == 0 {
 		return nil
 	}
 	now := time.Now()
 	var feedbacks []*physio.HomeFeedback
 
-	for i, clientId := range store.PhysioClientIDs {
+	for i, clientId := range clientIds {
 		// 2-4 feedbacks per client over the last 2 weeks
 		count := 2 + rand.Intn(3)
 		for j := 0; j < count; j++ {
@@ -44,8 +44,8 @@ func generateHomeFeedbacks(store *MockDataStore) []*physio.HomeFeedback {
 			}
 
 			therapistId := ""
-			if len(store.PhysioTherapistIDs) > 0 {
-				therapistId = store.PhysioTherapistIDs[i%len(store.PhysioTherapistIDs)]
+			if len(therapistIds) > 0 {
+				therapistId = therapistIds[i%len(therapistIds)]
 			}
 
 			feedbacks = append(feedbacks, &physio.HomeFeedback{
@@ -67,14 +67,14 @@ func generateHomeFeedbacks(store *MockDataStore) []*physio.HomeFeedback {
 	return feedbacks
 }
 
-func generateSessionReports(store *MockDataStore) []*physio.SessionReport {
-	if len(store.PhysioClientIDs) == 0 {
+func generateSessionReports(clientIds, therapistIds []string) []*physio.SessionReport {
+	if len(clientIds) == 0 {
 		return nil
 	}
 	now := time.Now()
 	var reports []*physio.SessionReport
 
-	for i, clientId := range store.PhysioClientIDs {
+	for i, clientId := range clientIds {
 		// 1-3 session reports per client
 		count := 1 + rand.Intn(3)
 		for j := 0; j < count; j++ {
@@ -97,8 +97,8 @@ func generateSessionReports(store *MockDataStore) []*physio.SessionReport {
 			}
 
 			therapistId := ""
-			if len(store.PhysioTherapistIDs) > 0 {
-				therapistId = store.PhysioTherapistIDs[i%len(store.PhysioTherapistIDs)]
+			if len(therapistIds) > 0 {
+				therapistId = therapistIds[i%len(therapistIds)]
 			}
 
 			adjustmentDetails := ""

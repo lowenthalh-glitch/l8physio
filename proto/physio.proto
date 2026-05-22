@@ -81,12 +81,6 @@ enum PhysioPhase {
   PHYSIO_PHASE_3           = 3;
 }
 
-// Whether exercise is Fixed (always in protocol) or Variable (rotated)
-enum PhysioExerciseType {
-  PHYSIO_EXERCISE_TYPE_UNSPECIFIED = 0;
-  PHYSIO_EXERCISE_TYPE_FIXED       = 1;
-  PHYSIO_EXERCISE_TYPE_VARIABLE    = 2;
-}
 
 // Load/equipment type
 enum PhysioLoadType {
@@ -266,6 +260,8 @@ message PhysioClientList {
 }
 
 message PhysioExercise {
+  reserved 16, 17;
+  reserved "phase", "exercise_type";
   string                 exercise_id          = 1;
   string                 name                 = 2;
   string                 description          = 3;
@@ -282,8 +278,6 @@ message PhysioExercise {
   // Classification fields for protocol builder
   PhysioJoint            joint                = 14;
   PhysioPosture          posture              = 15;
-  PhysioPhase            phase                = 16;
-  PhysioExerciseType     exercise_type        = 17;
   PhysioLoadType         load_type            = 18;
   string                 effort               = 19;
   string                 load_notes           = 20;

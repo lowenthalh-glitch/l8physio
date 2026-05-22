@@ -10,6 +10,7 @@ require (
 	github.com/saichler/l8events v0.0.0-20260517163932-d2d1abd736f8
 	github.com/saichler/l8parser v0.0.0-20260504014757-63e78ee52fb3
 	github.com/saichler/l8pollaris v0.0.0-20260418233826-378ba5e9453a
+	github.com/saichler/l8secure v0.0.0-20260518143258-cafdaafa6963
 	github.com/saichler/l8srlz v0.0.0-20260322124809-505a0d08f95d
 	github.com/saichler/l8types v0.0.0-20260517162613-bf0348cedf0e
 	github.com/saichler/l8utils v0.0.0-20260517163445-ab88911f8894

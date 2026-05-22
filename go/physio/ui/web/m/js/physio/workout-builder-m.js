@@ -67,8 +67,9 @@
         .then(function(data) {
             var allEx = data.list || [];
             if (!window.PhysioWorkoutCircuits) { preview.innerHTML = '<div style="color:var(--layer8d-error);">Builder not available.</div>'; return; }
-            var protocols = [{ posture: posture, joint: joint }];
-            var circuits = PhysioWorkoutCircuits.assembleCircuits(allEx, protocols, null, phase, volume);
+            var defaultCircuits = [1, 2, 3, 4].map(function(cat) { return { category: cat, count: volume }; });
+            var protocols = [{ posture: posture, joint: joint, circuits: defaultCircuits }];
+            var circuits = PhysioWorkoutCircuits.assembleCircuits(allEx, protocols);
             if (!circuits || circuits.length === 0) { preview.innerHTML = '<div style="padding:12px;color:var(--layer8d-text-muted);">No exercises found for this combination.</div>'; return; }
             _renderPreview(preview, circuits, posture, joint, phase, volume, presetClientId);
         })
@@ -82,10 +83,8 @@
             html += '<div style="margin-bottom:12px;">';
             html += '<div style="background:var(--layer8d-primary);color:#fff;font-size:12px;font-weight:600;padding:6px 10px;border-radius:6px 6px 0 0;">' + label + ' (Circuit ' + c.number + ')</div>';
             (c.slots || []).forEach(function(slot) {
-                var typeBadge = slot.exerciseType === 1 ? 'Fixed' : 'Variable';
                 html += '<div style="border:1px solid var(--layer8d-border);border-top:none;padding:8px 10px;background:var(--layer8d-bg-white);font-size:13px;">' +
                     '<span style="font-weight:600;">' + Layer8DUtils.escapeHtml(slot.name) + '</span>' +
-                    ' <span style="font-size:11px;color:var(--layer8d-text-muted);">(' + typeBadge + ')</span>' +
                     (slot.sets ? ' \u2022 ' + slot.sets + ' sets' : '') +
                     (slot.reps ? ' \u2022 ' + (slot.repsDisplay || slot.reps) + ' reps' : '') +
                     '</div>';

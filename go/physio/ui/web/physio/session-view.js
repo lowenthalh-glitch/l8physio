@@ -178,12 +178,11 @@
         .then(function(data) {
             var exMap = {};
             (data.list || []).forEach(function(ex) { exMap[ex.exerciseId] = ex; });
-            // Detect plan's joints/postures/phase from first exercise (for add-exercise filtering)
+            // Detect plan's joints/postures from first exercise (for add-exercise filtering)
             var st = _getState(container);
             var seed = exercises.length > 0 ? exMap[exercises[0].exerciseId] : null;
             st.planJoints   = seed ? ((seed.joints   && seed.joints.length)   ? seed.joints   : (seed.joint   ? [seed.joint]   : null)) : null;
             st.planPostures = seed ? ((seed.postures && seed.postures.length) ? seed.postures : (seed.posture ? [seed.posture] : null)) : null;
-            st.planPhase    = seed ? (seed.phase || null) : null;
             _renderPlanCircuits(container, plan, exercises, exMap);
         })
         .catch(function() {
@@ -246,7 +245,6 @@
             html += '<table style="width:100%;border-collapse:collapse;font-size:13px;">';
             html += '<thead><tr style="background:var(--layer8d-bg-light);">' +
                 '<th style="padding:6px 10px;text-align:left;">Exercise</th>' +
-                '<th style="padding:6px 10px;text-align:left;width:70px;">Type</th>' +
                 '<th style="padding:6px 10px;text-align:left;width:90px;">Load</th>' +
                 '<th style="padding:6px 10px;text-align:left;width:80px;">Value</th>' +
                 '<th style="padding:6px 10px;text-align:left;width:70px;">Sets</th>' +
@@ -279,15 +277,10 @@
                 }
                 actionBtns += '<button class="session-delete-btn" data-row="' + rowIdx + '" title="Remove exercise" style="' + btnStyle + 'color:var(--layer8d-error);">\u2716</button>';
 
-                var typeBadge = (fullEx.exerciseType === 1)
-                    ? '<span class="physio-type-badge physio-type-fixed">Fixed</span>'
-                    : '<span class="physio-type-badge physio-type-variable">Variable</span>';
-
                 var loadDropdown = PhysioPlanActions.loadTypeSelect(row.loadType, 'session-edit-load', ' data-row="' + rowIdx + '"');
 
                 html += '<tr style="border-bottom:1px solid var(--layer8d-border);">' +
                     '<td style="padding:6px 10px;">' + Layer8DUtils.escapeHtml(row.name) + ' ' + progRegBtns + '</td>' +
-                    '<td style="padding:6px 10px;">' + typeBadge + '</td>' +
                     '<td style="padding:6px 10px;">' + loadDropdown + '</td>' +
                     '<td style="padding:6px 10px;">' + _valueCellInner(row, rowIdx) + '</td>' +
                     '<td style="padding:6px 10px;"><input type="number" class="session-edit-sets" data-row="' + rowIdx + '" value="' + Layer8DUtils.escapeHtml(String(row.sets)) + '" style="' + inputStyle + '"></td>' +
@@ -506,7 +499,7 @@
         if (add) {
             e.stopPropagation(); _collectEdits(container);
             var aCNum = parseInt(add.dataset.circuit, 10);
-            var available = PA.availableForCircuit(st.exercises, st.exMap, aCNum, st.planJoints, st.planPostures, st.planPhase);
+            var available = PA.availableForCircuit(st.exercises, st.exMap, aCNum, st.planJoints, st.planPostures);
             var opts = available.length === 0
                 ? '<option value="">No exercises available</option>'
                 : '<option value="">-- Select --</option>' + available.map(function(ex) {

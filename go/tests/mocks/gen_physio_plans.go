@@ -12,11 +12,11 @@ var categoryLabels = map[int32]string{1: "Mobility", 2: "Rehab", 3: "Strength", 
 
 // generateTreatmentPlans creates 20 treatment plans distributed across clients
 // Status distribution: 60% Active, 20% Completed, 10% Draft, 10% Suspended
-func generateTreatmentPlans(store *MockDataStore) []*physio.TreatmentPlan {
+func generateTreatmentPlans(store *MockDataStore, clientIds []string) []*physio.TreatmentPlan {
 	plans := make([]*physio.TreatmentPlan, 20)
 
 	for i := 0; i < 20; i++ {
-		clientID := lm.PickRef(store.PhysioClientIDs, i)
+		clientID := lm.PickRef(clientIds, i)
 
 		var status physio.PhysioPlanStatus
 		switch {

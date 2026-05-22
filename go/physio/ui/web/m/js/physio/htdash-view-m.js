@@ -131,7 +131,10 @@
             entries.forEach(function(entry) {
                 var color = STATUS_COLORS[entry.status] || 'var(--layer8d-text-muted)';
                 var dateStr = entry.date ? Layer8DUtils.formatDateTime(entry.date) : '\u2014';
-                var icon = entry.type === 'feedback' ? '\uD83D\uDCDD' : entry.type === 'session' ? '\uD83E\uDE7A' : '\u2699\uFE0F';
+                var icon = entry.type === 'feedback' ? '\uD83D\uDCDD'
+                         : entry.type === 'session'  ? '\uD83E\uDE7A'
+                         : entry.type === 'plan'     ? '\uD83D\uDCCB'
+                         : '\u2699\uFE0F';
                 var userTag = entry.user ? ' <span style="font-size:11px;color:var(--layer8d-text-muted);">by ' + Layer8DUtils.escapeHtml(entry.user) + '</span>' : '';
                 html += '<div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--layer8d-border);">' +
                     '<div style="width:4px;border-radius:2px;background:' + color + ';flex-shrink:0;"></div>' +

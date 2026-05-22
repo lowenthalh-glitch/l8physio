@@ -9,11 +9,11 @@ import (
 )
 
 // generateProgressLogs creates 50 progress log records linked to completed appointments
-func generateProgressLogs(store *MockDataStore) []*physio.ProgressLog {
+func generateProgressLogs(store *MockDataStore, clientIds []string) []*physio.ProgressLog {
 	logs := make([]*physio.ProgressLog, 50)
 
 	for i := 0; i < 50; i++ {
-		clientID := lm.PickRef(store.PhysioClientIDs, i)
+		clientID := lm.PickRef(clientIds, i)
 		planID := lm.PickRef(store.TreatmentPlanIDs, i)
 		apptID := lm.PickRef(store.AppointmentIDs, i)
 

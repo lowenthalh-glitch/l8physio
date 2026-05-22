@@ -14,7 +14,6 @@
         _exerciseMap: null,          // cached full exercise data for info tab
         _planJoints: null,           // joints from the plan's first exercise
         _planPostures: null,         // postures from the plan's first exercise
-        _planPhase: null,            // phase from the plan's first exercise
         _circuitTables: {},          // map of category -> Layer8DTable instance
 
         open: function(clientId) {
@@ -156,11 +155,10 @@
                         exerciseMap[ex.exerciseId] = ex;
                     });
 
-                    // Detect plan's joints/postures/phase from first exercise (for add-exercise filtering)
+                    // Detect plan's joints/postures from first exercise (for add-exercise filtering)
                     var seed = exerciseMap[exercises[0].exerciseId];
                     self._planJoints   = seed ? ((seed.joints   && seed.joints.length)   ? seed.joints   : (seed.joint   ? [seed.joint]   : null)) : null;
                     self._planPostures = seed ? ((seed.postures && seed.postures.length) ? seed.postures : (seed.posture ? [seed.posture] : null)) : null;
-                    self._planPhase    = seed ? (seed.phase || null) : null;
                     self._exerciseMap = exerciseMap;
                     self._renderPlanTable(plan, exercises, exerciseMap, container);
                     if (infoContainer) self._renderExerciseInfo(plan, exercises, exerciseMap, infoContainer);
@@ -221,11 +219,6 @@
                 ...col.col('name',  'Exercise'),
                 ...col.col('sets',  'Sets'),
                 ...col.col('reps',  'Reps'),
-                ...col.custom('exerciseType', 'Type', function(item) {
-                    return item.exerciseType === 1
-                        ? '<span class="physio-type-badge physio-type-fixed">Fixed</span>'
-                        : '<span class="physio-type-badge physio-type-variable">Variable</span>';
-                }, { sortKey: false }),
                 ...col.custom('loadType', 'Load', function(item) {
                     return PhysioPlanActions.loadTypeSelect(item.loadType, 'physio-load-select', ' data-eid="' + Layer8DUtils.escapeHtml(item.exerciseId) + '"');
                 }, { sortKey: false }),

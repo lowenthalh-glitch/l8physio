@@ -4,6 +4,14 @@
     var POSTURE_CODES = { 1:'KYPH', 2:'LORD', 3:'UFLAT', 4:'LFLAT', 5:'VALG', 6:'PRON', 7:'GEN' };
     var JOINT_CODES   = { 1:'SHO',  2:'KNE',  3:'ANK',  4:'LBP',  5:'ELB',  6:'GEN', 7:'HIP', 8:'CORE', 9:'SIJ' };
 
+    var CIRCUIT_CATEGORIES = [
+        { value: 1, label: 'Mobility'   },
+        { value: 2, label: 'Rehab'      },
+        { value: 3, label: 'Strength'   },
+        { value: 4, label: 'Functional' }
+    ];
+    var DEFAULT_CIRCUIT_COUNT = 4;
+
     function _authHeaders() {
         var t = sessionStorage.getItem('bearerToken');
         var h = { 'Content-Type': 'application/json' };
@@ -26,6 +34,43 @@
         }).join('');
     }
 
+    function _circuitPickerHtml() {
+        var items = CIRCUIT_CATEGORIES.map(function(c) {
+            return [
+                '<label class="wb-circuit-pick">',
+                  '<input type="checkbox" class="wb-circuit-check" data-cat="' + c.value + '">',
+                  '<span class="wb-circuit-name">' + c.label + '</span>',
+                  '<input type="number" class="wb-circuit-count" data-cat="' + c.value + '"',
+                    ' min="1" max="20" value="' + DEFAULT_CIRCUIT_COUNT + '" disabled>',
+                '</label>'
+            ].join('');
+        }).join('');
+        return '<div class="wb-circuit-picker">' + items + '</div>';
+    }
+
+    function _wireCircuitPicker(row) {
+        row.querySelectorAll('.wb-circuit-check').forEach(function(cb) {
+            cb.addEventListener('change', function() {
+                var cat   = cb.dataset.cat;
+                var count = row.querySelector('.wb-circuit-count[data-cat="' + cat + '"]');
+                if (count) count.disabled = !cb.checked;
+            });
+        });
+    }
+
+    function _readCircuits(row) {
+        var out = [];
+        row.querySelectorAll('.wb-circuit-check').forEach(function(cb) {
+            if (!cb.checked) return;
+            var cat   = parseInt(cb.dataset.cat, 10);
+            var count = row.querySelector('.wb-circuit-count[data-cat="' + cb.dataset.cat + '"]');
+            var n     = count ? parseInt(count.value, 10) : DEFAULT_CIRCUIT_COUNT;
+            if (isNaN(n) || n < 1) n = 1;
+            out.push({ category: cat, count: n });
+        });
+        return out;
+    }
+
     function _renderPanel() {
         var enums       = (window.PhysioManagement && window.PhysioManagement.enums) || {};
         var postureOpts = _enumOptions(enums.POSTURE || {});
@@ -33,39 +78,26 @@
 
         return [
             '<div class="wb-panel">',
-              '<div class="wb-controls">',
-                '<div class="wb-ctrl">',
-                  '<label class="wb-label">Posture</label>',
-                  '<select id="wb-posture" class="wb-select">' + postureOpts + '</select>',
+              '<div id="wb-primary-row" class="wb-proto-block">',
+                '<div class="wb-controls">',
+                  '<div class="wb-ctrl">',
+                    '<label class="wb-label">Posture</label>',
+                    '<select id="wb-posture" class="wb-select">' + postureOpts + '</select>',
+                  '</div>',
+                  '<div class="wb-ctrl">',
+                    '<label class="wb-label">Joint</label>',
+                    '<select id="wb-joint" class="wb-select">' + jointOpts + '</select>',
+                  '</div>',
+                  '<div class="wb-ctrl">',
+                    '<label class="wb-label">Protocol</label>',
+                    '<span id="wb-protocol" class="wb-protocol-badge"></span>',
+                  '</div>',
+                  '<div class="wb-ctrl wb-ctrl-build">',
+                    '<button id="wb-add-protocol" class="layer8d-btn layer8d-btn-secondary layer8d-btn-small">+ Add Protocol</button>',
+                    '<button id="wb-build" class="layer8d-btn layer8d-btn-primary layer8d-btn-small">&#9654; Build Workout</button>',
+                  '</div>',
                 '</div>',
-                '<div class="wb-ctrl">',
-                  '<label class="wb-label">Joint</label>',
-                  '<select id="wb-joint" class="wb-select">' + jointOpts + '</select>',
-                '</div>',
-                '<div class="wb-ctrl">',
-                  '<label class="wb-label">Phase</label>',
-                  '<select id="wb-phase" class="wb-select">',
-                    '<option value="1">Phase 1 — ROM / Control</option>',
-                    '<option value="2">Phase 2 — Strength</option>',
-                    '<option value="3">Phase 3 — Functional</option>',
-                  '</select>',
-                '</div>',
-                '<div class="wb-ctrl">',
-                  '<label class="wb-label">Volume</label>',
-                  '<select id="wb-volume" class="wb-select">',
-                    '<option value="3">3 per circuit</option>',
-                    '<option value="4" selected>4 per circuit</option>',
-                    '<option value="5">5 per circuit</option>',
-                  '</select>',
-                '</div>',
-                '<div class="wb-ctrl">',
-                  '<label class="wb-label">Protocol</label>',
-                  '<span id="wb-protocol" class="wb-protocol-badge"></span>',
-                '</div>',
-                '<div class="wb-ctrl wb-ctrl-build">',
-                  '<button id="wb-add-protocol" class="layer8d-btn layer8d-btn-secondary layer8d-btn-small">+ Add Protocol</button>',
-                  '<button id="wb-build" class="layer8d-btn layer8d-btn-primary layer8d-btn-small">&#9654; Build Workout</button>',
-                '</div>',
+                _circuitPickerHtml(),
               '</div>',
               '<div id="wb-extra-rows"></div>',
               '<div id="wb-output"></div>',
@@ -79,13 +111,16 @@
         var jointOpts   = _enumOptions(enums.JOINT   || {});
 
         var row = document.createElement('div');
-        row.className = 'wb-extra-row';
+        row.className = 'wb-extra-row wb-proto-block';
         row.innerHTML = [
-            '<span class="wb-extra-row-label">+</span>',
-            '<select class="wb-row-posture wb-select">' + postureOpts + '</select>',
-            '<select class="wb-row-joint wb-select">' + jointOpts + '</select>',
-            '<span class="wb-row-badge wb-protocol-badge"></span>',
-            '<button class="wb-row-remove layer8d-btn layer8d-btn-secondary layer8d-btn-small">\u00d7 Remove</button>'
+            '<div class="wb-extra-row-top">',
+              '<span class="wb-extra-row-label">+</span>',
+              '<select class="wb-row-posture wb-select">' + postureOpts + '</select>',
+              '<select class="wb-row-joint wb-select">' + jointOpts + '</select>',
+              '<span class="wb-row-badge wb-protocol-badge"></span>',
+              '<button class="wb-row-remove layer8d-btn layer8d-btn-secondary layer8d-btn-small">× Remove</button>',
+            '</div>',
+            _circuitPickerHtml()
         ].join('');
 
         var postureEl = row.querySelector('.wb-row-posture');
@@ -98,6 +133,7 @@
         postureEl.addEventListener('change', _sync);
         jointEl.addEventListener('change', _sync);
         _sync();
+        _wireCircuitPicker(row);
 
         row.querySelector('.wb-row-remove').addEventListener('click', function() {
             row.parentNode.removeChild(row);
@@ -107,26 +143,41 @@
     }
 
     async function _build(container) {
-        var posture           = parseInt(container.querySelector('#wb-posture').value, 10);
-        var joint             = parseInt(container.querySelector('#wb-joint').value,   10);
-        var phase             = container.querySelector('#wb-phase').value;
-        var volume            = container.querySelector('#wb-volume').value;
-        var output            = container.querySelector('#wb-output');
-        var codeEl            = container.querySelector('#wb-protocol');
+        var primaryRow = container.querySelector('#wb-primary-row');
+        var posture    = parseInt(container.querySelector('#wb-posture').value, 10);
+        var joint      = parseInt(container.querySelector('#wb-joint').value,   10);
+        var output     = container.querySelector('#wb-output');
+        var codeEl     = container.querySelector('#wb-protocol');
 
         window.PhysioWorkoutBuilder._lastCircuits  = null;
         window.PhysioWorkoutBuilder._lastProtocols = null;
 
         codeEl.textContent = _protocolCode(posture, joint);
-        output.innerHTML = '<div class="wb-loading">Loading exercises\u2026</div>';
 
-        // Collect primary protocol + any extra rows
-        var protocols = [{ posture: posture, joint: joint }];
+        // Collect primary protocol + any extra rows, each with its own circuit picks
+        var protocols = [{
+            posture:  posture,
+            joint:    joint,
+            circuits: _readCircuits(primaryRow)
+        }];
         container.querySelectorAll('.wb-extra-row').forEach(function(row) {
-            var p = parseInt(row.querySelector('.wb-row-posture').value, 10);
-            var j = parseInt(row.querySelector('.wb-row-joint').value,   10);
-            protocols.push({ posture: p, joint: j });
+            protocols.push({
+                posture:  parseInt(row.querySelector('.wb-row-posture').value, 10),
+                joint:    parseInt(row.querySelector('.wb-row-joint').value,   10),
+                circuits: _readCircuits(row)
+            });
         });
+
+        var anyTicked = protocols.some(function(p) { return p.circuits.length > 0; });
+        if (!anyTicked) {
+            output.innerHTML = '<div class="wb-empty-state">' +
+                '<div class="wb-empty-icon">&#9888;</div>' +
+                '<div>Tick at least one circuit on a protocol before building.</div>' +
+                '</div>';
+            return;
+        }
+
+        output.innerHTML = '<div class="wb-loading">Loading exercises…</div>';
 
         // Find unique joints to minimise fetch calls
         var uniqueJoints = protocols.reduce(function(acc, p) {
@@ -151,7 +202,7 @@
                 allFetched = allFetched.concat(data.list || []);
             }
 
-            // Deduplicate and tag each exercise with its matching protocol
+            // Deduplicate fetched exercises by id and filter to ones matching some protocol
             var seen      = {};
             var exercises = [];
             allFetched.forEach(function(ex) {
@@ -182,12 +233,9 @@
                 return;
             }
 
-            var circuits = window.PhysioWorkoutCircuits.assembleCircuits(
-                exercises, protocols, null, phase, volume
-            );
+            var circuits = window.PhysioWorkoutCircuits.assembleCircuits(exercises, protocols);
             window.PhysioWorkoutBuilder._lastCircuits  = circuits;
             window.PhysioWorkoutBuilder._lastProtocols = protocols;
-            window.PhysioWorkoutBuilder._lastPhase     = parseInt(phase, 10) || 0;
 
             window.PhysioWorkoutCircuits.renderAll(output, circuits);
 
@@ -195,8 +243,7 @@
             var assignBar = document.createElement('div');
             assignBar.className = 'wb-assign-row';
             assignBar.innerHTML = '<button class="layer8d-btn layer8d-btn-primary layer8d-btn-small wb-assign-btn"' +
-                ' data-posture="' + posture + '" data-joint="' + joint + '"' +
-                ' data-phase="' + phase + '" data-volume="' + volume + '">' +
+                ' data-posture="' + posture + '" data-joint="' + joint + '">' +
                 (isEdit ? '&#9998; Update Plan' : '&#128100; Assign to Client') +
                 '</button>';
             output.appendChild(assignBar);
@@ -224,14 +271,15 @@
         if (opts.onCancel) {
             var backBtn = document.createElement('button');
             backBtn.className = 'layer8d-btn layer8d-btn-secondary layer8d-btn-small wb-back-btn';
-            backBtn.innerHTML = '\u2190 Back';
+            backBtn.innerHTML = '← Back';
             backBtn.addEventListener('click', function() {
                 if (opts.onCancel) opts.onCancel();
             });
-            container.querySelector('.wb-panel').insertBefore(backBtn, container.querySelector('.wb-controls'));
+            container.querySelector('.wb-panel').insertBefore(backBtn, container.querySelector('#wb-primary-row'));
             window.PhysioWorkoutBuilder._onCancel = opts.onCancel;
         }
 
+        var primaryRow = container.querySelector('#wb-primary-row');
         var postureEl  = container.querySelector('#wb-posture');
         var jointEl    = container.querySelector('#wb-joint');
         var protocolEl = container.querySelector('#wb-protocol');
@@ -242,6 +290,7 @@
         postureEl.addEventListener('change', _syncCode);
         jointEl.addEventListener('change',   _syncCode);
         _syncCode();
+        _wireCircuitPicker(primaryRow);
 
         container.querySelector('#wb-add-protocol').addEventListener('click', function() {
             _addExtraRow(container);
@@ -254,14 +303,6 @@
             var p = opts.preset;
             if (p.posture) postureEl.value = String(p.posture);
             if (p.joint)   jointEl.value   = String(p.joint);
-            if (p.phase) {
-                var phaseEl = container.querySelector('#wb-phase');
-                if (phaseEl) phaseEl.value = String(p.phase);
-            }
-            if (p.volume) {
-                var volEl = container.querySelector('#wb-volume');
-                if (volEl) volEl.value = String(p.volume);
-            }
             _syncCode();
         }
 
@@ -270,8 +311,7 @@
             note.className = 'wb-phase-note';
             note.textContent = 'Editing existing plan. Adjust settings and click Build Workout to preview, then Update Plan to save.';
             var panel = container.querySelector('.wb-panel');
-            var controls = container.querySelector('.wb-controls');
-            panel.insertBefore(note, controls);
+            panel.insertBefore(note, primaryRow);
         }
 
         window.PhysioWorkoutBuilder._mode      = opts.mode      || 'new';

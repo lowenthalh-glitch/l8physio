@@ -44,7 +44,6 @@ func RunMockGenerator(address, user, password string, insecure bool) {
 
 	// Print summary
 	fmt.Printf("\n=== Summary ===\n")
-	fmt.Printf("  PhysioClients:   %d\n", len(store.PhysioClientIDs))
 	fmt.Printf("  PhysioExercises: %d\n", len(store.PhysioExerciseIDs))
 	fmt.Printf("  TreatmentPlans:  %d\n", len(store.TreatmentPlanIDs))
 	fmt.Printf("  Appointments:    %d\n", len(store.AppointmentIDs))

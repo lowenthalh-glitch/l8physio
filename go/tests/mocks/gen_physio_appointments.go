@@ -9,11 +9,11 @@ import (
 
 // generateAppointments creates 40 appointment records
 // Status distribution: 30% Scheduled, 20% Confirmed, 35% Completed, 10% Cancelled, 5% No Show
-func generateAppointments(store *MockDataStore) []*physio.Appointment {
+func generateAppointments(store *MockDataStore, clientIds []string) []*physio.Appointment {
 	appointments := make([]*physio.Appointment, 40)
 
 	for i := 0; i < 40; i++ {
-		clientID := lm.PickRef(store.PhysioClientIDs, i)
+		clientID := lm.PickRef(clientIds, i)
 		planID := lm.PickRef(store.TreatmentPlanIDs, i)
 
 		var status physio.PhysioApptStatus

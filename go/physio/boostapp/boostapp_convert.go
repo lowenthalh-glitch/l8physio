@@ -49,9 +49,17 @@ func ConvertAll(resp *BoostappCalendarResponse) []*physio.BoostappCalendarEvent 
 }
 
 // ConvertParticipants transforms raw participant data into protobuf Participants.
+// Boostapp occasionally returns the same participant twice in activeTrainers; dedupe by ParticipantID.
 func ConvertParticipants(raw []ParticipantRaw) []*physio.BoostappParticipant {
 	result := make([]*physio.BoostappParticipant, 0, len(raw))
+	seen := make(map[string]bool, len(raw))
 	for _, p := range raw {
+		if p.ParticipantID != "" {
+			if seen[p.ParticipantID] {
+				continue
+			}
+			seen[p.ParticipantID] = true
+		}
 		result = append(result, &physio.BoostappParticipant{
 			ParticipantId:    p.ParticipantID,
 			BoostappClientId: p.BoostappClientID,

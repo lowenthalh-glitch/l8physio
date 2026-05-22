@@ -35,14 +35,11 @@
     }
 
     function _showAssignPopup(ds) {
-        var phase   = ds.phase;
-        var volume  = ds.volume;
         var presetClientId = window.PhysioWorkoutBuilder._clientId || '';
         var allProtocols = window.PhysioWorkoutBuilder._lastProtocols || [{ posture: ds.posture, joint: ds.joint }];
         var protoCodes   = allProtocols.map(function(p) { return _protocolCode(p.posture, p.joint); });
         var code         = protoCodes.join(' + ');
-        var phaseLabels  = { '1': 'Phase 1', '2': 'Phase 2', '3': 'Phase 3' };
-        var defaultTitle = code + ' \u2014 ' + (phaseLabels[phase] || 'Phase ' + phase) + ' Program';
+        var defaultTitle = code + ' Program';
 
         // If opened from a client popup, skip client selection
         var clientRow = presetClientId
@@ -67,10 +64,6 @@
                 '<label class="wb-af-label">Protocol</label>',
                 '<span class="wb-af-static">' + code + '</span>',
               '</div>',
-              '<div class="wb-af-row">',
-                '<label class="wb-af-label">Volume</label>',
-                '<span class="wb-af-static">' + volume + ' exercises per circuit</span>',
-              '</div>',
             '</div>'
         ].join('');
 
@@ -93,7 +86,7 @@
                 if (!title)    { Layer8DNotification.error('Please enter a plan title.'); return; }
 
                 var startDate = dateVal ? Math.floor(new Date(dateVal).getTime() / 1000) : 0;
-                _saveAssignment({ clientId: clientId, title: title, startDate: startDate, volume: parseInt(volume, 10) });
+                _saveAssignment({ clientId: clientId, title: title, startDate: startDate });
             }
         });
     }
