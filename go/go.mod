@@ -5,15 +5,15 @@ go 1.26.1
 require (
 	github.com/saichler/l8agent v0.0.0-20260404041519-33c923998e3c
 	github.com/saichler/l8bus v0.0.0-20260507121220-fb7db984917c
-	github.com/saichler/l8collector/go v0.0.0-20260514214534-7b3cc2bd96e2
+	github.com/saichler/l8collector/go v0.0.0-20260523194110-7c402c15d968
 	github.com/saichler/l8common v0.0.0-20260505024122-8e5ad212b06b
-	github.com/saichler/l8events v0.0.0-20260517163932-d2d1abd736f8
+	github.com/saichler/l8events v0.0.0-20260523191742-e36c5ec00709
 	github.com/saichler/l8parser v0.0.0-20260504014757-63e78ee52fb3
 	github.com/saichler/l8pollaris v0.0.0-20260418233826-378ba5e9453a
 	github.com/saichler/l8secure v0.0.0-20260518143258-cafdaafa6963
 	github.com/saichler/l8srlz v0.0.0-20260322124809-505a0d08f95d
-	github.com/saichler/l8types v0.0.0-20260517162613-bf0348cedf0e
-	github.com/saichler/l8utils v0.0.0-20260517163445-ab88911f8894
+	github.com/saichler/l8types v0.0.0-20260523165750-476130c0d811
+	github.com/saichler/l8utils v0.0.0-20260523164237-1ceabdf92c0d
 	google.golang.org/protobuf v1.36.12-0.20260120151049-f2248ac996af
 )
 
@@ -43,15 +43,15 @@ require (
 	github.com/saichler/l8reflect v0.0.0-20260510153526-a40cb00e4db2 // indirect
 	github.com/saichler/l8services v0.0.0-20260507104132-1658bd7baa30 // indirect
 	github.com/saichler/l8web v0.0.0-20260508110248-236a0cd55e74 // indirect
-	github.com/saichler/probler v0.0.0-20260508110701-3398a61aa6f3 // indirect
+	github.com/saichler/probler v0.0.0-20260523194022-a99896a9e09c // indirect
 	github.com/spf13/pflag v1.0.9 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
-	golang.org/x/crypto v0.51.0 // indirect
-	golang.org/x/net v0.53.0 // indirect
+	golang.org/x/crypto v0.52.0 // indirect
+	golang.org/x/net v0.54.0 // indirect
 	golang.org/x/oauth2 v0.34.0 // indirect
-	golang.org/x/sys v0.44.0 // indirect
+	golang.org/x/sys v0.45.0 // indirect
 	golang.org/x/term v0.43.0 // indirect
 	golang.org/x/text v0.37.0 // indirect
 	golang.org/x/time v0.14.0 // indirect
