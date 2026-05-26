@@ -1,27 +1,37 @@
 (function() {
     'use strict';
 
-    // Fetch an image from FileStore via PUT (returns base64), convert to blob URL
+    // Fetch an image from FileStore via PUT (returns base64), convert to blob URL.
+    // Cross-platform: mobile uses Layer8MAuth.put (which handles the bearer + 401);
+    // desktop uses raw fetch with the global getAuthHeaders.
     function _fetchImageBlob(storagePath, callback) {
         if (!storagePath) { callback(null); return; }
         var endpoint = Layer8DConfig.resolveEndpoint('/0/FileStore');
-        var headers = typeof getAuthHeaders === 'function' ? getAuthHeaders() : {};
-        headers['Content-Type'] = 'application/json';
-        fetch(endpoint, {
-            method: 'PUT',
-            headers: headers,
-            body: JSON.stringify({ storagePath: storagePath })
-        })
-        .then(function(r) { return r.ok ? r.json() : null; })
-        .then(function(data) {
+        var body = { storagePath: storagePath };
+
+        var dataPromise;
+        if (typeof Layer8MAuth !== 'undefined' && typeof getAuthHeaders !== 'function') {
+            // Mobile path
+            dataPromise = Layer8MAuth.put(endpoint, body);
+        } else {
+            // Desktop path
+            var headers = typeof getAuthHeaders === 'function' ? getAuthHeaders() : {};
+            headers['Content-Type'] = 'application/json';
+            dataPromise = fetch(endpoint, {
+                method: 'PUT',
+                headers: headers,
+                body: JSON.stringify(body)
+            }).then(function(r) { return r.ok ? r.json() : null; });
+        }
+
+        dataPromise.then(function(data) {
             if (!data || !data.fileData) { callback(null); return; }
             var binary = atob(data.fileData);
             var bytes = new Uint8Array(binary.length);
             for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
             var blob = new Blob([bytes], { type: data.mimeType || 'image/jpeg' });
             callback(URL.createObjectURL(blob));
-        })
-        .catch(function() { callback(null); });
+        }).catch(function() { callback(null); });
     }
 
     function _showPopup(title, content, size, onShow) {

@@ -13,8 +13,16 @@
     };
 })();
 
+// Read the bearer from sessionStorage first, then fall back to localStorage —
+// mirrors Layer8MAuth.getBearerToken() on mobile so the two surfaces persist
+// sessions the same way (sessionStorage for the current tab, localStorage only
+// when the user opted into remember-me).
+function _getStoredToken() {
+    return sessionStorage.getItem('bearerToken') || localStorage.getItem('bearerToken');
+}
+
 function getAuthHeaders() {
-    const bearerToken = sessionStorage.getItem('bearerToken');
+    const bearerToken = _getStoredToken();
     return {
         'Authorization': bearerToken ? `Bearer ${bearerToken}` : '',
         'Content-Type': 'application/json',
@@ -23,7 +31,7 @@ function getAuthHeaders() {
 }
 
 async function makeAuthenticatedRequest(url, options = {}) {
-    const bearerToken = sessionStorage.getItem('bearerToken');
+    const bearerToken = _getStoredToken();
 
     if (!bearerToken) {
         console.error('No bearer token found');
@@ -91,13 +99,24 @@ document.addEventListener('DOMContentLoaded', async function() {
         await Layer8DConfig.load();
     }
 
-    const bearerToken = sessionStorage.getItem('bearerToken');
+    const bearerToken = _getStoredToken();
     if (!bearerToken) {
         window.location.href = 'l8ui/login/index.html';
         return;
     }
 
-    localStorage.setItem('bearerToken', bearerToken);
+    // Gate the localStorage copy on the same signal mobile uses:
+    // login-auth.js writes 'rememberedUser' iff the user checked "Remember me",
+    // so a match between that and the current user means remember-me is on.
+    // Without this, the bearer would leak to persistent storage on shared
+    // devices even when the user declined remember-me.
+    const rememberMe = !!localStorage.getItem('rememberedUser') &&
+        localStorage.getItem('rememberedUser') === sessionStorage.getItem('currentUser');
+    if (rememberMe) {
+        localStorage.setItem('bearerToken', bearerToken);
+    } else {
+        localStorage.removeItem('bearerToken');
+    }
     window.bearerToken = bearerToken;
 
     const username = sessionStorage.getItem('currentUser') || 'Admin';

@@ -7,6 +7,16 @@
     function _headers() { return getAuthHeaders(); }
     function _fetch(url) { return fetch(url, { method: 'GET', headers: _headers() }).then(function(r) { return r.json(); }); }
 
+    // The plan is read-only when the user lacks PUT (action 2) on TreatmentPlan —
+    // e.g. a client viewing their own workout. Empty/absent Layer8DPermissions
+    // means permissive (legacy admin), so default to editable in that case.
+    function _canEditPlan() {
+        var perms = window.Layer8DPermissions;
+        if (!perms || Object.keys(perms).length === 0) return true;
+        var actions = perms.TreatmentPlan || [];
+        return actions.indexOf(2) !== -1;
+    }
+
     // PhysioClientExercises — popup for viewing/editing a client's assigned treatment plan exercises
     window.PhysioClientExercises = {
 
@@ -35,6 +45,7 @@
         _showClientPopup: function(client) {
             var self = this;
             var name = (client.firstName || '') + ' ' + (client.lastName || '');
+            var canEdit = _canEditPlan();
 
             var content = [
                 '<div class="physio-client-tabs">',
@@ -47,9 +58,9 @@
                   '<button class="physio-client-tab" data-tab="details">Details</button>',
                 '</div>',
                 '<div class="physio-client-tab-pane active" id="physio-exercises-pane">',
-                  '<div class="physio-wb-toolbar">',
-                    '<button class="layer8d-btn layer8d-btn-secondary layer8d-btn-small" id="physio-wb-open-btn">\uD83D\uDD28 Workout Builder</button>',
-                  '</div>',
+                  (canEdit
+                    ? '<div class="physio-wb-toolbar"><button class="layer8d-btn layer8d-btn-secondary layer8d-btn-small" id="physio-wb-open-btn">\uD83D\uDD28 Workout Builder</button></div>'
+                    : ''),
                   '<div id="physio-exercises-pane-content">',
                     '<div class="physio-exercises-loading">Loading workout plan\u2026</div>',
                   '</div>',
@@ -132,7 +143,9 @@
                 var plan  = plans.length > 0 ? plans[0] : null;
 
                 if (!plan) {
-                    var noplan = '<div class="physio-no-protocol">No active workout plan assigned to this client yet.<br><span style="font-size:12px;color:var(--layer8d-text-muted)">Use the Workout Builder tab to create and assign a plan.</span></div>';
+                    var noplan = '<div class="physio-no-protocol">No active workout plan assigned to this client yet.'
+                        + (_canEditPlan() ? '<br><span style="font-size:12px;color:var(--layer8d-text-muted)">Use the Workout Builder tab to create and assign a plan.</span>' : '')
+                        + '</div>';
                     container.innerHTML = noplan;
                     if (infoContainer) infoContainer.innerHTML = noplan;
                     return;
@@ -184,6 +197,7 @@
 
         _renderPlanTable: function(plan, planExercises, exerciseMap, container) {
             var self = this;
+            var canEdit = _canEditPlan();
 
             if (!self._originals) {
                 self._originals = {};
@@ -220,14 +234,15 @@
                 ...col.col('sets',  'Sets'),
                 ...col.col('reps',  'Reps'),
                 ...col.custom('loadType', 'Load', function(item) {
-                    return PhysioPlanActions.loadTypeSelect(item.loadType, 'physio-load-select', ' data-eid="' + Layer8DUtils.escapeHtml(item.exerciseId) + '"');
+                    var extra = ' data-eid="' + Layer8DUtils.escapeHtml(item.exerciseId) + '"' + (canEdit ? '' : ' disabled');
+                    return PhysioPlanActions.loadTypeSelect(item.loadType, 'physio-load-select', extra);
                 }, { sortKey: false }),
                 ...col.custom('_value', 'Value', function(item) {
                     var lt = item.loadType;
                     var field = lt === 5 ? 'weightKg' : ((lt === 8 || lt === 9) ? 'holdSeconds' : '');
                     var suffix = lt === 5 ? 'kg' : ((lt === 8 || lt === 9) ? 's' : '');
                     var val = field ? (item[field] || 0) : 0;
-                    var enabled = !!field;
+                    var enabled = !!field && canEdit;
                     var eid = Layer8DUtils.escapeHtml(item.exerciseId);
                     return '<span style="display:inline-flex;align-items:center;gap:2px;white-space:nowrap;">'
                          + '<input type="number" min="0" class="physio-value-input" data-eid="' + eid + '" data-field="' + field + '" value="' + val + '" ' + (enabled ? '' : 'disabled') + ' style="width:48px;padding:2px 4px;border:1px solid var(--layer8d-border);border-radius:3px;' + (enabled ? '' : 'background:var(--layer8d-bg-light);color:var(--layer8d-text-muted);') + '">'
@@ -236,6 +251,7 @@
                 }, { sortKey: false }),
                 ...col.col('notes', 'Notes'),
                 ...col.custom('_progReg', '', function(item) {
+                    if (!canEdit) return '';
                     var eid = Layer8DUtils.escapeHtml(item.exerciseId);
                     var fullEx = (self._exerciseMap || {})[item.exerciseId] || {};
                     var btns = '';
@@ -253,6 +269,7 @@
                     return btns || '';
                 }, { sortKey: false }),
                 ...col.custom('_order', '', function(item) {
+                    if (!canEdit) return '';
                     var eid = Layer8DUtils.escapeHtml(item.exerciseId);
                     return '<button class="physio-move-up" data-eid="' + eid + '" title="Move up" style="cursor:pointer;background:none;border:none;font-size:14px;">\u25b2</button>'
                          + '<button class="physio-move-down" data-eid="' + eid + '" title="Move down" style="cursor:pointer;background:none;border:none;font-size:14px;">\u25bc</button>';
@@ -332,11 +349,11 @@
                     serverSide:   false,
                     sortable:     false,
                     filterable:   false,
-                    showActions:  true,
-                    onAdd:        (function(cn) { return function() { self._addExerciseToCircuit(cn); }; })(cNum),
-                    addButtonText: '+ Add Exercise',
-                    onEdit:       function(id) { self._editExercise(id); },
-                    onDelete:     function(id) { self._deleteExercise(id); },
+                    showActions:  canEdit,
+                    onAdd:        canEdit ? (function(cn) { return function() { self._addExerciseToCircuit(cn); }; })(cNum) : null,
+                    addButtonText: canEdit ? '+ Add Exercise' : undefined,
+                    onEdit:       canEdit ? function(id) { self._editExercise(id); } : null,
+                    onDelete:     canEdit ? function(id) { self._deleteExercise(id); } : null,
                     emptyMessage: 'No exercises.'
                 });
                 table.init();

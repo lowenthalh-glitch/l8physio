@@ -4,6 +4,15 @@
     function _apiPrefix() { return Layer8DConfig.getApiPrefix(); }
     function _headers() { return getAuthHeaders(); }
 
+    // Mirrors layer8d-service-registry.js permission gating. Empty/absent
+    // Layer8DPermissions means permissive mode (legacy admin).
+    function _canCreate(model) {
+        var perms = window.Layer8DPermissions;
+        if (!perms || Object.keys(perms).length === 0) return true;
+        var actions = perms[model] || [];
+        return actions.indexOf(1) !== -1;
+    }
+
     window.PhysioClientSessionReports = {
 
         init: function(container, client, parentCtx) {
@@ -13,15 +22,18 @@
             self._parentCtx = parentCtx;
             self._container = container;
 
-            var toolbar = '<div style="margin-bottom:8px;">' +
-                '<button id="physio-add-report-btn" class="layer8d-btn layer8d-btn-primary layer8d-btn-small">+ Add Session Report</button>' +
-                '</div>';
+            var canAdd = _canCreate('SessionReport');
+            var toolbar = canAdd
+                ? '<div style="margin-bottom:8px;"><button id="physio-add-report-btn" class="layer8d-btn layer8d-btn-primary layer8d-btn-small">+ Add Session Report</button></div>'
+                : '';
             var tableDiv = '<div id="physio-sessreports-table"></div>';
             container.innerHTML = toolbar + tableDiv;
 
-            container.querySelector('#physio-add-report-btn').addEventListener('click', function() {
-                self._openAddReport();
-            });
+            if (canAdd) {
+                container.querySelector('#physio-add-report-btn').addEventListener('click', function() {
+                    self._openAddReport();
+                });
+            }
 
             self._loadTable();
         },

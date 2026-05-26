@@ -22,15 +22,18 @@
             self._parentCtx = parentCtx;
             self._container = container;
 
-            var toolbar = '<div style="margin-bottom:8px;">' +
-                '<button id="physio-add-feedback-btn" class="layer8d-btn layer8d-btn-primary layer8d-btn-small">+ Add Feedback</button>' +
-                '</div>';
+            var canAdd = hasPerm(1); // POST
+            var toolbar = canAdd
+                ? '<div style="margin-bottom:8px;"><button id="physio-add-feedback-btn" class="layer8d-btn layer8d-btn-primary layer8d-btn-small">+ Add Feedback</button></div>'
+                : '';
             var tableDiv = '<div id="physio-homefeedback-table"></div>';
             container.innerHTML = toolbar + tableDiv;
 
-            container.querySelector('#physio-add-feedback-btn').addEventListener('click', function() {
-                self._openAddFeedback();
-            });
+            if (canAdd) {
+                container.querySelector('#physio-add-feedback-btn').addEventListener('click', function() {
+                    self._openAddFeedback();
+                });
+            }
 
             self._loadTable();
         },

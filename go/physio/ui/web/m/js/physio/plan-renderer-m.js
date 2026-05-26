@@ -7,6 +7,16 @@
     function _api() { return Layer8DConfig.getApiPrefix(); }
     function _get(url) { return Layer8MAuth.get(url); }
 
+    // The plan is read-only when the user lacks PUT (action 2) on TreatmentPlan —
+    // e.g. a client viewing their own workout. The framework populates
+    // window.Layer8DPermissions; an empty/absent map means permissive (legacy admin).
+    function _canEditPlan() {
+        var perms = window.Layer8DPermissions;
+        if (!perms || Object.keys(perms).length === 0) return true;
+        var actions = perms.TreatmentPlan || [];
+        return actions.indexOf(2) !== -1;
+    }
+
     function _getState(container) {
         if (!container._planState) container._planState = { flatRows: [], plan: null, exercises: null, exMap: null };
         return container._planState;
@@ -53,12 +63,12 @@
 
     var MPR_INPUT_STYLE = 'width:100%;padding:6px;border:1px solid var(--layer8d-border);border-radius:4px;font-size:13px;';
 
-    function _valueDivHTML(row, rowIdx) {
+    function _valueDivHTML(row, rowIdx, canEdit) {
         var lt = row.loadType;
         var field = lt === 5 ? 'weightKg' : ((lt === 8 || lt === 9) ? 'holdSeconds' : '');
         var label = lt === 5 ? 'Value (kg)' : ((lt === 8 || lt === 9) ? 'Value (s)' : 'Value');
         var val = field ? (row[field] || 0) : 0;
-        var enabled = !!field;
+        var enabled = !!field && canEdit;
         return '<div><label style="font-size:11px;color:var(--layer8d-text-muted);">' + label + '</label><input type="number" min="0" class="mpr-value" data-row="' + rowIdx + '" data-field="' + field + '" value="' + val + '" ' + (enabled ? '' : 'disabled') + ' style="' + MPR_INPUT_STYLE + (enabled ? '' : 'background:var(--layer8d-bg-light);color:var(--layer8d-text-muted);') + '"></div>';
     }
 
@@ -67,6 +77,9 @@
         var PA = window.PhysioPlanActions;
         var CATS = PA.CATEGORY_LABELS;
         var needsInit = !container._planHandlerAttached;
+        var canEdit = _canEditPlan();
+        var roDis = canEdit ? '' : ' disabled';
+        var roStyle = canEdit ? '' : 'background:var(--layer8d-bg-light);color:var(--layer8d-text-muted);';
 
         var result = PA.groupAndSort(exercises, exMap);
         var circuits = result.circuits;
@@ -78,52 +91,67 @@
         var html = '<div style="padding:4px 0;">' +
             '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">' +
             '<span style="font-weight:600;font-size:15px;">' + Layer8DUtils.escapeHtml(plan.title || 'Workout Plan') + '</span>' +
-            '<button class="mpr-save-btn" style="padding:8px 16px;border:none;border-radius:6px;background:var(--layer8d-primary);color:#fff;font-size:13px;font-weight:600;cursor:pointer;">Save</button></div>';
+            (canEdit ? '<button class="mpr-save-btn" style="padding:8px 16px;border:none;border-radius:6px;background:var(--layer8d-primary);color:#fff;font-size:13px;font-weight:600;cursor:pointer;">Save</button>' : '') +
+            '</div>';
 
         var rowIdx = 0;
         Object.keys(displayCircuits).sort().forEach(function(cNum) {
             var label = CATS[parseInt(cNum)] || ('Circuit ' + cNum);
             html += '<div style="background:var(--layer8d-primary);color:#fff;font-size:12px;font-weight:600;padding:8px 12px;margin-top:12px;border-radius:6px 6px 0 0;display:flex;justify-content:space-between;align-items:center;">' +
                 '<span>' + label + '</span>' +
-                '<button class="mpr-add-btn" data-circuit="' + cNum + '" style="font-size:11px;padding:3px 10px;background:rgba(255,255,255,0.2);color:#fff;border:1px solid rgba(255,255,255,0.4);border-radius:4px;cursor:pointer;">+ Add</button></div>';
+                (canEdit ? '<button class="mpr-add-btn" data-circuit="' + cNum + '" style="font-size:11px;padding:3px 10px;background:rgba(255,255,255,0.2);color:#fff;border:1px solid rgba(255,255,255,0.4);border-radius:4px;cursor:pointer;">+ Add</button>' : '') +
+                '</div>';
 
             displayCircuits[cNum].forEach(function(row) {
                 var fullEx = exMap[row.pe.exerciseId] || {};
                 var eid = Layer8DUtils.escapeHtml(row.pe.exerciseId);
 
-                // Action buttons
+                // Action buttons — video is always shown; all editors require canEdit.
                 var actions = '';
-                if (fullEx.regressionExerciseId) {
+                if (canEdit && fullEx.regressionExerciseId) {
                     var regName = (exMap[fullEx.regressionExerciseId] || {}).name || 'easier';
                     actions += '<button class="mpr-regress" data-row="' + rowIdx + '" title="' + Layer8DUtils.escapeHtml(regName) + '" style="padding:4px 8px;border:1px solid var(--layer8d-error);border-radius:4px;background:none;color:var(--layer8d-error);font-size:14px;cursor:pointer;">\u2212</button>';
                 }
-                if (fullEx.progressionExerciseId) {
+                if (canEdit && fullEx.progressionExerciseId) {
                     var progName = (exMap[fullEx.progressionExerciseId] || {}).name || 'harder';
                     actions += '<button class="mpr-progress" data-row="' + rowIdx + '" title="' + Layer8DUtils.escapeHtml(progName) + '" style="padding:4px 8px;border:1px solid var(--layer8d-success);border-radius:4px;background:none;color:var(--layer8d-success);font-size:14px;cursor:pointer;">+</button>';
                 }
-                if (fullEx.rotationGroupId) {
+                if (canEdit && fullEx.rotationGroupId) {
                     actions += '<button class="mpr-rotate" data-row="' + rowIdx + '" title="Rotate" style="padding:4px 8px;border:1px solid var(--layer8d-border);border-radius:4px;background:none;font-size:14px;cursor:pointer;">↻</button>';
                 }
-                actions += '<button class="mpr-up" data-row="' + rowIdx + '" style="padding:4px 6px;border:1px solid var(--layer8d-border);border-radius:4px;background:none;cursor:pointer;">\u25b2</button>';
-                actions += '<button class="mpr-down" data-row="' + rowIdx + '" style="padding:4px 6px;border:1px solid var(--layer8d-border);border-radius:4px;background:none;cursor:pointer;">\u25bc</button>';
+                if (canEdit) {
+                    actions += '<button class="mpr-up" data-row="' + rowIdx + '" style="padding:4px 6px;border:1px solid var(--layer8d-border);border-radius:4px;background:none;cursor:pointer;">\u25b2</button>';
+                    actions += '<button class="mpr-down" data-row="' + rowIdx + '" style="padding:4px 6px;border:1px solid var(--layer8d-border);border-radius:4px;background:none;cursor:pointer;">\u25bc</button>';
+                }
                 actions += '<button class="mpr-video" data-eid="' + eid + '" style="padding:4px 6px;border:1px solid var(--layer8d-border);border-radius:4px;background:none;cursor:pointer;">\u25b6</button>';
-                actions += '<button class="mpr-delete" data-row="' + rowIdx + '" style="padding:4px 6px;border:1px solid var(--layer8d-error);border-radius:4px;background:none;color:var(--layer8d-error);cursor:pointer;">\u2716</button>';
+                if (canEdit) {
+                    actions += '<button class="mpr-delete" data-row="' + rowIdx + '" style="padding:4px 6px;border:1px solid var(--layer8d-error);border-radius:4px;background:none;color:var(--layer8d-error);cursor:pointer;">\u2716</button>';
+                }
 
-                var loadSelect = PA.loadTypeSelect(row.loadType, 'mpr-load', ' data-row="' + rowIdx + '"');
+                var loadSelect = PA.loadTypeSelect(row.loadType, 'mpr-load', ' data-row="' + rowIdx + '"' + roDis);
                 var iStyle = 'width:100%;padding:6px;border:1px solid var(--layer8d-border);border-radius:4px;font-size:13px;';
+                // Thumbnail (only when the exercise has an image) — loaded by
+                // PhysioClientExerciseInfo.loadAuthImages() at the end of _renderCircuits,
+                // mirroring the desktop _image column wiring.
+                var thumbHtml = fullEx.imageStoragePath
+                    ? '<img data-img-path="' + Layer8DUtils.escapeHtml(fullEx.imageStoragePath) + '" data-eid="' + eid + '" class="mpr-thumb" alt="" style="width:36px;height:36px;object-fit:cover;border-radius:4px;cursor:pointer;background:var(--layer8d-bg-light);flex:0 0 auto;">'
+                    : '';
 
                 html += '<div style="border:1px solid var(--layer8d-border);border-top:none;padding:10px 12px;background:var(--layer8d-bg-white);">' +
-                    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">' +
-                    '<span style="font-weight:600;font-size:14px;">' + Layer8DUtils.escapeHtml(row.name) + '</span></div>' +
+                    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:8px;">' +
+                    '<div style="display:flex;align-items:center;gap:8px;min-width:0;">' +
+                    thumbHtml +
+                    '<span style="font-weight:600;font-size:14px;">' + Layer8DUtils.escapeHtml(row.name) + '</span>' +
+                    '</div></div>' +
                     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;">' +
                     '<div><label style="font-size:11px;color:var(--layer8d-text-muted);">Load</label>' + loadSelect + '</div>' +
-                    _valueDivHTML(row, rowIdx) +
+                    _valueDivHTML(row, rowIdx, canEdit) +
                     '</div>' +
                     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;">' +
-                    '<div><label style="font-size:11px;color:var(--layer8d-text-muted);">Sets</label><input type="number" class="mpr-sets" data-row="' + rowIdx + '" value="' + Layer8DUtils.escapeHtml(String(row.sets)) + '" style="' + iStyle + '"></div>' +
-                    '<div><label style="font-size:11px;color:var(--layer8d-text-muted);">Reps</label><input type="text" class="mpr-reps" data-row="' + rowIdx + '" value="' + Layer8DUtils.escapeHtml(String(row.reps)) + '" style="' + iStyle + '"></div>' +
+                    '<div><label style="font-size:11px;color:var(--layer8d-text-muted);">Sets</label><input type="number" class="mpr-sets" data-row="' + rowIdx + '" value="' + Layer8DUtils.escapeHtml(String(row.sets)) + '"' + roDis + ' style="' + iStyle + roStyle + '"></div>' +
+                    '<div><label style="font-size:11px;color:var(--layer8d-text-muted);">Reps</label><input type="text" class="mpr-reps" data-row="' + rowIdx + '" value="' + Layer8DUtils.escapeHtml(String(row.reps)) + '"' + roDis + ' style="' + iStyle + roStyle + '"></div>' +
                     '</div>' +
-                    '<div style="margin-bottom:6px;"><label style="font-size:11px;color:var(--layer8d-text-muted);">Notes</label><input type="text" class="mpr-notes" data-row="' + rowIdx + '" value="' + Layer8DUtils.escapeHtml(row.notes) + '" style="' + iStyle + '"></div>' +
+                    '<div style="margin-bottom:6px;"><label style="font-size:11px;color:var(--layer8d-text-muted);">Notes</label><input type="text" class="mpr-notes" data-row="' + rowIdx + '" value="' + Layer8DUtils.escapeHtml(row.notes) + '"' + roDis + ' style="' + iStyle + roStyle + '"></div>' +
                     '<div style="display:flex;gap:6px;flex-wrap:wrap;">' + actions + '</div></div>';
                 rowIdx++;
             });
@@ -217,11 +245,8 @@
                 var delName = (st.exMap[dpe.exerciseId] || {}).name || dpe.exerciseId;
                 var delLabel = PA.CATEGORY_LABELS[dpe.circuitNumber] || ('Circuit ' + (dpe.circuitNumber || '?'));
                 PA.remove(st.exercises, dpe); st.plan.exercises = st.exercises;
-                fetch(_api() + '/50/ExSwapLog', {
-                    method: 'POST',
-                    headers: Object.assign({}, (typeof getAuthHeaders === 'function' ? getAuthHeaders() : Layer8MAuth.getAuthHeaders()), { 'Content-Type': 'application/json' }),
-                    body: JSON.stringify({ clientId: st.plan.clientId, planId: st.plan.planId, oldExerciseId: dpe.exerciseId, newExerciseId: '', direction: 0, swapDate: Math.floor(Date.now() / 1000), therapistId: sessionStorage.getItem('currentUser') || '', description: '[' + delLabel + '] Removed: ' + delName })
-                }).catch(function(err) { console.warn('Failed to log delete:', err); });
+                Layer8MAuth.post(_api() + '/50/ExSwapLog', { clientId: st.plan.clientId, planId: st.plan.planId, oldExerciseId: dpe.exerciseId, newExerciseId: '', direction: 0, swapDate: Math.floor(Date.now() / 1000), therapistId: sessionStorage.getItem('currentUser') || '', description: '[' + delLabel + '] Removed: ' + delName })
+                    .catch(function(err) { console.warn('Failed to log delete:', err); });
                 _rerender(container);
             }
             return;
@@ -235,11 +260,8 @@
             if (mpe && PA.move(st.exercises, st.exMap, mpe, up ? -1 : 1)) {
                 var moveName = (st.exMap[mpe.exerciseId] || {}).name || mpe.exerciseId;
                 var moveLabel = PA.CATEGORY_LABELS[mpe.circuitNumber] || ('Circuit ' + (mpe.circuitNumber || '?'));
-                fetch(_api() + '/50/ExSwapLog', {
-                    method: 'POST',
-                    headers: Object.assign({}, (typeof getAuthHeaders === 'function' ? getAuthHeaders() : Layer8MAuth.getAuthHeaders()), { 'Content-Type': 'application/json' }),
-                    body: JSON.stringify({ clientId: st.plan.clientId, planId: st.plan.planId, oldExerciseId: mpe.exerciseId, newExerciseId: mpe.exerciseId, direction: 0, swapDate: Math.floor(Date.now() / 1000), therapistId: sessionStorage.getItem('currentUser') || '', description: '[' + moveLabel + '] Moved ' + (up ? 'up' : 'down') + ': ' + moveName })
-                }).catch(function(err) { console.warn('Failed to log move:', err); });
+                Layer8MAuth.post(_api() + '/50/ExSwapLog', { clientId: st.plan.clientId, planId: st.plan.planId, oldExerciseId: mpe.exerciseId, newExerciseId: mpe.exerciseId, direction: 0, swapDate: Math.floor(Date.now() / 1000), therapistId: sessionStorage.getItem('currentUser') || '', description: '[' + moveLabel + '] Moved ' + (up ? 'up' : 'down') + ': ' + moveName })
+                    .catch(function(err) { console.warn('Failed to log move:', err); });
                 _rerender(container);
             }
             return;
@@ -267,11 +289,8 @@
                     st.plan.exercises = st.exercises;
                     var addedName = (st.exMap[exId] || {}).name || exId;
                     var addLabel = PA.CATEGORY_LABELS[aCNum] || ('Circuit ' + aCNum);
-                    fetch(_api() + '/50/ExSwapLog', {
-                        method: 'POST',
-                        headers: Object.assign({}, (typeof getAuthHeaders === 'function' ? getAuthHeaders() : Layer8MAuth.getAuthHeaders()), { 'Content-Type': 'application/json' }),
-                        body: JSON.stringify({ clientId: st.plan.clientId, planId: st.plan.planId, oldExerciseId: '', newExerciseId: exId, direction: 0, swapDate: Math.floor(Date.now() / 1000), therapistId: sessionStorage.getItem('currentUser') || '', description: '[' + addLabel + '] Added: ' + addedName })
-                    }).catch(function(err) { console.warn('Failed to log add:', err); });
+                    Layer8MAuth.post(_api() + '/50/ExSwapLog', { clientId: st.plan.clientId, planId: st.plan.planId, oldExerciseId: '', newExerciseId: exId, direction: 0, swapDate: Math.floor(Date.now() / 1000), therapistId: sessionStorage.getItem('currentUser') || '', description: '[' + addLabel + '] Added: ' + addedName })
+                        .catch(function(err) { console.warn('Failed to log add:', err); });
                     Layer8MPopup.close();
                     _rerender(container);
                 }
@@ -281,5 +300,8 @@
 
         var vid = t.closest('.mpr-video');
         if (vid) { e.stopPropagation(); if (window.PhysioClientExerciseInfo) PhysioClientExerciseInfo.showVideoPopup(vid.dataset.eid, st.exMap); return; }
+
+        var thumb = t.closest('.mpr-thumb');
+        if (thumb) { e.stopPropagation(); if (window.PhysioClientExerciseInfo) PhysioClientExerciseInfo.showImagePopup(thumb.dataset.eid, st.exMap); return; }
     }
 })();

@@ -9,15 +9,6 @@
 
     function _apiPrefix() { return Layer8DConfig.getApiPrefix(); }
 
-    function _authFetch(url, opts) {
-        var headers = (typeof Layer8MAuth !== 'undefined') ?
-            Layer8MAuth.getAuthHeaders() :
-            (typeof getAuthHeaders === 'function' ? getAuthHeaders() : {});
-        opts = opts || {};
-        opts.headers = Object.assign({}, headers, opts.headers || {});
-        return fetch(url, opts);
-    }
-
     // ── Detail popup ──────────────────────────────────────────────────
     function _showDetail(item, onRefresh) {
         if (!item) return;
@@ -171,37 +162,28 @@
     // ── Override save ─────────────────────────────────────────────────
     function _saveOverride(clientId, fromStatus, toStatus, reason, onSuccess) {
         var prefix = _apiPrefix();
-        _authFetch(prefix + '/50/OvrdLog', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                clientId: clientId,
-                changedBy: sessionStorage.getItem('currentUser') || '',
-                fromStatus: fromStatus,
-                toStatus: toStatus,
-                changeDate: Math.floor(Date.now() / 1000),
-                reason: reason
-            })
+        Layer8MAuth.post(prefix + '/50/OvrdLog', {
+            clientId: clientId,
+            changedBy: sessionStorage.getItem('currentUser') || '',
+            fromStatus: fromStatus,
+            toStatus: toStatus,
+            changeDate: Math.floor(Date.now() / 1000),
+            reason: reason
         }).catch(function(err) { console.warn('Failed to log override:', err); });
 
         var query = encodeURIComponent(JSON.stringify({ text: 'select * from PhysioClient where clientId=' + clientId }));
-        _authFetch(prefix + '/50/PhyClient?body=' + query, { method: 'GET' })
-        .then(function(r) { return r.json(); })
+        Layer8MAuth.get(prefix + '/50/PhyClient?body=' + query)
         .then(function(data) {
+            if (!data) return null;
             var client = (data.list || [])[0];
-            if (!client) return;
+            if (!client) return null;
             client.overrideStatus = toStatus;
-            return _authFetch(prefix + '/50/PhyClient', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(client)
-            });
+            return Layer8MAuth.put(prefix + '/50/PhyClient', client);
         })
         .then(function(r) {
-            if (r && r.ok) {
-                if (typeof Layer8MUtils !== 'undefined') Layer8MUtils.showSuccess('Override updated');
-                if (onSuccess) onSuccess();
-            }
+            if (!r) return;
+            if (typeof Layer8MUtils !== 'undefined') Layer8MUtils.showSuccess('Override updated');
+            if (onSuccess) onSuccess();
         })
         .catch(function(err) {
             if (typeof Layer8MUtils !== 'undefined') Layer8MUtils.showError('Error: ' + err.message);

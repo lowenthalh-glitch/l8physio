@@ -28,16 +28,10 @@
 
             this.updateUserInfo();
 
-            const token = Layer8MAuth.getBearerToken();
-
             // Load per-type action permissions
             try {
-                const permResp = await fetch('/permissions', {
-                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
-                });
-                if (permResp.ok) {
-                    window.Layer8DPermissions = await permResp.json();
-                }
+                const perms = await Layer8MAuth.get('/permissions');
+                if (perms) window.Layer8DPermissions = perms;
             } catch (e) { console.warn('Failed to load permissions:', e); }
 
             // Physio does not use ModConfig — skip Layer8DModuleFilter to avoid logout on 404
@@ -134,9 +128,8 @@
                 if (!forceReload && sectionCache[section]) {
                     contentArea.innerHTML = sectionCache[section];
                 } else {
-                    const response = await fetch(sectionUrl + '?t=' + Date.now());
-                    if (!response.ok) throw new Error('Failed to load section');
-                    const html = await response.text();
+                    const html = await Layer8MAuth.fetchText(sectionUrl + '?t=' + Date.now());
+                    if (html === null) return; // 401 — redirect already in progress
                     sectionCache[section] = html;
                     contentArea.innerHTML = html;
                 }
@@ -171,9 +164,8 @@
                 if (!forceReload && sectionCache['dashboard']) {
                     contentArea.innerHTML = sectionCache['dashboard'];
                 } else {
-                    const response = await fetch(SECTIONS['dashboard'] + '?t=' + Date.now());
-                    if (!response.ok) throw new Error('Failed to load dashboard');
-                    const html = await response.text();
+                    const html = await Layer8MAuth.fetchText(SECTIONS['dashboard'] + '?t=' + Date.now());
+                    if (html === null) return; // 401 — redirect already in progress
                     sectionCache['dashboard'] = html;
                     contentArea.innerHTML = html;
                 }

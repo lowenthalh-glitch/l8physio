@@ -6,6 +6,16 @@
     function _api() { return Layer8DConfig.getApiPrefix(); }
     function _get(url) { return Layer8MAuth.get(url); }
 
+    // Mirrors the permission check the framework does in layer8d-service-registry.js /
+    // layer8m-nav-data.js. Action codes: 1=POST, 2=PUT, 4=DELETE, 5=GET. Empty/absent
+    // permissions map means permissive mode (no restriction).
+    function _canCreate(model) {
+        var perms = window.Layer8DPermissions;
+        if (!perms || Object.keys(perms).length === 0) return true;
+        var actions = perms[model] || [];
+        return actions.indexOf(1) !== -1;
+    }
+
     var STATUS_LABELS = { 1: 'Green', 2: 'Yellow', 3: 'Red' };
     var TYPE_MAP = { 1: 'Meeting', 2: 'Class', 3: 'Block' };
 
@@ -25,7 +35,10 @@
                 ...col.number('painAfter', 'Pain After'),
                 ...col.boolean('followupRequired', 'Follow-up')
             ];
-            container.innerHTML = '<div style="margin-bottom:8px;"><button id="madd-report-btn" style="padding:8px 14px;border:none;border-radius:6px;background:var(--layer8d-primary);color:#fff;font-size:13px;font-weight:600;cursor:pointer;">+ Add Report</button></div><div id="' + divId + '"></div>';
+            var canAdd = _canCreate('SessionReport');
+            container.innerHTML = (canAdd
+                ? '<div style="margin-bottom:8px;"><button id="madd-report-btn" style="padding:8px 14px;border:none;border-radius:6px;background:var(--layer8d-primary);color:#fff;font-size:13px;font-weight:600;cursor:pointer;">+ Add Report</button></div>'
+                : '') + '<div id="' + divId + '"></div>';
 
             var table = new Layer8MEditTable(divId, {
                 endpoint: _api() + '/50/SessRpt',
@@ -36,9 +49,11 @@
                 baseWhereClause: 'clientId=' + client.clientId
             });
 
-            container.querySelector('#madd-report-btn').addEventListener('click', function() {
-                _openAddReport(client, function() { table.refresh ? table.refresh() : location.reload(); });
-            });
+            if (canAdd) {
+                container.querySelector('#madd-report-btn').addEventListener('click', function() {
+                    _openAddReport(client, function() { table.refresh ? table.refresh() : location.reload(); });
+                });
+            }
         }
     };
 
@@ -165,7 +180,10 @@
                 ...col.number('painAfter', 'Pain After'),
                 ...col.status('status', 'Status', enums.SESSION_STATUS_VALUES, render.sessionStatus)
             ];
-            container.innerHTML = '<div style="margin-bottom:8px;"><button id="madd-feedback-btn" style="padding:8px 14px;border:none;border-radius:6px;background:var(--layer8d-primary);color:#fff;font-size:13px;font-weight:600;cursor:pointer;">+ Add Feedback</button></div><div id="' + divId + '"></div>';
+            var canAdd = _canCreate('HomeFeedback');
+            container.innerHTML = (canAdd
+                ? '<div style="margin-bottom:8px;"><button id="madd-feedback-btn" style="padding:8px 14px;border:none;border-radius:6px;background:var(--layer8d-primary);color:#fff;font-size:13px;font-weight:600;cursor:pointer;">+ Add Feedback</button></div>'
+                : '') + '<div id="' + divId + '"></div>';
 
             var table = new Layer8MEditTable(divId, {
                 endpoint: _api() + '/50/HomeFdbk',
@@ -176,9 +194,11 @@
                 baseWhereClause: 'clientId=' + client.clientId
             });
 
-            container.querySelector('#madd-feedback-btn').addEventListener('click', function() {
-                _openAddFeedback(client, function() { table.refresh ? table.refresh() : location.reload(); });
-            });
+            if (canAdd) {
+                container.querySelector('#madd-feedback-btn').addEventListener('click', function() {
+                    _openAddFeedback(client, function() { table.refresh ? table.refresh() : location.reload(); });
+                });
+            }
         }
     };
 
