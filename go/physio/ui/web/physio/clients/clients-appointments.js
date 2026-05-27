@@ -116,7 +116,7 @@
                     containerId: containerId,
                     columns: columns,
                     primaryKey: 'eventId',
-                    pageSize: 10,
+                    pageSize: 60,
                     serverSide: false,
                     sortable: true,
                     filterable: false,

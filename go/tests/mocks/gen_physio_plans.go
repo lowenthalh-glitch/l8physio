@@ -2,80 +2,91 @@ package mocks
 
 import (
 	"fmt"
-	"math/rand"
+	"strings"
 
 	lm "github.com/saichler/l8common/go/mocks"
 	"github.com/saichler/l8physio/go/types/physio"
 )
 
-var categoryLabels = map[int32]string{1: "Mobility", 2: "Rehab", 3: "Strength", 4: "Functional"}
+// generateCuratedHipPlan builds the real, hand-curated treatment plan
+// "ירך מובילטי וחיזוק, פתיחת חזה וכוח כללי" — 18 exercises across 4 circuits
+// (LORD-HIP Mobility, LORD-HIP Rehab, KYPH-SHO Mobility, GEN-GEN Strength).
+// Exercises are resolved by name against exerciseByName so the plan stays
+// correct if cex-NNN indices ever shift. Returns (plan, missingNames).
+func generateCuratedHipPlan(clientID string, exerciseByName map[string]string) (*physio.TreatmentPlan, []string) {
+	dumbbell := physio.PhysioLoadType_PHYSIO_LOAD_TYPE_DUMBBELL
 
-// generateTreatmentPlans creates 20 treatment plans distributed across clients
-// Status distribution: 60% Active, 20% Completed, 10% Draft, 10% Suspended
-func generateTreatmentPlans(store *MockDataStore, clientIds []string) []*physio.TreatmentPlan {
-	plans := make([]*physio.TreatmentPlan, 20)
-
-	for i := 0; i < 20; i++ {
-		clientID := lm.PickRef(clientIds, i)
-
-		var status physio.PhysioPlanStatus
-		switch {
-		case i < 12:
-			status = physio.PhysioPlanStatus_PHYSIO_PLAN_STATUS_ACTIVE
-		case i < 16:
-			status = physio.PhysioPlanStatus_PHYSIO_PLAN_STATUS_COMPLETED
-		case i < 18:
-			status = physio.PhysioPlanStatus_PHYSIO_PLAN_STATUS_DRAFT
-		default:
-			status = physio.PhysioPlanStatus_PHYSIO_PLAN_STATUS_SUSPENDED
-		}
-
-		startDate := lm.RandomPastDate(6, 28)
-		var endDate int64
-		if status == physio.PhysioPlanStatus_PHYSIO_PLAN_STATUS_COMPLETED {
-			endDate = startDate + int64(rand.Intn(60)+30)*86400 // 30-90 days after start
-		} else {
-			endDate = lm.RandomFutureDate(3, 28)
-		}
-
-		// Attach 3-5 exercises per plan
-		numExercises := rand.Intn(3) + 3
-		exercises := make([]*physio.PlanExercise, numExercises)
-		for j := 0; j < numExercises; j++ {
-			exIdx := (i*7 + j) % len(store.PhysioExerciseIDs)
-			exId := lm.PickRef(store.PhysioExerciseIDs, exIdx)
-			cat := store.PhysioExerciseCategories[exId]
-			if cat == 0 {
-				cat = int32((j % 4) + 1) // fallback: distribute across categories
-			}
-			exercises[j] = &physio.PlanExercise{
-				PlanExerciseId: fmt.Sprintf("pe-%03d-%02d", i+1, j+1),
-				ExerciseId:     exId,
-				Sets:           int32(rand.Intn(3) + 2),
-				Reps:           int32(rand.Intn(10) + 10),
-				HoldSeconds:    int32(rand.Intn(3)) * 10,
-				Frequency:      physio.PhysioFrequency(rand.Intn(4) + 1),
-				OrderIndex:     int32(j + 1),
-				CircuitNumber:  cat,
-				CircuitLabel:   categoryLabels[cat],
-			}
-		}
-
-		plans[i] = &physio.TreatmentPlan{
-			PlanId:         lm.GenID("plan", i),
-			ClientId:       clientID,
-			UserId:         "admin",
-			Title:          planTitles[i%len(planTitles)],
-			Description:    fmt.Sprintf("Comprehensive treatment plan addressing %s.", diagnoses[i%len(diagnoses)]),
-			Status:         status,
-			StartDate:      startDate,
-			EndDate:        endDate,
-			Goals:          fmt.Sprintf("Reduce pain to 2/10. Restore full functional range of motion. Return to normal daily activities within %d weeks.", rand.Intn(6)+6),
-			TherapistNotes: fmt.Sprintf("Initial assessment completed. Plan tailored to client presentation of %s.", diagnoses[i%len(diagnoses)]),
-			Exercises:      exercises,
-			AuditInfo:      lm.CreateAuditInfo(),
-		}
+	type peDef struct {
+		name          string
+		sets, reps    int32
+		notes         string
+		loadType      physio.PhysioLoadType
+		weightKg      int32
+		circuitNumber int32
+		circuitLabel  string
 	}
 
-	return plans
+	defs := []peDef{
+		// Circuit 1 — LORD-HIP — Mobility
+		{"Glute massage", 3, 60, "seconds", 0, 0, 1, "LORD-HIP — Mobility"},
+		{"Pigeon stretch", 3, 30, "seconds", 0, 0, 1, "LORD-HIP — Mobility"},
+		{"Couch stretch", 3, 30, "seconds each side", 0, 0, 1, "LORD-HIP — Mobility"},
+		{"90/90 Hip Rotations", 2, 20, "", 0, 0, 1, "LORD-HIP — Mobility"},
+		{"Hip Internal Stretch 90/90", 2, 30, "seconds each side", 0, 0, 1, "LORD-HIP — Mobility"},
+		{"Single-Leg Middle Split Stretch", 2, 30, "seconds each side", 0, 0, 1, "LORD-HIP — Mobility"},
+
+		// Circuit 2 — LORD-HIP — Rehab
+		{"Clam Shell", 3, 15, "", 0, 0, 2, "LORD-HIP — Rehab"},
+		{"Hip Thrust with Ball Squeeze", 3, 12, "", 0, 8, 2, "LORD-HIP — Rehab"},
+		{"PPT with Ball Squeeze", 3, 15, "", 0, 0, 2, "LORD-HIP — Rehab"},
+		{"PPT Crunches with Ball Squeeze", 3, 12, "", 0, 0, 2, "LORD-HIP — Rehab"},
+		{"Side Walk with Band", 3, 15, "", 0, 0, 2, "LORD-HIP — Rehab"},
+
+		// Circuit 3 — KYPH-SHO — Mobility
+		{"Thoracic Extension on Foam Roller", 2, 10, "", 0, 0, 3, "KYPH-SHO — Mobility"},
+		{"Chest Opening on Swiss Ball", 2, 30, "", dumbbell, 1, 3, "KYPH-SHO — Mobility"},
+		{"Stick Behind Back – ROM", 2, 15, "", 0, 0, 3, "KYPH-SHO — Mobility"},
+		{"Trunk Rotation Next to Wall", 2, 10, "", 0, 0, 3, "KYPH-SHO — Mobility"},
+
+		// Circuit 4 — GEN-GEN — Strength
+		{"Wall Squat – Medial Head", 3, 45, "", dumbbell, 5, 4, "GEN-GEN — Strength"},
+		{"TRX Row – Narrow Grip", 3, 10, "", 0, 0, 4, "GEN-GEN — Strength"},
+		{"Push-Up on Knees", 3, 12, "", 0, 0, 4, "GEN-GEN — Strength"},
+	}
+
+	var missing []string
+	exercises := make([]*physio.PlanExercise, 0, len(defs))
+	orderInCircuit := map[int32]int32{}
+	for _, d := range defs {
+		exID, ok := exerciseByName[strings.ToLower(d.name)]
+		if !ok {
+			missing = append(missing, d.name)
+			continue
+		}
+		orderInCircuit[d.circuitNumber]++
+		exercises = append(exercises, &physio.PlanExercise{
+			PlanExerciseId: fmt.Sprintf("pe-curated-c%d-%02d", d.circuitNumber, orderInCircuit[d.circuitNumber]),
+			ExerciseId:     exID,
+			Sets:           d.sets,
+			Reps:           d.reps,
+			Notes:          d.notes,
+			OrderIndex:     orderInCircuit[d.circuitNumber],
+			CircuitNumber:  d.circuitNumber,
+			CircuitLabel:   d.circuitLabel,
+			LoadType:       d.loadType,
+			WeightKg:       d.weightKg,
+		})
+	}
+
+	plan := &physio.TreatmentPlan{
+		PlanId:    "plan-curated-hagar-hip",
+		ClientId:  clientID,
+		UserId:    "admin",
+		Title:     "ירך מובילטי וחיזוק, פתיחת חזה וכוח כללי",
+		Status:    physio.PhysioPlanStatus_PHYSIO_PLAN_STATUS_ACTIVE,
+		StartDate: lm.RandomPastDate(1, 14),
+		Exercises: exercises,
+		AuditInfo: lm.CreateAuditInfo(),
+	}
+	return plan, missing
 }

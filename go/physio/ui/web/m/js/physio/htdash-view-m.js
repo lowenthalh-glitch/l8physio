@@ -153,7 +153,7 @@
             endpoint: Layer8DConfig.resolveEndpoint('/50/ExSwapLog'),
             modelName: 'ExerciseSwapLog',
             columns: cols,
-            rowsPerPage: 15,
+            rowsPerPage: 60,
             getItemId: function(item) { return item.swapId; },
             baseWhereClause: 'clientId=' + clientId
         });

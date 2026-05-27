@@ -72,7 +72,7 @@
             endpoint: Layer8DConfig.resolveEndpoint('/50/PhyClient'),
             modelName: 'PhysioClient',
             columns: columns,
-            rowsPerPage: 15,
+            rowsPerPage: 60,
             getItemId: function(item) { return item.clientId; },
             baseWhereClause: 'therapistId=' + tid
         });

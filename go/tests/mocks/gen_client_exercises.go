@@ -295,6 +295,18 @@ func generateClientExercises() []*physio.PhysioExercise {
 			"Deep lunge; reach opposite arm to grab back foot.",
 			"Hip flexor stretch with quad and shoulder opening", "",
 			mob, hip, lord, bw, "5-6", 2, 30},
+		{"Glute massage",
+			"Self-myofascial release of the glutes using a foam roller or massage ball; roll slowly across the glute medius and maximus, pausing on tender points.",
+			"Glute tissue release and hip-mobility preparation", "Foam roller / massage ball",
+			mob, hip, lord, bw, "5-6", 3, 60},
+		{"Pigeon stretch",
+			"From all-fours, bring one shin forward across the body; lower the hips toward the mat and rest the chest over the front leg.",
+			"Deep glute and external-rotator lengthening", "Mat",
+			mob, hip, lord, bw, "5-6", 3, 30},
+		{"Couch stretch",
+			"Place the back foot on a couch or wall with knee on the floor; bring the front foot forward to a lunge and drive the hips forward, keeping the torso tall.",
+			"Hip-flexor and quadriceps lengthening", "Couch / wall",
+			mob, hip, lord, bw, "5-6", 3, 30},
 	}
 
 	result := make([]*physio.PhysioExercise, len(defs))

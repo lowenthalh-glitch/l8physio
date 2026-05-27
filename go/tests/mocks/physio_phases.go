@@ -3,6 +3,7 @@ package mocks
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/saichler/l8physio/go/types/physio"
 )
@@ -19,7 +20,8 @@ func RunAllPhases(client *PhysioClient, store *MockDataStore) {
 	if len(clientIds) == 0 {
 		fmt.Printf("=== Skipping client-dependent phases: no clients in service ===\n")
 	} else {
-		runPhysioPhase2(client, store, clientIds)        // Treatment Plans
+		// Treatment Plans: only the curated hip plan attached to hagnat.sol@gmail.com.
+		runCuratedPlan(client, store, "hagnat.sol@gmail.com")
 		runPhysioPhase3(client, store, clientIds)        // Appointments
 		runPhysioPhase4(client, store, clientIds)        // Progress Logs
 		runPhysioDashboardData(client, store, clientIds) // HomeFeedback + SessionReport
@@ -33,9 +35,15 @@ func storeExercises(exercises []*physio.PhysioExercise, store *MockDataStore) {
 	if store.PhysioExerciseCategories == nil {
 		store.PhysioExerciseCategories = make(map[string]int32)
 	}
+	if store.PhysioExerciseIDByName == nil {
+		store.PhysioExerciseIDByName = make(map[string]string)
+	}
 	for _, e := range exercises {
 		store.PhysioExerciseIDs = append(store.PhysioExerciseIDs, e.ExerciseId)
 		store.PhysioExerciseCategories[e.ExerciseId] = int32(e.Category)
+		if e.Name != "" {
+			store.PhysioExerciseIDByName[strings.ToLower(e.Name)] = e.ExerciseId
+		}
 	}
 }
 
@@ -71,35 +79,9 @@ func runPhysioPhase1(client *PhysioClient, store *MockDataStore) {
 	}
 }
 
-// runPhysioPhase2 generates treatment plans (requires clients and exercises)
-func runPhysioPhase2(client *PhysioClient, store *MockDataStore, clientIds []string) {
-	fmt.Printf("=== Phase 2: Treatment Plans ===\n")
-
-	if len(store.PhysioExerciseIDs) == 0 {
-		fmt.Printf("  SKIPPED: no exercises available (Phase 1 may have failed)\n")
-		return
-	}
-
-	plans := generateTreatmentPlans(store, clientIds)
-	_, err := client.Post("/physio/50/PhyPlan", &physio.TreatmentPlanList{List: plans})
-	if err != nil {
-		fmt.Printf("  ERROR creating TreatmentPlans: %v\n", err)
-	} else {
-		for _, p := range plans {
-			store.TreatmentPlanIDs = append(store.TreatmentPlanIDs, p.PlanId)
-		}
-		fmt.Printf("  Created %d TreatmentPlans\n", len(plans))
-	}
-}
-
-// runPhysioPhase3 generates appointments (requires clients and plans)
+// runPhysioPhase3 generates appointments (requires clients; PlanId left empty since plans are not seeded)
 func runPhysioPhase3(client *PhysioClient, store *MockDataStore, clientIds []string) {
 	fmt.Printf("=== Phase 3: Appointments ===\n")
-
-	if len(store.TreatmentPlanIDs) == 0 {
-		fmt.Printf("  SKIPPED: no plans available (Phase 2 may have failed)\n")
-		return
-	}
 
 	appointments := generateAppointments(store, clientIds)
 	_, err := client.Post("/physio/50/PhyAppt", &physio.AppointmentList{List: appointments})
@@ -113,12 +95,12 @@ func runPhysioPhase3(client *PhysioClient, store *MockDataStore, clientIds []str
 	}
 }
 
-// runPhysioPhase4 generates progress logs (requires clients, plans, and appointments)
+// runPhysioPhase4 generates progress logs (requires clients, exercises, and appointments; PlanId left empty)
 func runPhysioPhase4(client *PhysioClient, store *MockDataStore, clientIds []string) {
 	fmt.Printf("=== Phase 4: Progress Logs ===\n")
 
-	if len(store.PhysioExerciseIDs) == 0 || len(store.TreatmentPlanIDs) == 0 || len(store.AppointmentIDs) == 0 {
-		fmt.Printf("  SKIPPED: missing exercises, plans, or appointments (earlier phase may have failed)\n")
+	if len(store.PhysioExerciseIDs) == 0 || len(store.AppointmentIDs) == 0 {
+		fmt.Printf("  SKIPPED: missing exercises or appointments (earlier phase may have failed)\n")
 		return
 	}
 
@@ -180,6 +162,63 @@ func runPhysioDashboardData(client *PhysioClient, store *MockDataStore, clientId
 			fmt.Printf("  Created %d SessionReports\n", len(reports))
 		}
 	}
+}
+
+// runCuratedPlan attaches the hand-curated hip-mobility/strength plan to the
+// PhysioClient whose email matches targetEmail (case-insensitive). If no client
+// with that email is currently in the service, the phase logs and skips.
+func runCuratedPlan(client *PhysioClient, store *MockDataStore, targetEmail string) {
+	fmt.Printf("=== Curated Plan: attach to %s ===\n", targetEmail)
+
+	clientID := fetchClientIDByEmail(client, targetEmail)
+	if clientID == "" {
+		fmt.Printf("  SKIPPED: no client found with email %s\n", targetEmail)
+		return
+	}
+
+	plan, missing := generateCuratedHipPlan(clientID, store.PhysioExerciseIDByName)
+	if len(missing) > 0 {
+		fmt.Printf("  WARN exercises not found by name (skipped): %s\n", strings.Join(missing, ", "))
+	}
+	if len(plan.Exercises) == 0 {
+		fmt.Printf("  SKIPPED: no exercises resolved for curated plan\n")
+		return
+	}
+	if _, err := client.Post("/physio/50/PhyPlan", &physio.TreatmentPlanList{List: []*physio.TreatmentPlan{plan}}); err != nil {
+		fmt.Printf("  ERROR creating curated plan: %v\n", err)
+		return
+	}
+	store.TreatmentPlanIDs = append(store.TreatmentPlanIDs, plan.PlanId)
+	fmt.Printf("  Created curated plan %s (%d exercises) attached to client %s\n", plan.PlanId, len(plan.Exercises), clientID)
+}
+
+// fetchClientIDByEmail returns the clientId of the PhysioClient whose email
+// matches the given address (case-insensitive), or "" if none is found.
+func fetchClientIDByEmail(client *PhysioClient, email string) string {
+	body, err := client.Get("/physio/50/PhyClient", `{"text":"select * from PhysioClient"}`)
+	if err != nil {
+		fmt.Printf("  ERROR fetching clients: %v\n", err)
+		return ""
+	}
+	var result map[string]interface{}
+	if err := json.Unmarshal([]byte(body), &result); err != nil {
+		fmt.Printf("  ERROR parsing clients response: %v\n", err)
+		return ""
+	}
+	list, _ := result["list"].([]interface{})
+	target := strings.ToLower(email)
+	for _, item := range list {
+		rec, ok := item.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		em, _ := rec["email"].(string)
+		if strings.ToLower(em) == target {
+			id, _ := rec["clientId"].(string)
+			return id
+		}
+	}
+	return ""
 }
 
 // fetchClientIDs returns the clientId of every PhysioClient currently in the service.

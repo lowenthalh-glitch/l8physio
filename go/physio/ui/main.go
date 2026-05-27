@@ -1,6 +1,8 @@
 package main
 
 import (
+	"net/http"
+
 	"github.com/saichler/l8agent/go/types/l8agent"
 	"github.com/saichler/l8common/go/common"
 	l8c "github.com/saichler/l8common/go/common"
@@ -11,6 +13,9 @@ import (
 
 func main() {
 	svr := common.CreateWebServer("web", registerPhysioTypes)
+	http.HandleFunc("/index.html", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/", http.StatusMovedPermanently)
+	})
 	svr.Start()
 }
 

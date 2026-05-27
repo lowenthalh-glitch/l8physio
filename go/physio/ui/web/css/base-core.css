@@ -229,7 +229,8 @@ body {
     font-size: 12px;
 }
 
-.logout-btn {
+.logout-btn,
+.home-btn {
     padding: 8px 14px;
     background: var(--bg-card);
     color: var(--text-primary);
@@ -240,9 +241,14 @@ body {
     font-size: 11px;
     transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
     font-family: 'Figtree', sans-serif;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
 }
 
-.logout-btn:hover {
+.logout-btn:hover,
+.home-btn:hover {
     background: var(--bg-secondary);
     border-color: var(--noc-cyan);
     color: var(--noc-cyan);

@@ -252,7 +252,7 @@
             modelName: 'PhysioClient',
             columns: cols,
             primaryKey: 'clientId',
-            pageSize: 20,
+            pageSize: 60,
             serverSide: true,
             baseWhereClause: 'therapistId=' + tid,
             showActions: false
@@ -431,7 +431,7 @@
             modelName: 'BoostappCalendarEvent',
             columns: cols,
             primaryKey: 'eventId',
-            pageSize: 10,
+            pageSize: 60,
             serverSide: true,
             baseWhereClause: 'startTime>=' + range.from + ' and startTime<=' + range.to,
             sortable: true,
@@ -461,7 +461,7 @@
             modelName: 'ExerciseSwapLog',
             columns: cols,
             primaryKey: 'swapId',
-            pageSize: 20,
+            pageSize: 60,
             serverSide: true,
             baseWhereClause: 'clientId=' + clientId,
             showActions: false

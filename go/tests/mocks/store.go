@@ -6,7 +6,8 @@ package mocks
 type MockDataStore struct {
 	// Phase 1: Exercises, Protocols, and Therapists (no dependencies)
 	PhysioExerciseIDs        []string
-	PhysioExerciseCategories map[string]int32 // exerciseId -> category (1=Mobility,2=Rehab,3=Strength,4=Functional)
+	PhysioExerciseCategories map[string]int32  // exerciseId -> category (1=Mobility,2=Rehab,3=Strength,4=Functional)
+	PhysioExerciseIDByName   map[string]string // lowercased exercise name -> exerciseId (last write wins on duplicate names)
 	PhysioProtocolIDs        []string
 	PhysioTherapistIDs       []string
 

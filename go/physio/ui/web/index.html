@@ -1,15 +1,63 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="0; url=app.html">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Physio by Layer 8</title>
-    <script>
-        window.location.href = 'app.html';
-    </script>
+    <title>קליניקת תנועה | Layer 8</title>
+    <link rel="icon" href="l8ui/images/Layer8Logo.gif">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/landing.css">
 </head>
 <body>
-    <p>Redirecting to <a href="app.html">Physio by Layer 8</a>...</p>
+    <div class="l8-topbar">
+        <div class="powered">
+            <span>Layer 8 Ecosystem</span>
+            <img src="l8ui/images/Layer8Logo.gif" alt="Layer 8 Ecosystem">
+            <span>Powered by</span>
+        </div>
+        <a href="app.html" class="enter-app">כניסה למערכת</a>
+    </div>
+
+    <header class="site-header">
+        <img src="images/landing/clinic-logo-full.jpeg" alt="קליניקת תנועה" class="clinic-logo">
+        <nav>
+            <a href="landing-treatment.html">טיפול ושיקום אורתופדי</a>
+            <a href="landing-training.html">אימוני כוח, גמישות ומוביליות</a>
+        </nav>
+    </header>
+
+    <section class="video-hero">
+        <video autoplay muted loop playsinline poster="images/landing/video-poster.jpg">
+            <source src="images/landing/bg-video.mp4" type="video/mp4">
+        </video>
+        <div class="overlay">
+            <h1>כיצד אפשר לעזור?</h1>
+            <p>בחרו את השירות המתאים לכם</p>
+            <a href="app.html" class="cta">כניסה למערכת</a>
+        </div>
+    </section>
+
+    <main class="page">
+        <section class="services">
+            <article class="service-card">
+                <h2>טיפול ושיקום אורתופדי</h2>
+                <p>שיקום עם תוצאות לטווח ארוך</p>
+                <a href="landing-treatment.html">למידע נוסף</a>
+            </article>
+            <article class="service-card">
+                <h2>אימוני כוח, גמישות ומוביליות</h2>
+                <p>אימוני משקל גוף וגמישות</p>
+                <a href="landing-training.html">למידע נוסף</a>
+            </article>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <span>Powered by</span>
+        <img src="l8ui/images/Layer8Logo.gif" alt="Layer 8 Ecosystem">
+        <span>Layer 8 Ecosystem &copy; 2026</span>
+    </footer>
 </body>
 </html>

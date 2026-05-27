@@ -44,7 +44,7 @@
                 endpoint: _api() + '/50/SessRpt',
                 modelName: 'SessionReport',
                 columns: columns,
-                rowsPerPage: 10,
+                rowsPerPage: 60,
                 getItemId: function(item) { return item.reportId; },
                 baseWhereClause: 'clientId=' + client.clientId
             });
@@ -189,7 +189,7 @@
                 endpoint: _api() + '/50/HomeFdbk',
                 modelName: 'HomeFeedback',
                 columns: columns,
-                rowsPerPage: 10,
+                rowsPerPage: 60,
                 getItemId: function(item) { return item.feedbackId; },
                 baseWhereClause: 'clientId=' + client.clientId
             });
