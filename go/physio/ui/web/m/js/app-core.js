@@ -48,6 +48,16 @@
 
             var refreshBtn = document.getElementById('refresh-btn');
             if (refreshBtn) refreshBtn.addEventListener('click', () => {
+                // If the user is inside a data list, refresh just the list.
+                // currentSection only tracks the top-level section, so reloading
+                // it would bounce the user back to the home module grid.
+                var activeTable = window._Layer8MNavActiveTable;
+                if (activeTable && typeof activeTable.refresh === 'function'
+                    && activeTable.containerId
+                    && document.getElementById(activeTable.containerId)) {
+                    activeTable.refresh();
+                    return;
+                }
                 this.loadSection(currentSection, true);
             });
 
@@ -250,6 +260,21 @@
                 nc.physio.services.management = nc.physio.services.management.filter(function(svc) {
                     return allowed.indexOf(svc.key) !== -1;
                 });
+            }
+
+            // Filter top-level home modules (home card grid) to match the sidebar
+            if (allowedSidebar && nc && Array.isArray(nc.modules)) {
+                nc.modules = nc.modules.filter(function(m) {
+                    return allowedSidebar.indexOf(m.key) !== -1;
+                });
+            }
+
+            // Hide dashboard KPI stats grid for non-admin portals
+            if (!document.getElementById('portal-hide-stats-style')) {
+                var style = document.createElement('style');
+                style.id = 'portal-hide-stats-style';
+                style.textContent = '#nav-stats { display: none !important; }';
+                document.head.appendChild(style);
             }
         },
 

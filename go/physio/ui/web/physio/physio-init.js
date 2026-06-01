@@ -437,6 +437,7 @@
             sortable: true,
             filterable: true,
             showActions: false,
+            defaultSort: { column: 'startTime', direction: 'asc' },
             onRowClick: function(item) {
                 if (window.Physio && window.Physio._showDetailsModal) {
                     window.Physio._showDetailsModal({ model: 'BoostappCalendarEvent' }, item, item.eventId);

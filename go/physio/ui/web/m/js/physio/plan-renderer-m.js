@@ -61,7 +61,7 @@
         .catch(function() { container.innerHTML = '<div style="padding:16px;color:var(--layer8d-error);">Failed to load exercises</div>'; });
     }
 
-    var MPR_INPUT_STYLE = 'width:100%;padding:6px;border:1px solid var(--layer8d-border);border-radius:4px;font-size:13px;';
+    var MPR_INPUT_STYLE = 'width:100%;padding:4px 6px;border:1px solid var(--layer8d-border);border-radius:4px;font-size:13px;box-sizing:border-box;';
 
     function _valueDivHTML(row, rowIdx, canEdit) {
         var lt = row.loadType;
@@ -128,28 +128,27 @@
                     actions += '<button class="mpr-delete" data-row="' + rowIdx + '" style="padding:4px 6px;border:1px solid var(--layer8d-error);border-radius:4px;background:none;color:var(--layer8d-error);cursor:pointer;">\u2716</button>';
                 }
 
-                var loadSelect = PA.loadTypeSelect(row.loadType, 'mpr-load', ' data-row="' + rowIdx + '"' + roDis);
-                var iStyle = 'width:100%;padding:6px;border:1px solid var(--layer8d-border);border-radius:4px;font-size:13px;';
+                var loadSelect = PA.loadTypeSelect(row.loadType, 'mpr-load', ' data-row="' + rowIdx + '"' + roDis)
+                    .replace('style="padding:4px 6px;', 'style="width:100%;box-sizing:border-box;padding:4px 6px;');
+                var iStyle = 'width:100%;padding:4px 6px;border:1px solid var(--layer8d-border);border-radius:4px;font-size:13px;box-sizing:border-box;';
                 // Thumbnail (only when the exercise has an image) — loaded by
                 // PhysioClientExerciseInfo.loadAuthImages() at the end of _renderCircuits,
                 // mirroring the desktop _image column wiring.
                 var thumbHtml = fullEx.imageStoragePath
-                    ? '<img data-img-path="' + Layer8DUtils.escapeHtml(fullEx.imageStoragePath) + '" data-eid="' + eid + '" class="mpr-thumb" alt="" style="width:36px;height:36px;object-fit:cover;border-radius:4px;cursor:pointer;background:var(--layer8d-bg-light);flex:0 0 auto;">'
+                    ? '<img data-img-path="' + Layer8DUtils.escapeHtml(fullEx.imageStoragePath) + '" data-eid="' + eid + '" class="mpr-thumb" alt="" style="width:100px;height:100px;object-fit:cover;border-radius:6px;cursor:pointer;background:var(--layer8d-bg-light);flex:0 0 auto;">'
                     : '';
 
                 html += '<div style="border:1px solid var(--layer8d-border);border-top:none;padding:10px 12px;background:var(--layer8d-bg-white);">' +
-                    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:8px;">' +
-                    '<div style="display:flex;align-items:center;gap:8px;min-width:0;">' +
-                    thumbHtml +
-                    '<span style="font-weight:600;font-size:14px;">' + Layer8DUtils.escapeHtml(row.name) + '</span>' +
-                    '</div></div>' +
-                    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;">' +
+                    '<div style="display:flex;gap:10px;margin-bottom:6px;align-items:flex-start;">' +
+                    '<div style="flex:1;min-width:0;">' +
+                    '<div style="font-weight:600;font-size:14px;margin-bottom:4px;">' + (canEdit ? '' : (rowIdx + 1) + '. ') + Layer8DUtils.escapeHtml(row.name) + '</div>' +
+                    '<div style="display:grid;grid-template-columns:1fr 1fr;column-gap:6px;row-gap:4px;">' +
                     '<div><label style="font-size:11px;color:var(--layer8d-text-muted);">Load</label>' + loadSelect + '</div>' +
                     _valueDivHTML(row, rowIdx, canEdit) +
-                    '</div>' +
-                    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;">' +
                     '<div><label style="font-size:11px;color:var(--layer8d-text-muted);">Sets</label><input type="number" class="mpr-sets" data-row="' + rowIdx + '" value="' + Layer8DUtils.escapeHtml(String(row.sets)) + '"' + roDis + ' style="' + iStyle + roStyle + '"></div>' +
                     '<div><label style="font-size:11px;color:var(--layer8d-text-muted);">Reps</label><input type="text" class="mpr-reps" data-row="' + rowIdx + '" value="' + Layer8DUtils.escapeHtml(String(row.reps)) + '"' + roDis + ' style="' + iStyle + roStyle + '"></div>' +
+                    '</div></div>' +
+                    thumbHtml +
                     '</div>' +
                     '<div style="margin-bottom:6px;"><label style="font-size:11px;color:var(--layer8d-text-muted);">Notes</label><input type="text" class="mpr-notes" data-row="' + rowIdx + '" value="' + Layer8DUtils.escapeHtml(row.notes) + '"' + roDis + ' style="' + iStyle + roStyle + '"></div>' +
                     '<div style="display:flex;gap:6px;flex-wrap:wrap;">' + actions + '</div></div>';
