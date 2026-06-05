@@ -3,6 +3,25 @@
 (function() {
     'use strict';
 
+    // Project-local toast styles. Layer8MUtils.showToast creates `.mobile-toast`
+    // elements but the shared lib never ships CSS for them, so error/success
+    // messages are otherwise invisible. Injected once per page.
+    (function injectToastStyles() {
+        if (document.getElementById('mphysio-toast-styles')) return;
+        var s = document.createElement('style');
+        s.id = 'mphysio-toast-styles';
+        s.textContent =
+            '.mobile-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);' +
+            'max-width:90%;padding:12px 18px;border-radius:8px;font-size:14px;font-weight:500;' +
+            'color:#fff;background:#374151;box-shadow:0 6px 24px rgba(0,0,0,0.25);' +
+            'opacity:0;transition:opacity .25s ease,transform .25s ease;z-index:11000;pointer-events:none;}' +
+            '.mobile-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}' +
+            '.mobile-toast-success{background:#059669;}' +
+            '.mobile-toast-error{background:#dc2626;}' +
+            '.mobile-toast-info{background:#2563eb;}';
+        document.head.appendChild(s);
+    })();
+
     function _api() { return Layer8DConfig.getApiPrefix(); }
     function _get(url) { return Layer8MAuth.get(url); }
 
@@ -62,7 +81,7 @@
         if (!formDef) { Layer8MUtils.showError('Form not found'); return; }
         var preData = {
             clientId: client.clientId,
-            therapistId: sessionStorage.getItem('currentUser') || '',
+            therapistId: client.therapistId || '',
             sessionDate: Math.floor(Date.now() / 1000)
         };
         var html = Layer8MForms.renderForm(formDef, preData, false);
@@ -72,8 +91,14 @@
             onSave: function(popup) {
                 var body = popup && popup.body ? popup.body : popup;
                 var data = Layer8MForms.getFormData(body);
+                // Mobile getFormData returns <select> values as strings; the
+                // SessionReport proto wants ints/enums for these — coerce or the
+                // server rejects with "Cannot find pb for method POST".
+                ['currentPhase','status','difficultyType','adjustmentLevel'].forEach(function(k) {
+                    if (data[k] !== undefined && data[k] !== null && data[k] !== '') data[k] = parseInt(data[k], 10) || 0;
+                });
                 data.clientId = client.clientId;
-                data.therapistId = preData.therapistId;
+                if (!data.therapistId) data.therapistId = preData.therapistId;
                 Layer8MAuth.post(_api() + '/50/SessRpt', data)
                 .then(function() { Layer8MPopup.close(); Layer8MUtils.showSuccess('Report saved'); if (onSuccess) onSuccess(); })
                 .catch(function(err) { Layer8MUtils.showError('Error: ' + (err.message || err)); });
@@ -174,7 +199,7 @@
             var enums = PhysioManagement.enums;
             var render = PhysioManagement.render;
             var columns = [
-                ...col.date('feedbackDate', 'Date'),
+                ...col.datetime('feedbackDate', 'Date / Time'),
                 ...col.status('difficulty', 'Training', enums.TRAINING_LEVEL_VALUES, render.trainingLevel),
                 ...col.number('painDuring', 'Pain During'),
                 ...col.number('painAfter', 'Pain After'),
@@ -191,7 +216,8 @@
                 columns: columns,
                 rowsPerPage: 60,
                 getItemId: function(item) { return item.feedbackId; },
-                baseWhereClause: 'clientId=' + client.clientId
+                baseWhereClause: 'clientId=' + client.clientId,
+                defaultSort: { column: 'feedbackDate', direction: 'desc' }
             });
 
             if (canAdd) {
@@ -199,7 +225,8 @@
                     _openAddFeedback(client, function() { table.refresh ? table.refresh() : location.reload(); });
                 });
             }
-        }
+        },
+        openAdd: function(client, onSuccess) { _openAddFeedback(client, onSuccess); }
     };
 
     function _openAddFeedback(client, onSuccess) {
@@ -207,7 +234,7 @@
         if (!formDef) { Layer8MUtils.showError('Form not found'); return; }
         var preData = {
             clientId: client.clientId,
-            therapistId: sessionStorage.getItem('currentUser') || '',
+            therapistId: client.therapistId || '',
             feedbackDate: Math.floor(Date.now() / 1000)
         };
         var html = Layer8MForms.renderForm(formDef, preData, false);
@@ -217,16 +244,56 @@
             onSave: function(popup) {
                 var body = popup && popup.body ? popup.body : popup;
                 var data = Layer8MForms.getFormData(body);
+                // Strip _radio keys from the rating-scale UI — those names don't
+                // exist on the HomeFeedback proto and would cause the server to
+                // reject the whole payload ("Cannot find pb for method POST").
+                Object.keys(data).forEach(function(k) { if (k.indexOf('_radio') !== -1) delete data[k]; });
+                // Mobile getFormData returns <select> values as strings; the
+                // HomeFeedback proto wants ints/enums for these — coerce or the
+                // server rejects with "Cannot find pb for method POST".
+                ['difficulty','painBefore','painDuring','painAfter','compliance','mood'].forEach(function(k) {
+                    if (data[k] !== undefined && data[k] !== null && data[k] !== '') data[k] = parseInt(data[k], 10) || 0;
+                });
                 data.clientId = client.clientId;
-                data.therapistId = preData.therapistId;
-                // One-per-day check
-                var today = Math.floor(Date.now() / 1000);
-                var dayStart = today - (today % 86400);
-                var checkQuery = encodeURIComponent(JSON.stringify({ text: 'select * from HomeFeedback where clientId=' + client.clientId }));
+                if (!data.therapistId) data.therapistId = preData.therapistId;
+                // status is computed server-side (HomeFdbkServiceCallback.validateHomeFdbk)
+                // If user picked today (local), store full epoch so date+time render correctly
+                // and same-day entries sort by submission order. Past dates keep their midnight.
+                var pickedTs = parseInt(data.feedbackDate, 10) || 0;
+                var pickedUTCDate = new Date(pickedTs * 1000).toISOString().slice(0, 10);
+                var now = new Date();
+                var todayLocal = now.getFullYear() + '-' +
+                    String(now.getMonth() + 1).padStart(2, '0') + '-' +
+                    String(now.getDate()).padStart(2, '0');
+                if (pickedUTCDate === todayLocal) {
+                    data.feedbackDate = Math.floor(Date.now() / 1000);
+                }
+                // One feedback per (client, local-day of picked feedbackDate). Fetch all of the
+                // client's feedback and filter in JS — orm range syntax has been flaky in practice
+                // and JS comparison is straightforward (one client, small N).
+                var ts = parseInt(data.feedbackDate, 10) || 0;
+                var pickedDay = new Date(ts * 1000);
+                pickedDay.setHours(0, 0, 0, 0);
+                var dayStart = Math.floor(pickedDay.getTime() / 1000);
+                var dayEnd   = dayStart + 86399;
+                var dupQ = 'select * from HomeFeedback where clientId=' + client.clientId;
+                var checkQuery = encodeURIComponent(JSON.stringify({ text: dupQ }));
+                console.log('[fb-dup-check] query:', dupQ, 'pickedDay window:', dayStart, '-', dayEnd);
                 _get(_api() + '/50/HomeFdbk?body=' + checkQuery)
                 .then(function(resp) {
-                    var existing = (resp.list || []).filter(function(fb) { return fb.feedbackDate >= dayStart && fb.feedbackDate < dayStart + 86400; });
-                    if (existing.length > 0) { Layer8MUtils.showError('One feedback per day. Already submitted today.'); return; }
+                    var list = resp.list || [];
+                    console.log('[fb-dup-check] resp list length:', list.length, 'list:', list);
+                    var dup = list.some(function(fb) {
+                        var fd = parseInt(fb.feedbackDate, 10) || 0;
+                        var inRange = fd >= dayStart && fd <= dayEnd;
+                        console.log('[fb-dup-check] row feedbackDate=' + fd + ' inRange=' + inRange);
+                        return inRange;
+                    });
+                    console.log('[fb-dup-check] dup=' + dup);
+                    if (dup) {
+                        Layer8MUtils.showError('Feedback already exists for this date. Only one feedback per day is allowed.');
+                        return;
+                    }
                     return Layer8MAuth.post(_api() + '/50/HomeFdbk', data);
                 })
                 .then(function(result) { if (result !== undefined) { Layer8MPopup.close(); Layer8MUtils.showSuccess('Feedback saved'); if (onSuccess) onSuccess(); } })
@@ -235,8 +302,73 @@
             onShow: function(popup) {
                 var body = popup && popup.body ? popup.body : popup;
                 if (typeof Layer8MForms.initFormFields === 'function') Layer8MForms.initFormFields(body);
+                _replaceWithRatingScale(body, 'painDuring', 0, 5, 'No pain', 'Very painful');
+                _replaceWithRatingScale(body, 'painAfter',  0, 5, 'No pain', 'Very painful');
+                _replaceWithRatingScale(body, 'painBefore', 1, 5, 'Bad', 'Good');
+                _replaceWithRatingScale(body, 'compliance', 1, 5, 'Bad', 'Good');
+                _replaceWithRatingScale(body, 'mood',       1, 5, 'Bad', 'Good');
+                _hideTherapistFieldForClient(body);
             }
         });
+    }
+
+    // Client portal users have no read permission on PhysioTherapist, so the
+    // reference picker can't resolve "ther-001" to a name. The data is already
+    // auto-injected from preData in onSave, so hide the field for clients.
+    function _hideTherapistFieldForClient(body) {
+        if (sessionStorage.getItem('userPortal') !== 'client-app.html') return;
+        var input = body.querySelector('input.reference-input[name="therapistId"]');
+        if (!input) return;
+        var field = input.closest('.mobile-form-field') || input.parentElement;
+        if (field) field.style.display = 'none';
+    }
+
+    // Replace a <select name=fieldName> with a Bad—1 2 3 4 5—Good radio row
+    // (mirrors desktop clients-home-feedback.js _replaceWithRadio). The select
+    // is kept hidden so Layer8MForms.getFormData still picks up the value.
+    function _replaceWithRatingScale(body, fieldName, min, max, minLabel, maxLabel) {
+        var select = body.querySelector('select[name="' + fieldName + '"]');
+        if (!select) return;
+        var wrapper = select.closest('.mobile-form-field') || select.parentElement;
+        if (!wrapper || wrapper.querySelector('.m-rating-scale')) return;
+        select.style.display = 'none';
+
+        var row = document.createElement('div');
+        row.className = 'm-rating-scale';
+        row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:6px;flex-wrap:nowrap;';
+
+        var minSpan = document.createElement('span');
+        minSpan.textContent = minLabel;
+        minSpan.style.cssText = 'font-size:11px;color:var(--layer8d-text-muted);white-space:nowrap;';
+        row.appendChild(minSpan);
+
+        var current = select.value;
+        for (var i = min; i <= max; i++) {
+            var label = document.createElement('label');
+            label.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;flex:0 0 auto;';
+            var radio = document.createElement('input');
+            radio.type = 'radio';
+            radio.name = fieldName + '_radio';
+            radio.value = String(i);
+            radio.style.cssText = 'width:20px;height:20px;cursor:pointer;margin:0;';
+            if (current === String(i)) radio.checked = true;
+            radio.addEventListener('change', (function(sel, val) {
+                return function() { sel.value = val; };
+            })(select, String(i)));
+            var num = document.createElement('span');
+            num.textContent = String(i);
+            num.style.cssText = 'font-size:12px;color:var(--layer8d-text-primary);';
+            label.appendChild(radio);
+            label.appendChild(num);
+            row.appendChild(label);
+        }
+
+        var maxSpan = document.createElement('span');
+        maxSpan.textContent = maxLabel;
+        maxSpan.style.cssText = 'font-size:11px;color:var(--layer8d-text-muted);white-space:nowrap;';
+        row.appendChild(maxSpan);
+
+        wrapper.appendChild(row);
     }
 
     // ── Appointments ──────────────────────────────────────────────────

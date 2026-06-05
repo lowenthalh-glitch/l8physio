@@ -120,6 +120,10 @@
         },
 
         async loadSection(section, forceReload = false) {
+            if (section === 'dashboard' && sessionStorage.getItem('userPortal') === 'client-app.html') {
+                this._loadClientLanding();
+                return;
+            }
             if (section !== 'dashboard' && section !== 'system' &&
                 window.LAYER8M_NAV_CONFIG && LAYER8M_NAV_CONFIG[section]) {
                 await this._loadDashboardForModule(section, forceReload);
@@ -160,6 +164,18 @@
             }
 
             contentArea.style.opacity = '1';
+        },
+
+        _loadClientLanding() {
+            const contentArea = document.getElementById('content-area');
+            if (!contentArea) return;
+            this.updateNavState('dashboard');
+            currentSection = 'dashboard';
+            if (window.MobilePhysioClientLanding) {
+                MobilePhysioClientLanding.renderForCurrentUser(contentArea);
+            } else {
+                contentArea.innerHTML = '<div style="padding:32px;text-align:center;color:#6b7280;">Client landing module not loaded.</div>';
+            }
         },
 
         async _loadDashboardForModule(moduleKey, forceReload) {
@@ -236,7 +252,7 @@
                 'therapist-app.html': ['therapists', 'clients', 'boostapp']
             };
             var PORTAL_SIDEBAR = {
-                'client-app.html':    ['physio', 'aia'],
+                'client-app.html':    ['physio'],
                 'therapist-app.html': ['physio', 'aia']
             };
 

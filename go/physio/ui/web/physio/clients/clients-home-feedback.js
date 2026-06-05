@@ -122,7 +122,7 @@
                     data.clientId = preData.clientId;
                     data.therapistId = preData.therapistId || '';
                     data.planId = preData.planId || '';
-                    data.status = self._calculateColor(data);
+                    // status is computed server-side (HomeFdbkServiceCallback.validateHomeFdbk)
 
                     // Check if feedback already exists for the selected date
                     var isDuplicate = await self._checkDuplicateDate(client.clientId, data.feedbackDate, svcConfig.endpoint);
@@ -172,7 +172,7 @@
                             return;
                         }
                         updated[PK] = id;
-                        updated.status = self._calculateColor(updated);
+                        // status is computed server-side
                         try {
                             await Layer8DForms.saveRecord(svcConfig.endpoint, updated, true);
                             Layer8DPopup.close();
@@ -243,19 +243,6 @@
                 var radio = body.querySelector('input[name="' + f + '_radio"][value="' + val + '"]');
                 if (radio) radio.checked = true;
             });
-        },
-
-        // RED=3: difficulty 1 or 4, painDuring 3-5, painAfter 3-5
-        // YELLOW=2: difficulty 2, painDuring 1-2, painAfter 1-2
-        // GREEN=1: difficulty 3 and painDuring 0 and painAfter 0
-        _calculateColor: function(data) {
-            var d = parseInt(data.difficulty) || 0;
-            var pd = parseInt(data.painDuring) || 0;
-            var pa = parseInt(data.painAfter) || 0;
-
-            if (d === 1 || d === 4 || pd >= 3 || pa >= 3) return 3;
-            if (d === 2 || (pd >= 1 && pd <= 2) || (pa >= 1 && pa <= 2)) return 2;
-            return 1;
         },
 
         _replaceWithRadio: function(body, fieldName, min, max, minLabel, maxLabel) {

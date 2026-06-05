@@ -69,7 +69,7 @@
         var label = lt === 5 ? 'Value (kg)' : ((lt === 8 || lt === 9) ? 'Value (s)' : 'Value');
         var val = field ? (row[field] || 0) : 0;
         var enabled = !!field && canEdit;
-        return '<div><label style="font-size:11px;color:var(--layer8d-text-muted);">' + label + '</label><input type="number" min="0" class="mpr-value" data-row="' + rowIdx + '" data-field="' + field + '" value="' + val + '" ' + (enabled ? '' : 'disabled') + ' style="' + MPR_INPUT_STYLE + (enabled ? '' : 'background:var(--layer8d-bg-light);color:var(--layer8d-text-muted);') + '"></div>';
+        return '<div><label style="font-size:11px;color:var(--layer8d-text-muted);">' + label + '</label><input type="number" min="0" class="mpr-value" data-row="' + rowIdx + '" data-field="' + field + '" value="' + val + '" ' + (enabled ? '' : 'disabled') + ' style="' + MPR_INPUT_STYLE + (enabled ? '' : 'background:var(--layer8d-bg-light);color:var(--layer8d-text-primary);-webkit-text-fill-color:var(--layer8d-text-primary);opacity:1;font-weight:600;') + '"></div>';
     }
 
     // ── Render circuits as mobile cards ───────────────────────────────
@@ -79,7 +79,7 @@
         var needsInit = !container._planHandlerAttached;
         var canEdit = _canEditPlan();
         var roDis = canEdit ? '' : ' disabled';
-        var roStyle = canEdit ? '' : 'background:var(--layer8d-bg-light);color:var(--layer8d-text-muted);';
+        var roStyle = canEdit ? '' : 'background:var(--layer8d-bg-light);color:var(--layer8d-text-primary);-webkit-text-fill-color:var(--layer8d-text-primary);opacity:1;font-weight:600;';
 
         var result = PA.groupAndSort(exercises, exMap);
         var circuits = result.circuits;
@@ -130,12 +130,15 @@
 
                 var loadSelect = PA.loadTypeSelect(row.loadType, 'mpr-load', ' data-row="' + rowIdx + '"' + roDis)
                     .replace('style="padding:4px 6px;', 'style="width:100%;box-sizing:border-box;padding:4px 6px;');
+                if (!canEdit) {
+                    loadSelect = loadSelect.replace('font-size:13px;', 'font-size:13px;' + roStyle);
+                }
                 var iStyle = 'width:100%;padding:4px 6px;border:1px solid var(--layer8d-border);border-radius:4px;font-size:13px;box-sizing:border-box;';
                 // Thumbnail (only when the exercise has an image) — loaded by
                 // PhysioClientExerciseInfo.loadAuthImages() at the end of _renderCircuits,
                 // mirroring the desktop _image column wiring.
                 var thumbHtml = fullEx.imageStoragePath
-                    ? '<img data-img-path="' + Layer8DUtils.escapeHtml(fullEx.imageStoragePath) + '" data-eid="' + eid + '" class="mpr-thumb" alt="" style="width:100px;height:100px;object-fit:cover;border-radius:6px;cursor:pointer;background:var(--layer8d-bg-light);flex:0 0 auto;">'
+                    ? '<img data-img-path="' + Layer8DUtils.escapeHtml(fullEx.imageStoragePath) + '" data-eid="' + eid + '" class="mpr-thumb" alt="" style="width:200px;height:200px;object-fit:cover;border-radius:6px;cursor:pointer;background:var(--layer8d-bg-light);flex:0 0 auto;">'
                     : '';
 
                 html += '<div style="border:1px solid var(--layer8d-border);border-top:none;padding:10px 12px;background:var(--layer8d-bg-white);">' +
@@ -147,10 +150,11 @@
                     _valueDivHTML(row, rowIdx, canEdit) +
                     '<div><label style="font-size:11px;color:var(--layer8d-text-muted);">Sets</label><input type="number" class="mpr-sets" data-row="' + rowIdx + '" value="' + Layer8DUtils.escapeHtml(String(row.sets)) + '"' + roDis + ' style="' + iStyle + roStyle + '"></div>' +
                     '<div><label style="font-size:11px;color:var(--layer8d-text-muted);">Reps</label><input type="text" class="mpr-reps" data-row="' + rowIdx + '" value="' + Layer8DUtils.escapeHtml(String(row.reps)) + '"' + roDis + ' style="' + iStyle + roStyle + '"></div>' +
-                    '</div></div>' +
+                    '</div>' +
+                    '<div style="margin-top:4px;"><label style="font-size:11px;color:var(--layer8d-text-muted);">Notes</label><input type="text" class="mpr-notes" data-row="' + rowIdx + '" value="' + Layer8DUtils.escapeHtml(row.notes) + '"' + roDis + ' style="' + iStyle + roStyle + '"></div>' +
+                    '</div>' +
                     thumbHtml +
                     '</div>' +
-                    '<div style="margin-bottom:6px;"><label style="font-size:11px;color:var(--layer8d-text-muted);">Notes</label><input type="text" class="mpr-notes" data-row="' + rowIdx + '" value="' + Layer8DUtils.escapeHtml(row.notes) + '"' + roDis + ' style="' + iStyle + roStyle + '"></div>' +
                     '<div style="display:flex;gap:6px;flex-wrap:wrap;">' + actions + '</div></div>';
                 rowIdx++;
             });
