@@ -13,9 +13,17 @@
     window.initializePhysio = function() {
         if (typeof origInit === 'function') origInit();
 
-        // Load name lookup maps for column rendering
+        // Load name lookup maps for column rendering. Fire-and-forget, but
+        // refresh the current table once they resolve so columns that depend
+        // on the maps (e.g. PhysioClient.therapistId rendered as therapist
+        // name) re-render with the resolved values instead of showing the
+        // raw ID when the table races the fetch.
         if (PhysioManagement.lookups && PhysioManagement.lookups.load) {
-            PhysioManagement.lookups.load();
+            PhysioManagement.lookups.load().then(function() {
+                if (window.Physio && window.Physio.refreshCurrentTable) {
+                    window.Physio.refreshCurrentTable();
+                }
+            });
         }
 
         // Override loadServiceView to handle 'builder' (not in config — nav bails early without this)
@@ -96,19 +104,20 @@
                                 return;
                             }
                             try {
-                                var result = await Layer8DForms.saveRecord(svcConfig.endpoint, data, false);
+                                // Pre-generate the PK client-side. The POST response is an
+                                // L8Transaction whose `id` is the transaction UUID, not the
+                                // entity's, so we can't recover the server-generated PK from it.
+                                // Server's GenerateID skips non-empty fields, so this value wins,
+                                // and we can pass it to UserProvisioning so L8User.userId equals
+                                // therapistId/clientId (required by the scope-deny rules).
+                                if (!data[svcConfig.primaryKey]) {
+                                    data[svcConfig.primaryKey] = crypto.randomUUID();
+                                }
+                                await Layer8DForms.saveRecord(svcConfig.endpoint, data, false);
                                 Layer8DPopup.close();
                                 if (window.Physio.refreshCurrentTable) window.Physio.refreshCurrentTable();
-                                // saveRecord returns a transaction result, not the entity.
-                                // Build the entity from the form data + the generated ID.
-                                var entity = Object.assign({}, data);
-                                if (result && result.id) {
-                                    entity[svcConfig.primaryKey] = result.id;
-                                }
-                                if (entity) {
-                                    if (service.model === 'PhysioClient') PhysioUserProvisioning.createClientUser(entity);
-                                    else PhysioUserProvisioning.createTherapistUser(entity);
-                                }
+                                if (service.model === 'PhysioClient') PhysioUserProvisioning.createClientUser(data);
+                                else PhysioUserProvisioning.createTherapistUser(data);
                             } catch (err) {
                                 Layer8DNotification.error('Error saving', [err.message]);
                             }

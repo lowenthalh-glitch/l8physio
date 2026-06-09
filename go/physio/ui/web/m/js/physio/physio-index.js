@@ -68,8 +68,16 @@
         return enrichedColumns[modelName] || (origGetColumns ? origGetColumns(modelName) : null);
     };
 
-    // Load name lookup caches (therapist/client/exercise names for column renderers)
+    // Load name lookup caches (therapist/client/exercise names for column
+    // renderers). Fire-and-forget, but refresh the active table when they
+    // resolve so columns rendered before the fetch finishes (notably the
+    // Therapist column on PhysioClient) flip from raw ID to name.
     if (MobilePhysioManagement.lookups && MobilePhysioManagement.lookups.load) {
-        MobilePhysioManagement.lookups.load();
+        MobilePhysioManagement.lookups.load().then(function() {
+            var activeTable = window._Layer8MNavActiveTable;
+            if (activeTable && typeof activeTable.refresh === 'function') {
+                activeTable.refresh();
+            }
+        });
     }
 })();

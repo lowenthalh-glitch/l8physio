@@ -34,19 +34,22 @@
                 }
                 var data = Layer8MForms.getFormData(body);
                 try {
-                    var result = await Layer8MAuth.post(Layer8MConfig.resolveEndpoint(serviceConfig.endpoint), data);
+                    // Pre-generate the PK client-side. The POST response is an L8Transaction
+                    // whose `id` is the transaction UUID, not the entity's, so we can't
+                    // recover the server-generated PK. Server's GenerateID skips non-empty
+                    // fields, so this value wins, and we can pass it to UserProvisioning so
+                    // L8User.userId equals therapistId/clientId (required by scope-deny).
+                    if (!data[serviceConfig.idField]) {
+                        data[serviceConfig.idField] = crypto.randomUUID();
+                    }
+                    await Layer8MAuth.post(Layer8MConfig.resolveEndpoint(serviceConfig.endpoint), data);
                     Layer8MUtils.showSuccess(serviceConfig.label.replace(/s$/, '') + ' created');
                     Layer8MPopup.close();
 
-                    var entity = Object.assign({}, data);
-                    if (result && result.id) {
-                        entity[serviceConfig.idField] = result.id;
-                    }
-
                     if (model === 'PhysioClient') {
-                        PhysioUserProvisioningMobile.createClientUser(entity);
+                        PhysioUserProvisioningMobile.createClientUser(data);
                     } else if (model === 'PhysioTherapist') {
-                        PhysioUserProvisioningMobile.createTherapistUser(entity);
+                        PhysioUserProvisioningMobile.createTherapistUser(data);
                     }
 
                     var activeTable = window._Layer8MNavActiveTable;

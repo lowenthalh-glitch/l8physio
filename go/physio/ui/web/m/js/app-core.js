@@ -19,6 +19,18 @@
         }
     };
 
+    // Wrap Layer8MAuth.logout so it also clears userPortal. l8ui's logout
+    // only clears bearerToken/currentUser, which would otherwise leak the
+    // previous user's portal-filtered nav into the next login on the same tab.
+    if (typeof Layer8MAuth !== 'undefined' && Layer8MAuth.logout && !Layer8MAuth._portalLogoutPatched) {
+        var _origLogout = Layer8MAuth.logout.bind(Layer8MAuth);
+        Layer8MAuth.logout = function(redirect) {
+            sessionStorage.removeItem('userPortal');
+            return _origLogout(redirect);
+        };
+        Layer8MAuth._portalLogoutPatched = true;
+    }
+
     window.MobileApp = {
         async init() {
             if (!Layer8MAuth.requireAuth()) return;
