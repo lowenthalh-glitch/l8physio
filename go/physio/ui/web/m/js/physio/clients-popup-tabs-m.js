@@ -63,7 +63,7 @@
                 endpoint: _api() + '/50/SessRpt',
                 modelName: 'SessionReport',
                 columns: columns,
-                rowsPerPage: 60,
+                rowsPerPage: 10,
                 getItemId: function(item) { return item.reportId; },
                 baseWhereClause: 'clientId=' + client.clientId
             });
@@ -214,7 +214,7 @@
                 endpoint: _api() + '/50/HomeFdbk',
                 modelName: 'HomeFeedback',
                 columns: columns,
-                rowsPerPage: 60,
+                rowsPerPage: 10,
                 getItemId: function(item) { return item.feedbackId; },
                 baseWhereClause: 'clientId=' + client.clientId,
                 defaultSort: { column: 'feedbackDate', direction: 'desc' }

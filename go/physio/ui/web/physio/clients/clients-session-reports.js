@@ -61,7 +61,7 @@
                 modelName:   'SessionReport',
                 columns:     columns,
                 primaryKey:  'reportId',
-                pageSize:    60,
+                pageSize:    10,
                 serverSide:  true,
                 baseWhereClause: 'clientId=' + self._client.clientId,
                 showActions: false

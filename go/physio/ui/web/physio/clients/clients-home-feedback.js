@@ -69,7 +69,7 @@
                 modelName:   MODEL,
                 columns:     columns,
                 primaryKey:  PK,
-                pageSize:    60,
+                pageSize:    10,
                 serverSide:  true,
                 baseWhereClause: 'clientId=' + self._client.clientId,
                 showActions: canEdit || canDelete,
