@@ -5,6 +5,7 @@ dist
 demo/
 go/demo.tar
 go/main
+go/cmd
 go/backups/
 logs/
 watchdog.pid
