@@ -1,0 +1,237 @@
+# GKE deployment — GCE PD storage, single physio namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: physio
+  labels:
+    name: physio
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: physio-storage
+provisioner: kubernetes.io/gce-pd
+parameters:
+  type: pd-standard
+reclaimPolicy: Retain
+volumeBindingMode: WaitForFirstConsumer
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  namespace: physio
+  name: physio-data
+  labels:
+    app: physio
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: physio-storage
+  resources:
+    requests:
+      storage: 50Gi
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  namespace: physio
+  name: physio-vnet
+  labels:
+    app: physio-vnet
+spec:
+  selector:
+    matchLabels:
+      app: physio-vnet
+  template:
+    metadata:
+      labels:
+        app: physio-vnet
+    spec:
+      hostNetwork: true
+      containers:
+        - name: physio-vnet
+          image: saichler/physio-vnet:latest
+          imagePullPolicy: Always
+          env:
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+          volumeMounts:
+            - name: hdata
+              mountPath: /data
+      volumes:
+        - name: hdata
+          persistentVolumeClaim:
+            claimName: physio-data
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  namespace: physio
+  name: physio
+  labels:
+    app: physio
+spec:
+  serviceName: physio
+  replicas: 1
+  selector:
+    matchLabels:
+      app: physio
+  template:
+    metadata:
+      labels:
+        app: physio
+    spec:
+      containers:
+        - name: physio
+          image: saichler/physio:latest
+          imagePullPolicy: Always
+          env:
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+          volumeMounts:
+            - name: hdata
+              mountPath: /data
+      volumes:
+        - name: hdata
+          persistentVolumeClaim:
+            claimName: physio-data
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  namespace: physio
+  name: physio-web
+  labels:
+    app: physio-web
+spec:
+  selector:
+    matchLabels:
+      app: physio-web
+  template:
+    metadata:
+      labels:
+        app: physio-web
+    spec:
+      hostNetwork: true
+      containers:
+        - name: physio-web
+          image: saichler/physio-web:latest
+          imagePullPolicy: Always
+          env:
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+          volumeMounts:
+            - name: hdata
+              mountPath: /data
+      volumes:
+        - name: hdata
+          persistentVolumeClaim:
+            claimName: physio-data
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  namespace: physio
+  name: physio-log-vnet
+  labels:
+    app: physio-log-vnet
+spec:
+  selector:
+    matchLabels:
+      app: physio-log-vnet
+  template:
+    metadata:
+      labels:
+        app: physio-log-vnet
+    spec:
+      hostNetwork: true
+      containers:
+        - name: physio-log-vnet
+          image: saichler/physio-log-vnet:latest
+          imagePullPolicy: Always
+          env:
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+          volumeMounts:
+            - name: hdata
+              mountPath: /data
+      volumes:
+        - name: hdata
+          persistentVolumeClaim:
+            claimName: physio-data
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  namespace: physio
+  name: physio-log-agent
+  labels:
+    app: physio-log-agent
+spec:
+  selector:
+    matchLabels:
+      app: physio-log-agent
+  template:
+    metadata:
+      labels:
+        app: physio-log-agent
+    spec:
+      containers:
+        - name: physio-log-agent
+          image: saichler/physio-log-agent:latest
+          imagePullPolicy: Always
+          env:
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+          volumeMounts:
+            - name: hdata
+              mountPath: /data
+      volumes:
+        - name: hdata
+          persistentVolumeClaim:
+            claimName: physio-data
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  namespace: physio
+  name: physio-boostapp
+  labels:
+    app: physio-boostapp
+spec:
+  serviceName: physio-boostapp
+  replicas: 1
+  selector:
+    matchLabels:
+      app: physio-boostapp
+  template:
+    metadata:
+      labels:
+        app: physio-boostapp
+    spec:
+      containers:
+        - name: physio-boostapp
+          image: saichler/physio-boostapp:latest
+          imagePullPolicy: Always
+          env:
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+          volumeMounts:
+            - name: hdata
+              mountPath: /data
+      volumes:
+        - name: hdata
+          persistentVolumeClaim:
+            claimName: physio-data

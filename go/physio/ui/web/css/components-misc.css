@@ -140,8 +140,8 @@ limitations under the License.
 /* ============================================ */
 
 .tree-view-container {
-    background: #f4f1ea;
-    border: 1px solid #ddd7ce;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-subtle);
     padding: 15px;
     font-family: 'Roboto Mono', monospace;
     font-size: 12px;
@@ -156,16 +156,16 @@ limitations under the License.
 }
 
 .tree-view-container::-webkit-scrollbar-track {
-    background: #f4f1ea;
+    background: var(--bg-primary);
 }
 
 .tree-view-container::-webkit-scrollbar-thumb {
-    background: #cbd5e0;
+    background: var(--border-default);
     border-radius: 4px;
 }
 
 .tree-view-container::-webkit-scrollbar-thumb:hover {
-    background: #0ea5e9;
+    background: var(--noc-cyan);
 }
 
 .tree-node {
@@ -188,7 +188,7 @@ limitations under the License.
 }
 
 .tree-expand-icon {
-    color: #0ea5e9;
+    color: var(--noc-cyan);
     font-size: 10px;
     width: 12px;
     display: inline-flex;
@@ -209,19 +209,19 @@ limitations under the License.
 }
 
 .tree-key {
-    color: #0ea5e9;
+    color: var(--noc-cyan);
     font-weight: 700;
 }
 
 .tree-type,
 .tree-count {
-    color: #718096;
+    color: var(--text-muted);
     font-size: 11px;
     font-style: italic;
 }
 
 .tree-value {
-    color: #2d3748;
+    color: var(--text-primary);
 }
 
 .tree-string {
@@ -229,7 +229,7 @@ limitations under the License.
 }
 
 .tree-number {
-    color: #ff9800;
+    color: var(--noc-amber);
 }
 
 .tree-boolean {
@@ -238,12 +238,12 @@ limitations under the License.
 
 .tree-null,
 .tree-undefined {
-    color: #718096;
+    color: var(--text-muted);
     font-style: italic;
 }
 
 .tree-empty {
-    color: #a0aec0;
+    color: var(--text-dim);
     font-style: italic;
 }
 
@@ -253,6 +253,6 @@ limitations under the License.
 }
 
 .tree-children {
-    border-left: 1px solid #ddd7ce;
+    border-left: 1px solid var(--border-subtle);
     margin-left: 10px;
 }

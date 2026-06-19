@@ -10,7 +10,6 @@ import (
 	"github.com/saichler/l8bus/go/overlay/vnic"
 	l8c "github.com/saichler/l8common/go/common"
 	"github.com/saichler/l8physio/go/physio/boostapp"
-	"github.com/saichler/l8secure/go/types/secure"
 	"github.com/saichler/l8physio/go/physio/common"
 	"github.com/saichler/l8physio/go/types/physio"
 	"github.com/saichler/l8types/go/ifs"
@@ -311,53 +310,33 @@ func autoOnboardUnlinked(bc *boostapp.Client, nic ifs.IVNic, events []*physio.Bo
 	return created
 }
 
-// provisionClientUser creates a system user in the vnet "users" service (area 73),
-// matching the payload posted by the desktop UI's PhysioUserProvisioning.createClientUser.
-// userId is set to PhysioClient.clientId so deny-scope rules referencing ${userId} resolve correctly.
 func provisionClientUser(nic ifs.IVNic, c *physio.PhysioClient) error {
-	user := &secure.L8User{
-		UserId:        c.ClientId,
-		FullName:      strings.TrimSpace(c.FirstName + " " + c.LastName),
-		Email:         c.Email,
-		AccountStatus: secure.AccountStatus_ACCOUNT_STATUS_ACTIVE,
-		Portal:        "client-app.html",
-		Password:      &secure.L8Password{Hash: defaultClientPassword},
-		Roles:         map[string]bool{"client": true},
+	userData := map[string]interface{}{
+		"userId":        c.ClientId,
+		"fullName":      strings.TrimSpace(c.FirstName + " " + c.LastName),
+		"email":         c.Email,
+		"accountStatus": "ACCOUNT_STATUS_ACTIVE",
+		"portal":        "client-app.html",
+		"password":      map[string]interface{}{"hash": defaultClientPassword},
+		"roles":         map[string]bool{"client": true},
 	}
-	_, err := l8c.PostEntity("users", 73, user, nic)
+	_, err := l8c.PostEntity("users", 73, userData, nic)
 	return err
 }
 
 const defaultClientPassword = "12345678"
 
 // ensureUsersForClients provisions a system user (area 73) for every PhysioClient
-// that has an email but no matching L8User. Closes the gap where the PhyClient POST
-// succeeded but the user-creation step failed or never ran.
+// that has an email. Attempts POST for each; duplicates are silently ignored.
 func ensureUsersForClients(nic ifs.IVNic, clients []*physio.PhysioClient) int {
-	if len(clients) == 0 {
-		return 0
-	}
-	entities, err := l8c.GetEntities("users", 73, &secure.L8User{}, nic)
-	if err != nil {
-		log("  USER CHECK WARN: could not fetch existing users: " + err.Error())
-		return 0
-	}
-	existing := make(map[string]bool, len(entities))
-	for _, e := range entities {
-		if u, ok := e.(*secure.L8User); ok && u.UserId != "" {
-			existing[u.UserId] = true
-		}
-	}
 	recovered := 0
 	for _, c := range clients {
-		if c.ClientId == "" || c.Email == "" || existing[c.ClientId] {
+		if c.ClientId == "" || c.Email == "" {
 			continue
 		}
 		if err := provisionClientUser(nic, c); err != nil {
-			log("  USER RETRY FAIL for " + c.Email + " (clientId=" + c.ClientId + "): " + err.Error())
 			continue
 		}
-		existing[c.ClientId] = true
 		recovered++
 		log("  USER RETRY PROVISIONED " + c.Email + " (userId=" + c.ClientId + ")")
 	}

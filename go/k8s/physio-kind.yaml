@@ -1,0 +1,252 @@
+# KIND cluster version — uses KIND's built-in standard StorageClass
+# KIND ships with rancher/local-path-provisioner pre-installed as StorageClass "standard"
+# No custom StorageClass definition needed.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: physio
+  labels:
+    name: physio
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  namespace: physio
+  name: physio-vnet
+  labels:
+    app: physio-vnet
+spec:
+  serviceName: physio-vnet
+  replicas: 1
+  selector:
+    matchLabels:
+      app: physio-vnet
+  template:
+    metadata:
+      labels:
+        app: physio-vnet
+    spec:
+      hostNetwork: true
+      containers:
+        - name: physio-vnet
+          image: saichler/physio-vnet:latest
+          imagePullPolicy: Always
+          env:
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+          volumeMounts:
+            - name: hdata
+              mountPath: /data
+  volumeClaimTemplates:
+    - metadata:
+        name: hdata
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: standard
+        resources:
+          requests:
+            storage: 5Gi
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  namespace: physio
+  name: physio
+  labels:
+    app: physio
+spec:
+  serviceName: physio
+  replicas: 1
+  selector:
+    matchLabels:
+      app: physio
+  template:
+    metadata:
+      labels:
+        app: physio
+    spec:
+      containers:
+        - name: physio
+          image: saichler/physio:latest
+          imagePullPolicy: Always
+          env:
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+          volumeMounts:
+            - name: hdata
+              mountPath: /data
+  volumeClaimTemplates:
+    - metadata:
+        name: hdata
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: standard
+        resources:
+          requests:
+            storage: 10Gi
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  namespace: physio
+  name: physio-web
+  labels:
+    app: physio-web
+spec:
+  serviceName: physio-web
+  replicas: 1
+  selector:
+    matchLabels:
+      app: physio-web
+  template:
+    metadata:
+      labels:
+        app: physio-web
+    spec:
+      hostNetwork: true
+      containers:
+        - name: physio-web
+          image: saichler/physio-web:latest
+          imagePullPolicy: Always
+          env:
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+          volumeMounts:
+            - name: hdata
+              mountPath: /data
+  volumeClaimTemplates:
+    - metadata:
+        name: hdata
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: standard
+        resources:
+          requests:
+            storage: 5Gi
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  namespace: physio
+  name: physio-log-vnet
+  labels:
+    app: physio-log-vnet
+spec:
+  serviceName: physio-log-vnet
+  replicas: 1
+  selector:
+    matchLabels:
+      app: physio-log-vnet
+  template:
+    metadata:
+      labels:
+        app: physio-log-vnet
+    spec:
+      hostNetwork: true
+      containers:
+        - name: physio-log-vnet
+          image: saichler/physio-log-vnet:latest
+          imagePullPolicy: Always
+          env:
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+          volumeMounts:
+            - name: hdata
+              mountPath: /data
+  volumeClaimTemplates:
+    - metadata:
+        name: hdata
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: standard
+        resources:
+          requests:
+            storage: 5Gi
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  namespace: physio
+  name: physio-log-agent
+  labels:
+    app: physio-log-agent
+spec:
+  serviceName: physio-log-agent
+  replicas: 1
+  selector:
+    matchLabels:
+      app: physio-log-agent
+  template:
+    metadata:
+      labels:
+        app: physio-log-agent
+    spec:
+      containers:
+        - name: physio-log-agent
+          image: saichler/physio-log-agent:latest
+          imagePullPolicy: Always
+          env:
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+          volumeMounts:
+            - name: hdata
+              mountPath: /data
+  volumeClaimTemplates:
+    - metadata:
+        name: hdata
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: standard
+        resources:
+          requests:
+            storage: 5Gi
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  namespace: physio
+  name: physio-boostapp
+  labels:
+    app: physio-boostapp
+spec:
+  serviceName: physio-boostapp
+  replicas: 1
+  selector:
+    matchLabels:
+      app: physio-boostapp
+  template:
+    metadata:
+      labels:
+        app: physio-boostapp
+    spec:
+      containers:
+        - name: physio-boostapp
+          image: saichler/physio-boostapp:latest
+          imagePullPolicy: Always
+          env:
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+          volumeMounts:
+            - name: hdata
+              mountPath: /data
+  volumeClaimTemplates:
+    - metadata:
+        name: hdata
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: standard
+        resources:
+          requests:
+            storage: 5Gi

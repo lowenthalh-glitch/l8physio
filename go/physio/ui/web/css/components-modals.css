@@ -42,8 +42,8 @@ limitations under the License.
 }
 
 .modal-container {
-    background: white;
-    border: 1px solid #e2e8f0;
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
     border-radius: 12px;
     box-shadow: 0 18px 40px rgba(15, 23, 42, 0.16);
     max-width: 1200px;
@@ -72,15 +72,15 @@ limitations under the License.
     justify-content: space-between;
     align-items: center;
     padding: 18px 24px;
-    border-bottom: 1px solid #e2e8f0;
-    background: #ffffff;
+    border-bottom: 1px solid var(--border-subtle);
+    background: var(--bg-card);
     border-radius: 12px 12px 0 0;
 }
 
 .modal-title {
     font-size: 18px;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--text-primary);
     text-transform: none;
     letter-spacing: -0.01em;
     font-family: 'Figtree', sans-serif;
@@ -126,7 +126,7 @@ limitations under the License.
 .modal-close {
     background: transparent;
     border: none;
-    color: #64748b;
+    color: var(--text-muted);
     font-size: 32px;
     cursor: pointer;
     padding: 0;
@@ -140,7 +140,7 @@ limitations under the License.
 }
 
 .modal-close:hover {
-    color: #0f172a;
+    color: var(--text-primary);
     transform: none;
 }
 
@@ -149,13 +149,13 @@ limitations under the License.
     overflow-y: auto;
     flex: 1;
     min-height: 0;
-    color: #2d3748;
+    color: var(--text-primary);
 }
 
 .modal-tabs {
     display: flex;
-    background: #ffffff;
-    border-bottom: 1px solid #e2e8f0;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border-subtle);
     padding: 0 16px;
 }
 
@@ -165,7 +165,7 @@ limitations under the License.
     font-weight: 600;
     text-transform: none;
     letter-spacing: 0;
-    color: #64748b;
+    color: var(--text-muted);
     cursor: pointer;
     border-bottom: 3px solid transparent;
     transition: all 0.2s ease;
@@ -174,13 +174,13 @@ limitations under the License.
 
 .modal-tab:hover {
     background: rgba(160, 136, 115, 0.08);
-    color: #0ea5e9;
+    color: var(--noc-cyan);
 }
 
 .modal-tab.active {
-    background: white;
-    color: #0ea5e9;
-    border-bottom-color: #0ea5e9;
+    background: var(--bg-card);
+    color: var(--noc-cyan);
+    border-bottom-color: var(--noc-cyan);
     box-shadow: none;
 }
 
@@ -205,16 +205,16 @@ limitations under the License.
 .detail-table {
     width: 100%;
     border-collapse: collapse;
-    background: white;
+    background: var(--bg-card);
     border-radius: 10px;
     overflow: hidden;
     box-shadow: none;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--border-subtle);
 }
 
 .detail-table thead {
-    background: #f4f1ea;
-    color: #0f172a;
+    background: var(--bg-primary);
+    color: var(--text-primary);
 }
 
 .detail-table thead th {
@@ -227,12 +227,12 @@ limitations under the License.
 }
 
 .detail-table tbody tr {
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid var(--border-subtle);
     transition: background-color 0.2s;
 }
 
 .detail-table tbody tr:hover {
-    background-color: #f9fafb;
+    background-color: var(--bg-elevated);
 }
 
 .detail-table tbody tr:last-child {
@@ -242,16 +242,16 @@ limitations under the License.
 .detail-table tbody td {
     padding: 12px 16px;
     font-size: 14px;
-    color: #374151;
+    color: var(--text-secondary);
 }
 
 .detail-table tbody td code {
-    background: #f3f4f6;
+    background: var(--bg-secondary);
     padding: 2px 6px;
     border-radius: 4px;
     font-family: 'Courier New', monospace;
     font-size: 13px;
-    color: #0ea5e9;
+    color: var(--noc-cyan);
 }
 
 .detail-grid {
@@ -275,14 +275,14 @@ limitations under the License.
 .detail-label {
     font-size: 13px;
     font-weight: 600;
-    color: #6b7280;
+    color: var(--text-muted);
     min-width: 140px;
     flex-shrink: 0;
 }
 
 .detail-value {
     font-size: 14px;
-    color: #1f2937;
+    color: var(--noc-charcoal);
     font-weight: 500;
     flex: 1;
 }
@@ -296,12 +296,12 @@ limitations under the License.
 }
 
 .modal-tab-content .detail-section h3 {
-    color: #0f172a;
+    color: var(--text-primary);
     font-size: 16px;
     font-weight: 600;
     margin-bottom: 16px;
     padding-bottom: 8px;
-    border-bottom: 2px solid #e5e7eb;
+    border-bottom: 2px solid var(--border-subtle);
 }
 
 .tab-pane {
@@ -321,29 +321,29 @@ limitations under the License.
 }
 
 .detail-section {
-    background: #ffffff;
-    border: 1px solid #ddd7ce;
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
     padding: 18px;
-    border-left: 1px solid #ddd7ce;
+    border-left: 1px solid var(--border-subtle);
     border-radius: 10px;
 }
 
 .detail-section-title {
     font-size: 14px;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--text-primary);
     text-transform: none;
     letter-spacing: 0;
     margin-bottom: 14px;
     padding-bottom: 8px;
-    border-bottom: 1px solid #ddd7ce;
+    border-bottom: 1px solid var(--border-subtle);
 }
 
 .detail-row {
     display: flex;
     justify-content: space-between;
     padding: 10px 0;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--border-subtle);
     gap: 12px;
 }
 
@@ -353,7 +353,7 @@ limitations under the License.
 
 .detail-label {
     font-size: 12px;
-    color: #64748b;
+    color: var(--text-muted);
     text-transform: none;
     letter-spacing: 0;
     font-weight: 600;
@@ -361,7 +361,7 @@ limitations under the License.
 
 .detail-value {
     font-size: 13px;
-    color: #0f172a;
+    color: var(--text-primary);
     font-family: 'Figtree', sans-serif;
     font-weight: 600;
     text-align: right;
@@ -386,7 +386,7 @@ limitations under the License.
 .perf-sub-tabs {
     display: flex;
     gap: 0;
-    border-bottom: 2px solid #ddd7ce;
+    border-bottom: 2px solid var(--border-subtle);
     margin-bottom: 20px;
 }
 
@@ -394,7 +394,7 @@ limitations under the License.
     padding: 10px 16px;
     font-size: 13px;
     font-weight: 600;
-    color: #64748b;
+    color: var(--text-muted);
     cursor: pointer;
     border-bottom: 2px solid transparent;
     margin-bottom: -2px;
@@ -402,13 +402,13 @@ limitations under the License.
 }
 
 .perf-sub-tab:hover {
-    color: #0ea5e9;
+    color: var(--noc-cyan);
     background: rgba(160, 136, 115, 0.08);
 }
 
 .perf-sub-tab.active {
-    color: #0ea5e9;
-    border-bottom-color: #0ea5e9;
+    color: var(--noc-cyan);
+    border-bottom-color: var(--noc-cyan);
 }
 
 .perf-sub-pane {
@@ -422,7 +422,7 @@ limitations under the License.
 .performance-bar {
     width: 100%;
     height: 8px;
-    background: #e6ddd0;
+    background: var(--bg-tertiary);
     border-radius: 4px;
     overflow: hidden;
     margin-top: 5px;
@@ -467,7 +467,7 @@ limitations under the License.
 
 .modal-body > p {
     padding: 20px 24px;
-    color: #475569;
+    color: var(--text-secondary);
     font-size: 14px;
     line-height: 1.6;
 }

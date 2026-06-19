@@ -1,0 +1,109 @@
+Both bugs are the same Go-reflection mistake: treating reflect.Kind as if it equals reflect.Type. It doesn't.
+
+  The setup. Protobuf generates enums as named int32 aliases:
+  type PhysioJoint int32
+  type PhysioExerciseCategory int32
+  For reflection, PhysioJoint has Kind() == reflect.Int32 (same primitive category as plain int32), but its Type() is physio.PhysioJoint, not int32. reflect.Value.Set requires type assignability, not kind
+  equality — so you can't shove a plain int32 into a PhysioJoint slot.
+
+  The trigger. Commit 9826957 added two new repeated-enum fields on PhysioExercise:
+  Joints     []PhysioJoint
+  Categories []PhysioExerciseCategory
+  These are the first slice-of-named-enum fields the system has seen. Singular fields like Joint PhysioJoint already existed and worked because the existing code had a one-off hack for that exact case — but only
+   for the singular case, and only at the struct field level.
+
+  Bug 1 — l8reflect deep cloner. The cloner dispatches by Kind(). When it cloned a PhysioJoint element, it ran the generic int32Cloner, which returns reflect.ValueOf(int32(i)) — losing the named type.
+  structCloner had a workaround (if cloned.Kind() == reflect.Int32 { SetInt(...) }) that papered over this for struct fields, but sliceCloner, arrayCloner, and mapCloner had no such guard. So cloning a
+  []PhysioJoint panicked the first time it tried to Set a plain int32 into a PhysioJoint slot. The fix: in those three cloners, if the cloned element's type doesn't match the destination's, Convert it first
+  (handles all named numeric aliases, not just int32).
+
+  Bug 2 — l8orm Postgres reader. When decoding a packed-enum column, the byte decoder produces a []int32. SetValueFromRow then checked fieldValue.Kind() == setFieldValue.Kind() — both are reflect.Slice, so it
+  called Set. But Set rejected it: []int32 is not assignable to []PhysioExerciseCategory, even though their elements have the same underlying type. (Go doesn't allow direct conversion between two slice types
+  with different named element types either, so a single Convert on the slice doesn't work — you have to rebuild the slice element by element.) The fix: when kinds match but the slice element types differ and
+  are convertible, allocate a fresh slice of the destination type and convert each element.
+
+  Why patch the libraries, not the model. The type-loss happens inside reflection-driven generic code in those libraries. The only alternatives in l8physio would be (a) stop using protobuf enums for repeated
+  fields — gives up type safety in the schema, or (b) hand-roll custom marshallers per model — defeats the purpose of using l8reflect/l8orm. The fix has to live where the reflection code lives. And it's a real
+  bug for any other consumer that adds a slice-of-named-enum field, not l8physio-specific.
+
+
+ ../l8reflect/go/reflect/cloning/DeepClone.go
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+ 116    for i := 0; i < value.Len(); i++ {
+ 117      elem := value.Index(i)
+ 118      elemClone := this.clone(elem, name, stopLoop)
+ 119 -    newSlice.Index(i).Set(elemClone)
+ 119 +    dst := newSlice.Index(i)
+ 120 +    dst.Set(coerce(elemClone, dst.Type()))
+ 121    }
+ 122    return newSlice
+ 123  }
+ 124
+ 125 +// coerce converts a cloned primitive back to a named element/key type when the
+ 126 +// per-kind cloner returned an unnamed value (e.g. int32 vs PhysioJoint).
+ 127 +func coerce(v reflect.Value, dstType reflect.Type) reflect.Value {
+ 128 +  if !v.IsValid() {
+ 129 +    return v
+ 130 +  }
+ 131 +  if v.Type() == dstType {
+ 132 +    return v
+ 133 +  }
+ 134 +  if v.Type().ConvertibleTo(dstType) {
+ 135 +    return v.Convert(dstType)
+ 136 +  }
+ 137 +  return v
+ 138 +}
+ 139 +
+ 140  // ptrCloner creates a deep copy of a pointer value.
+ 141  // It tracks pointer addresses in stopLoop to detect and handle circular references.
+╌
+ 284    for i := 0; i < value.Len(); i++ {
+ 285      elem := value.Index(i)
+ 286      elemClone := this.clone(elem, name, stopLoop)
+ 287 -    newArray.Index(i).Set(elemClone)
+ 287 +    dst := newArray.Index(i)
+ 288 +    dst.Set(coerce(elemClone, dst.Type()))
+ 289    }
+ 290    return newArray
+ 291  }
+╌
+ 188      return value
+ 189    }
+ 190    mapKeys := value.MapKeys()
+ 191 -  mapClone := reflect.MakeMapWithSize(value.Type(), len(mapKeys))
+ 191 +  mapType := value.Type()
+ 192 +  mapClone := reflect.MakeMapWithSize(mapType, len(mapKeys))
+ 193 +  keyType := mapType.Key()
+ 194 +  elemType := mapType.Elem()
+ 195    for _, key := range mapKeys {
+ 196      mapElem := value.MapIndex(key)
+ 197 +    keyClone := this.clone(key, name, stopLoop)
+ 198      mapElemClone := this.clone(mapElem, name, stopLoop)
+ 195 -    mapClone.SetMapIndex(key, mapElemClone)
+ 199 +    mapClone.SetMapIndex(coerce(keyClone, keyType), coerce(mapElemClone, elemType))
+ 200    }
+ 201    return mapClone
+ 202  }
+╌
+ ../l8orm/go/orm/convert/ConvertFrom.go
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+ 211    } else {
+ 212      setFieldValue := reflect.ValueOf(v)
+ 213      if fieldValue.Kind() == setFieldValue.Kind() {
+ 214 -      fieldValue.Set(reflect.ValueOf(v))
+ 214 +      // Handle []int32 -> []NamedEnum and similar: kinds match but the
+ 215 +      // decoded slice's element type is the unnamed primitive while the
+ 216 +      // destination uses a named alias (e.g. PhysioExerciseCategory).
+ 217 +      if setFieldValue.Type() != fieldValue.Type() &&
+ 218 +        setFieldValue.Kind() == reflect.Slice &&
+ 219 +        setFieldValue.Type().Elem().ConvertibleTo(fieldValue.Type().Elem()) {
+ 220 +        converted := reflect.MakeSlice(fieldValue.Type(), setFieldValue.Len(), setFieldValue.Len())
+ 221 +        for i := 0; i < setFieldValue.Len(); i++ {
+ 222 +          converted.Index(i).Set(setFieldValue.Index(i).Convert(fieldValue.Type().Elem()))
+ 223 +        }
+ 224 +        setFieldValue = converted
+ 225 +      }
+ 226 +      fieldValue.Set(setFieldValue)
+ 227      } else {
+ 228        if setFieldValue.Kind() != reflect.String || setFieldValue.String() != "" {
+ 229          panic("Not set" + setFieldValue.String())

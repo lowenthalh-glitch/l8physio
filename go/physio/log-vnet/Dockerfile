@@ -7,9 +7,9 @@ RUN GOPROXY=direct GOPRIVATE=github.com go mod tidy
 RUN go mod vendor
 
 WORKDIR /home/src/github.com/saichler/build
-RUN go build -o physio-vnet
+RUN go build -o physio-log-vnet
 
 FROM saichler/phy-security:latest AS final
-COPY --from=build /home/src/github.com/saichler/build/physio-vnet /home/run/physio-vnet
+COPY --from=build /home/src/github.com/saichler/build/physio-log-vnet /home/run/physio-log-vnet
 
-ENTRYPOINT ["/home/run/physio-vnet"]
+ENTRYPOINT ["/home/run/physio-log-vnet"]
