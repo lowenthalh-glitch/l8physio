@@ -7,6 +7,7 @@
     PhysioManagement.columns = PhysioManagement.columns || {};
     PhysioManagement.columns.PhysioClient = [
         ...col.id('clientId',   'Client ID'),
+        ...col.col('alias',     'Alias'),
         ...col.col('lastName',  'Last Name'),
         ...col.col('firstName', 'First Name'),
         ...col.col('email',     'Email'),

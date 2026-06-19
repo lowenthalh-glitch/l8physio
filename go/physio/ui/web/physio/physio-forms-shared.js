@@ -7,6 +7,7 @@
             return {
                 PhysioClient: f.form('Physio Client', [
                     f.section('Personal Information', [
+                        ...f.text('alias',            'Alias'),
                         ...f.text('firstName',        'First Name',        true),
                         ...f.text('lastName',         'Last Name',         true),
                         ...f.text('email',            'Email',             true),
