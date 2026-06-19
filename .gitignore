@@ -9,3 +9,4 @@ go/cmd
 go/backups/
 logs/
 watchdog.pid
+go/physio/boostapp/main/client_id_registry.json
