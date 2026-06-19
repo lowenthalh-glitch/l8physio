@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/saichler/l8physio/go/types/physio"
+	"github.com/lowenthalh-glitch/l8physio/go/types/physio"
 )
 
 // ConvertEvent transforms a raw Boostapp event into a protobuf BoostappCalendarEvent.

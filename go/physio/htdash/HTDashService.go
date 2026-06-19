@@ -1,7 +1,7 @@
 package htdash
 
 import (
-	"github.com/saichler/l8physio/go/types/physio"
+	"github.com/lowenthalh-glitch/l8physio/go/types/physio"
 	"github.com/saichler/l8srlz/go/serialize/object"
 	l8api "github.com/saichler/l8types/go/types/l8api"
 	"github.com/saichler/l8types/go/ifs"

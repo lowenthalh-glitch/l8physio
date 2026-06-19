@@ -2,7 +2,7 @@ package mocks
 
 import (
 	lm "github.com/saichler/l8common/go/mocks"
-	"github.com/saichler/l8physio/go/types/physio"
+	"github.com/lowenthalh-glitch/l8physio/go/types/physio"
 )
 
 // generateRehabBankExercises returns the 62 classified exercises from the client's

@@ -5,9 +5,9 @@ import (
 	parserService "github.com/saichler/l8parser/go/parser/service"
 	"github.com/saichler/l8pollaris/go/pollaris"
 	"github.com/saichler/l8pollaris/go/pollaris/targets"
-	"github.com/saichler/l8physio/go/physio/boostapp"
-	"github.com/saichler/l8physio/go/physio/common"
-	"github.com/saichler/l8physio/go/types/physio"
+	"github.com/lowenthalh-glitch/l8physio/go/physio/boostapp"
+	"github.com/lowenthalh-glitch/l8physio/go/physio/common"
+	"github.com/lowenthalh-glitch/l8physio/go/types/physio"
 )
 
 func main() {

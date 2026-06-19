@@ -4,7 +4,7 @@ import (
 	"math/rand"
 
 	lm "github.com/saichler/l8common/go/mocks"
-	"github.com/saichler/l8physio/go/types/physio"
+	"github.com/lowenthalh-glitch/l8physio/go/types/physio"
 )
 
 // generateAppointments creates 40 appointment records

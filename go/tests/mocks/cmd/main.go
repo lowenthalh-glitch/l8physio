@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 
-	"github.com/saichler/l8physio/go/tests/mocks"
+	"github.com/lowenthalh-glitch/l8physio/go/tests/mocks"
 )
 
 func main() {

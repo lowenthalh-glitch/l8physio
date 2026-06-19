@@ -24,4 +24,4 @@ rm -rf *.rs
 cd ../go
 find . -name "*.go" -type f -exec sed -i 's|"./types/l8api"|"github.com/saichler/l8types/go/types/l8api"|g' {} +
 find . -name "*.go" -type f -exec sed -i 's|"./types/l8common"|"github.com/saichler/l8common/go/types/l8common"|g' {} +
-find . -name "*.go" -type f -exec sed -i 's|"./types/physio"|"github.com/saichler/l8physio/go/types/physio"|g' {} +
+find . -name "*.go" -type f -exec sed -i 's|"./types/physio"|"github.com/lowenthalh-glitch/l8physio/go/types/physio"|g' {} +

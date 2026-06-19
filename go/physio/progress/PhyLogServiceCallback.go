@@ -2,9 +2,9 @@ package progress
 
 import (
 	l8c "github.com/saichler/l8common/go/common"
-	"github.com/saichler/l8physio/go/physio/exercises"
-	"github.com/saichler/l8physio/go/physio/plans"
-	"github.com/saichler/l8physio/go/types/physio"
+	"github.com/lowenthalh-glitch/l8physio/go/physio/exercises"
+	"github.com/lowenthalh-glitch/l8physio/go/physio/plans"
+	"github.com/lowenthalh-glitch/l8physio/go/types/physio"
 	"github.com/saichler/l8types/go/ifs"
 )
 

@@ -14,7 +14,7 @@ set -euo pipefail
 PROD_HOST="${PROD_HOST:-34.199.207.223}"
 PROD_USER="${PROD_USER:-ubuntu}"
 PROD_KEY="${PROD_KEY:-$HOME/Shachar_key.pem}"
-PROD_DIR="${PROD_DIR:-/home/ubuntu/proj/src/github.com/saichler/l8physio/go}"
+PROD_DIR="${PROD_DIR:-/home/ubuntu/proj/src/github.com/lowenthalh-glitch/l8physio/go}"
 
 CONTAINER="${POSTGRES_CONTAINER:-unsecure-postgres}"
 DB_USER="${PGUSER:-admin}"

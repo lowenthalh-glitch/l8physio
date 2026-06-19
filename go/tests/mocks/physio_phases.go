@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/saichler/l8physio/go/types/physio"
+	"github.com/lowenthalh-glitch/l8physio/go/types/physio"
 )
 
 // RunAllPhases executes all physio data phases in dependency order.

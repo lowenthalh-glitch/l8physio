@@ -1,7 +1,7 @@
 package boostapp
 
 import (
-	"github.com/saichler/l8physio/go/physio/common"
+	"github.com/lowenthalh-glitch/l8physio/go/physio/common"
 	"github.com/saichler/l8pollaris/go/types/l8tpollaris"
 )
 

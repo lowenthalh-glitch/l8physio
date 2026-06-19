@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/saichler/l8bus/go/overlay/vnet"
-	"github.com/saichler/l8physio/go/physio/common"
+	"github.com/lowenthalh-glitch/l8physio/go/physio/common"
 	"os"
 )
 

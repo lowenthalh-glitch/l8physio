@@ -281,9 +281,9 @@ Add to `go/physio/security/security.go`:
 ```go
 import (
     "fmt"
-    "github.com/saichler/l8physio/go/physio/clients"
-    "github.com/saichler/l8physio/go/physio/therapists"
-    physioTypes "github.com/saichler/l8physio/go/types/physio"
+    "github.com/lowenthalh-glitch/l8physio/go/physio/clients"
+    "github.com/lowenthalh-glitch/l8physio/go/physio/therapists"
+    physioTypes "github.com/lowenthalh-glitch/l8physio/go/types/physio"
 )
 
 // SeedAccounts creates user accounts for all existing therapists and clients.
@@ -540,7 +540,7 @@ func (cb *physioTherapistCallback) After(elem interface{}, action ifs.Action, no
 In `go/physio/main/main.go`, after `ActivateAllServices`:
 
 ```go
-import "github.com/saichler/l8physio/go/physio/security"
+import "github.com/lowenthalh-glitch/l8physio/go/physio/security"
 
 // After:
 services.ActivateAllServices(common.DB_CREDS, common.DB_NAME, nic)

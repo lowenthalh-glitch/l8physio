@@ -3,8 +3,8 @@ package boostapp
 import (
 	"strings"
 
-	"github.com/saichler/l8physio/go/physio/common"
-	"github.com/saichler/l8physio/go/types/physio"
+	"github.com/lowenthalh-glitch/l8physio/go/physio/common"
+	"github.com/lowenthalh-glitch/l8physio/go/types/physio"
 )
 
 // LinkClients matches Boostapp events to PhysioClient records.

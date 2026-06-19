@@ -2,7 +2,7 @@ package mocks
 
 import (
 	lm "github.com/saichler/l8common/go/mocks"
-	"github.com/saichler/l8physio/go/types/physio"
+	"github.com/lowenthalh-glitch/l8physio/go/types/physio"
 )
 
 // per builds a ProtocolExercise entry referencing a rehab-bank exercise (rbex-xxx ID).

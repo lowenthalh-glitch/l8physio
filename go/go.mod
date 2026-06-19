@@ -1,4 +1,4 @@
-module github.com/saichler/l8physio/go
+module github.com/lowenthalh-glitch/l8physio/go
 
 go 1.26.1
 

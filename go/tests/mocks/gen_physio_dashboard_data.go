@@ -8,7 +8,7 @@ import (
 	"time"
 
 	lm "github.com/saichler/l8common/go/mocks"
-	"github.com/saichler/l8physio/go/types/physio"
+	"github.com/lowenthalh-glitch/l8physio/go/types/physio"
 )
 
 func generateHomeFeedbacks(clientIds, therapistIds []string) []*physio.HomeFeedback {

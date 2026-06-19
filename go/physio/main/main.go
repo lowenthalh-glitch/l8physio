@@ -3,9 +3,9 @@ package main
 import (
 	"fmt"
 	"github.com/saichler/l8bus/go/overlay/vnic"
-	"github.com/saichler/l8physio/go/physio/aia"
-	"github.com/saichler/l8physio/go/physio/common"
-	"github.com/saichler/l8physio/go/physio/services"
+	"github.com/lowenthalh-glitch/l8physio/go/physio/aia"
+	"github.com/lowenthalh-glitch/l8physio/go/physio/common"
+	"github.com/lowenthalh-glitch/l8physio/go/physio/services"
 	evtservices "github.com/saichler/l8events/go/services"
 	"github.com/saichler/l8types/go/ifs"
 	"os"
