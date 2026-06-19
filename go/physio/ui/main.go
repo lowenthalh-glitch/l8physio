@@ -1,14 +1,20 @@
 package main
 
 import (
+	"bytes"
+	"database/sql"
+	"encoding/json"
+	"io"
 	"net/http"
+	"strings"
+	"sync"
 
 	"github.com/saichler/l8agent/go/types/l8agent"
 	"github.com/saichler/l8common/go/common"
 	l8c "github.com/saichler/l8common/go/common"
-	"github.com/saichler/l8types/go/types/l8events"
 	"github.com/lowenthalh-glitch/l8physio/go/types/physio"
 	"github.com/saichler/l8types/go/ifs"
+	"github.com/saichler/l8types/go/types/l8events"
 )
 
 func main() {
@@ -16,7 +22,74 @@ func main() {
 	http.HandleFunc("/index.html", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusMovedPermanently)
 	})
+	http.HandleFunc("/physio-auth", authProxy)
 	svr.Start()
+}
+
+// Testing-only: lets clients log in with their cli-NNN alias instead of email.
+// The login page POSTs {user, pass} to /physio-auth; if user is an alias
+// (no '@'), we resolve it to the matching PhysioClient.client_id (email) and
+// hand the rewritten body to the real /auth handler on the same ServeMux.
+// Will be removed once the user drops the alias field from PhysioClient.
+
+var (
+	aliasDBOnce sync.Once
+	aliasDB     *sql.DB
+)
+
+func openAliasDB() {
+	defer func() { _ = recover() }() // OpenDBConection panics if postgres is unreachable
+	aliasDB = common.OpenDBConection("admin", "admin", "admin", "5432")
+}
+
+func resolveAlias(alias string) string {
+	aliasDBOnce.Do(openAliasDB)
+	if aliasDB == nil {
+		return ""
+	}
+	var clientID string
+	if err := aliasDB.QueryRow(
+		"SELECT clientid FROM physioclient WHERE alias=$1 AND clientid LIKE '%@%'",
+		alias,
+	).Scan(&clientID); err != nil {
+		return ""
+	}
+	return clientID
+}
+
+func authProxy(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	rewritten := body
+	var req struct {
+		User string `json:"user"`
+		Pass string `json:"pass"`
+	}
+	if json.Unmarshal(body, &req) == nil && req.User != "" && !strings.Contains(req.User, "@") {
+		if email := resolveAlias(req.User); email != "" {
+			req.User = email
+			if rb, jerr := json.Marshal(req); jerr == nil {
+				rewritten = rb
+			}
+		}
+	}
+	inner, _ := http.NewRequestWithContext(r.Context(), http.MethodPost, "/auth", bytes.NewReader(rewritten))
+	inner.Header = r.Header.Clone()
+	inner.Header.Set("Content-Type", "application/json")
+	inner.ContentLength = int64(len(rewritten))
+	handler, pattern := http.DefaultServeMux.Handler(inner)
+	if pattern == "" {
+		http.Error(w, "/auth handler not registered", http.StatusInternalServerError)
+		return
+	}
+	handler.ServeHTTP(w, inner)
 }
 
 /*

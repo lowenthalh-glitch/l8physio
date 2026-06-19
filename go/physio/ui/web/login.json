@@ -2,7 +2,7 @@
     "login": {
         "appTitle": "Physio by Layer 8",
         "appDescription": "Physiotherapy Management",
-        "authEndpoint": "/auth",
+        "authEndpoint": "/physio-auth",
         "redirectUrl": "/app.html",
         "showRememberMe": true,
         "showRegister": false,

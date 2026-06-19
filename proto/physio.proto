@@ -251,6 +251,7 @@ message PhysioClient {
   string             therapist_id      = 14;
   string             boostapp_id       = 15;
   SessionStatus      override_status   = 16;
+  string             alias             = 17;
   l8common.AuditInfo      audit_info        = 30;
 }
 

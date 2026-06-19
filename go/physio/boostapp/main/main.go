@@ -218,7 +218,7 @@ func fetchParticipantsForEvents(client *boostapp.Client, events []*physio.Boosta
 func autoOnboardUnlinked(bc *boostapp.Client, nic ifs.IVNic, events []*physio.BoostappCalendarEvent, existing []*physio.PhysioClient) int {
 	existingBoostappId := make(map[string]bool, len(existing))
 	existingEmail := make(map[string]bool, len(existing))
-	nextClientIdx := 1
+	nextAliasIdx := 1
 	for _, c := range existing {
 		if c.BoostappId != "" {
 			existingBoostappId[c.BoostappId] = true
@@ -226,9 +226,9 @@ func autoOnboardUnlinked(bc *boostapp.Client, nic ifs.IVNic, events []*physio.Bo
 		if c.Email != "" {
 			existingEmail[strings.ToLower(c.Email)] = true
 		}
-		if strings.HasPrefix(c.ClientId, "cli-") {
-			if n, err := strconv.Atoi(strings.TrimPrefix(c.ClientId, "cli-")); err == nil && n >= nextClientIdx {
-				nextClientIdx = n + 1
+		if strings.HasPrefix(c.Alias, "cli-") {
+			if n, err := strconv.Atoi(strings.TrimPrefix(c.Alias, "cli-")); err == nil && n >= nextAliasIdx {
+				nextAliasIdx = n + 1
 			}
 		}
 	}
@@ -283,7 +283,8 @@ func autoOnboardUnlinked(bc *boostapp.Client, nic ifs.IVNic, events []*physio.Bo
 		}
 		first, last := splitName(match.Name)
 		newClient := &physio.PhysioClient{
-			ClientId:   fmt.Sprintf("cli-%03d", nextClientIdx),
+			ClientId:   match.Email,
+			Alias:      fmt.Sprintf("cli-%03d", nextAliasIdx),
 			FirstName:  first,
 			LastName:   last,
 			Email:      match.Email,
@@ -295,11 +296,11 @@ func autoOnboardUnlinked(bc *boostapp.Client, nic ifs.IVNic, events []*physio.Bo
 			log("  ONBOARD FAIL " + t.boostappID + " (" + match.Name + "): " + err.Error())
 			continue
 		}
-		nextClientIdx++
+		nextAliasIdx++
 		existingBoostappId[match.ID] = true
 		existingEmail[strings.ToLower(match.Email)] = true
 		created++
-		log("  ONBOARDED " + match.Name + " (boostapp=" + match.ID + ", email=" + match.Email + ", phone=" + match.Phone + ", clientId=" + newClient.ClientId + ")")
+		log("  ONBOARDED " + match.Name + " (boostapp=" + match.ID + ", email=" + match.Email + ", phone=" + match.Phone + ", clientId=" + newClient.ClientId + ", alias=" + newClient.Alias + ")")
 
 		if err := provisionClientUser(nic, newClient); err != nil {
 			log("  USER PROVISION FAIL for " + newClient.Email + ": " + err.Error())
