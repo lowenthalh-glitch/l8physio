@@ -18,6 +18,7 @@ import (
 func main() {
 	log("=== Boostapp Sync Starting ===")
 	res := common.CreateResources("boostapp-sync", false)
+	ifs.SetNetworkMode(ifs.NETWORK_K8s)
 	nic := vnic.NewVirtualNetworkInterface(res, nil)
 	nic.Start()
 	nic.WaitForConnection()

@@ -31,6 +31,9 @@ nodes:
       - containerPort: 2773
         hostPort: 2773
         protocol: TCP
+      - containerPort: 2774
+        hostPort: 2774
+        protocol: TCP
 EOF
 
 echo "Creating KIND cluster '$CLUSTER_NAME'..."
