@@ -1,0 +1,22 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+  - role: control-plane
+    kubeadmConfigPatches:
+      - |
+        kind: InitConfiguration
+        nodeRegistration:
+          taints:
+            - key: "node-role.kubernetes.io/control-plane"
+              effect: "NoSchedule"
+  - role: worker
+    extraPortMappings:
+      - containerPort: 2443
+        hostPort: 2443
+        protocol: TCP
+      - containerPort: 2773
+        hostPort: 2773
+        protocol: TCP
+      - containerPort: 2774
+        hostPort: 2774
+        protocol: TCP

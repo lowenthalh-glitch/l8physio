@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -15,6 +14,8 @@ import (
 	"github.com/lowenthalh-glitch/l8physio/go/physio/common"
 	"github.com/lowenthalh-glitch/l8physio/go/types/physio"
 	"github.com/saichler/l8types/go/ifs"
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
 )
 
 func main() {
@@ -315,18 +316,14 @@ func autoOnboardUnlinked(bc *boostapp.Client, nic ifs.IVNic, events []*physio.Bo
 }
 
 func provisionClientUser(nic ifs.IVNic, c *physio.PhysioClient) error {
-	userJSON := fmt.Sprintf(`{
-		"userId":"%s",
-		"fullName":"%s",
-		"email":"%s",
-		"accountStatus":1,
-		"portal":"client-app.html",
-		"password":{"hash":"%s"},
-		"roles":{"client":true}
-	}`, c.ClientId,
+	userJSON := l8c.L8UserJSON(
+		c.ClientId,
 		strings.TrimSpace(c.FirstName+" "+c.LastName),
 		c.Email,
-		defaultClientPassword)
+		defaultClientPassword,
+		"client-app.html",
+		map[string]bool{"client": true},
+	)
 
 	info, err := nic.Resources().Registry().Info("L8User")
 	if err != nil {
@@ -336,10 +333,14 @@ func provisionClientUser(nic ifs.IVNic, c *physio.PhysioClient) error {
 	if err != nil {
 		return errors.New("failed to create L8User instance: " + err.Error())
 	}
-	if err := json.Unmarshal([]byte(userJSON), user); err != nil {
+	msg, ok := user.(proto.Message)
+	if !ok {
+		return errors.New("L8User instance does not implement proto.Message")
+	}
+	if err := protojson.Unmarshal([]byte(userJSON), msg); err != nil {
 		return errors.New("failed to unmarshal user JSON: " + err.Error())
 	}
-	_, err = l8c.PostEntity("users", 73, user, nic)
+	_, err = l8c.PostEntity("users", 73, msg, nic)
 	return err
 }
 

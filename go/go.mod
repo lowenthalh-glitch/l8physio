@@ -6,7 +6,7 @@ require (
 	github.com/saichler/l8agent v0.0.0-20260404041519-33c923998e3c
 	github.com/saichler/l8bus v0.0.0-20260524152159-cc0b5c210821
 	github.com/saichler/l8collector/go v0.0.0-20260613145511-2d3088c0579a
-	github.com/saichler/l8common v0.0.0-20260531125907-5a2ae47e916f
+	github.com/saichler/l8common v0.0.0-20260620150610-ecbfc11d3827
 	github.com/saichler/l8events v0.0.0-20260526025458-f1445c360635
 	github.com/saichler/l8logfusion v0.0.0-20260320120056-3a3617eed28f
 	github.com/saichler/l8parser v0.0.0-20260504014757-63e78ee52fb3
