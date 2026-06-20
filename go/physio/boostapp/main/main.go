@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -313,16 +315,31 @@ func autoOnboardUnlinked(bc *boostapp.Client, nic ifs.IVNic, events []*physio.Bo
 }
 
 func provisionClientUser(nic ifs.IVNic, c *physio.PhysioClient) error {
-	userData := map[string]interface{}{
-		"userId":        c.ClientId,
-		"fullName":      strings.TrimSpace(c.FirstName + " " + c.LastName),
-		"email":         c.Email,
-		"accountStatus": "ACCOUNT_STATUS_ACTIVE",
-		"portal":        "client-app.html",
-		"password":      map[string]interface{}{"hash": defaultClientPassword},
-		"roles":         map[string]bool{"client": true},
+	userJSON := fmt.Sprintf(`{
+		"userId":"%s",
+		"fullName":"%s",
+		"email":"%s",
+		"accountStatus":1,
+		"portal":"client-app.html",
+		"password":{"hash":"%s"},
+		"roles":{"client":true}
+	}`, c.ClientId,
+		strings.TrimSpace(c.FirstName+" "+c.LastName),
+		c.Email,
+		defaultClientPassword)
+
+	info, err := nic.Resources().Registry().Info("L8User")
+	if err != nil {
+		return errors.New("L8User type not registered: " + err.Error())
 	}
-	_, err := l8c.PostEntity("users", 73, userData, nic)
+	user, err := info.NewInstance()
+	if err != nil {
+		return errors.New("failed to create L8User instance: " + err.Error())
+	}
+	if err := json.Unmarshal([]byte(userJSON), user); err != nil {
+		return errors.New("failed to unmarshal user JSON: " + err.Error())
+	}
+	_, err = l8c.PostEntity("users", 73, user, nic)
 	return err
 }
 
