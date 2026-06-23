@@ -3,7 +3,11 @@
     window.PhysioManagement = window.PhysioManagement || {};
 
     const factory = window.Layer8EnumFactory;
-    const { renderEnum, renderEnumList } = Layer8DRenderers;
+    const { renderEnum } = Layer8DRenderers;
+    const renderEnumList = (values, enumMap) => {
+        if (!Array.isArray(values) || values.length === 0) return '-';
+        return values.map((v) => renderEnum(v, enumMap)).join(', ');
+    };
 
     const EXERCISE_CATEGORY = factory.simple([
         'Unspecified', 'Mobility', 'Rehab', 'Strength', 'Functional',
@@ -47,4 +51,5 @@
     PhysioManagement.render.joint            = (v) => renderEnum(v, JOINT.enum);
     PhysioManagement.render.joints           = (v) => renderEnumList(v, JOINT.enum);
     PhysioManagement.render.categories       = (v) => renderEnumList(v, EXERCISE_CATEGORY.enum);
+    PhysioManagement.render.postures         = (v) => renderEnumList(v, POSTURE.enum);
 })();

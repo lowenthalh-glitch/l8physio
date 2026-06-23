@@ -19,6 +19,20 @@
         }
     };
 
+    // Polyfill Layer8MAuth.fetchText — l8ui's mobile auth ships get/post/put/...
+    // but no text-returning helper, and loadSection() needs raw HTML. Mirror
+    // get() but return response.text() instead of response.json().
+    if (typeof Layer8MAuth !== 'undefined' && !Layer8MAuth.fetchText) {
+        Layer8MAuth.fetchText = async function(url) {
+            const response = await this.makeAuthenticatedRequest(url, { method: 'GET' });
+            if (!response) return null; // 401 — redirect already in progress
+            if (!response.ok) {
+                throw new Error('Request failed: ' + response.status);
+            }
+            return response.text();
+        };
+    }
+
     // Wrap Layer8MAuth.logout so it also clears userPortal. l8ui's logout
     // only clears bearerToken/currentUser, which would otherwise leak the
     // previous user's portal-filtered nav into the next login on the same tab.
