@@ -200,7 +200,7 @@
         pe.loadType = parseInt(sel.value, 10) || 0;
         var valInput = container.querySelector('.mpr-value[data-row="' + rowIdx + '"]');
         var valDiv = valInput ? valInput.parentNode : null;
-        if (valDiv) valDiv.outerHTML = _valueDivHTML(pe, rowIdx);
+        if (valDiv) valDiv.outerHTML = _valueDivHTML(pe, rowIdx, _canEditPlan());
     }
 
     function _collectEdits(container) {
