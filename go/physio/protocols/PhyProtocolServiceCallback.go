@@ -22,11 +22,5 @@ func setPhyProtocolID(e interface{}) {
 
 func validatePhyProtocol(e interface{}, vnic ifs.IVNic) error {
 	entity := e.(*physio.PhysioProtocol)
-	if err := l8c.ValidateRequired(entity.Name, "Name"); err != nil {
-		return err
-	}
-	if err := l8c.ValidateRequired(entity.UserId, "UserId"); err != nil {
-		return err
-	}
-	return nil
+	return l8c.ValidateRequired(entity.Name, "Name")
 }

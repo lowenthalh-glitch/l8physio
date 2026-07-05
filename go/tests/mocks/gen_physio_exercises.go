@@ -138,6 +138,7 @@ func generatePhysioExercises() []*physio.PhysioExercise {
 			Instructions:       fmt.Sprintf("Perform %d sets of %d repetitions. Maintain correct posture throughout.", def.sets, def.reps),
 			Contraindications:  "Do not perform if experiencing acute pain. Consult therapist before proceeding.",
 			VideoStoragePath:   pickVideoURL(i),
+			ImageStoragePath:   LookupImagePath(def.name),
 			IsActive:           true,
 			AuditInfo:          lm.CreateAuditInfo(),
 		}

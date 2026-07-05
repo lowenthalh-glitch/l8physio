@@ -94,6 +94,20 @@
             (canEdit ? '<button class="mpr-save-btn" style="padding:8px 16px;border:none;border-radius:6px;background:var(--layer8d-primary);color:#fff;font-size:13px;font-weight:600;cursor:pointer;">Save</button>' : '') +
             '</div>';
 
+        // Notes block — staff only (canEdit implies PUT; clients don't have PUT).
+        if (canEdit) {
+            var notesText = plan.notes || '';
+            html += '<div style="background:var(--layer8d-bg-light);border:1px solid var(--layer8d-border);border-radius:6px;padding:10px 12px;margin-bottom:10px;">' +
+                '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">' +
+                  '<span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--layer8d-text-medium);">Notes</span>' +
+                  '<button class="mpr-notes-btn" style="font-size:11px;padding:3px 10px;background:none;color:var(--layer8d-primary);border:1px solid var(--layer8d-primary);border-radius:4px;cursor:pointer;">' + (notesText ? '✎ Edit' : '+ Add') + '</button>' +
+                '</div>' +
+                '<div class="mpr-notes-body" style="font-size:13px;color:' + (notesText ? 'var(--layer8d-text-dark);white-space:pre-wrap;line-height:1.4' : 'var(--layer8d-text-muted);font-style:italic') + ';">' +
+                  (notesText ? Layer8DUtils.escapeHtml(notesText) : 'No notes yet — visible to staff only.') +
+                '</div>' +
+              '</div>';
+        }
+
         var rowIdx = 0;
         Object.keys(displayCircuits).sort().forEach(function(cNum) {
             var label = CATS[parseInt(cNum)] || ('Circuit ' + cNum);
@@ -306,5 +320,35 @@
 
         var thumb = t.closest('.mpr-thumb');
         if (thumb) { e.stopPropagation(); if (window.PhysioClientExerciseInfo) PhysioClientExerciseInfo.showImagePopup(thumb.dataset.eid, st.exMap); return; }
+
+        var notesBtn = t.closest('.mpr-notes-btn');
+        if (notesBtn) { e.stopPropagation(); _openNotesDialog(container); return; }
+    }
+
+    function _openNotesDialog(container) {
+        var st = _getState(container);
+        var current = (st.plan && st.plan.notes) || '';
+        Layer8MPopup.show({
+            title: 'Edit Notes',
+            size: 'medium',
+            showFooter: true,
+            saveButtonText: 'Save',
+            content: '<div style="padding:12px;">' +
+                       '<label style="display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--layer8d-text-medium);margin-bottom:6px;">Treatment Notes</label>' +
+                       '<textarea id="mpr-notes-text" rows="8" style="width:100%;padding:10px;border:1px solid var(--layer8d-border);border-radius:6px;font-size:14px;font-family:inherit;box-sizing:border-box;resize:vertical;">' + Layer8DUtils.escapeHtml(current) + '</textarea>' +
+                       '<div style="font-size:11px;color:var(--layer8d-text-muted);font-style:italic;margin-top:4px;">Not visible to the client.</div>' +
+                     '</div>',
+            onSave: function(popup) {
+                var body = popup && popup.body ? popup.body : popup;
+                var txt  = body ? body.querySelector('#mpr-notes-text') : null;
+                var text = txt ? txt.value : '';
+                _collectEdits(container);
+                st.plan.notes = text;
+                window.PhysioPlanActions.save(st.plan, function() {
+                    Layer8MPopup.close();
+                    _rerender(container);
+                });
+            }
+        });
     }
 })();

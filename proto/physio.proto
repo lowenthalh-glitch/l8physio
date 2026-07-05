@@ -199,18 +199,26 @@ message ProgressEntry {
   PhysioFrequency frequency_prescribed = 12;
 }
 
-// Embedded in PhysioProtocol — an exercise slot in a reusable protocol template
+// Embedded in PhysioProtocol — strict superset of PlanExercise so plan↔protocol
+// round-trip via export/import is lossless.
 message ProtocolExercise {
+  reserved 5, 6;
+  reserved "load_notes";
+
   string          protocol_exercise_id = 1;
   string          exercise_id          = 2;
   string          exercise_name        = 3;
   int32           sets                 = 4;
-  string          reps                 = 5;
-  string          load_notes           = 6;
   int32           order_index          = 7;
   PhysioLoadType  load_type            = 8;
   string          effort               = 9;
   int32           weight_kg            = 10;
+  int32           reps                 = 11;
+  int32           hold_seconds         = 12;
+  PhysioFrequency frequency            = 13;
+  string          notes                = 14;
+  int32           circuit_number       = 15;
+  string          circuit_label        = 16;
 }
 
 // ──────────────────────────────────────────────
@@ -320,18 +328,22 @@ enum PhysioJoint {
   PHYSIO_JOINT_SIJ         = 9;
 }
 
-// PhysioProtocol — a reusable template of exercises for a given condition/posture
+// PhysioProtocol — a reusable, practice-wide template of exercises.
+// Classification (joints/categories/postures) mirrors PhysioExercise.
 message PhysioProtocol {
-  string          protocol_id   = 1;
-  string          name          = 2;
-  string          description   = 3;
-  PhysioJoint     joint         = 4;
-  PhysioPosture   posture       = 5;
-  string          protocol_code = 6;
-  string          user_id       = 7;
-  bool            is_active     = 8;
-  repeated ProtocolExercise exercises = 20;
-  l8common.AuditInfo   audit_info    = 30;
+  reserved 4, 5, 6, 7;
+  reserved "joint", "posture", "protocol_code", "user_id";
+
+  string                          protocol_id = 1;
+  string                          name        = 2;
+  string                          description = 3;
+  bool                            is_active   = 8;
+  string                          goals       = 9;
+  repeated PhysioJoint            joints      = 10;
+  repeated PhysioExerciseCategory categories  = 11;
+  repeated PhysioPosture          postures    = 12;
+  repeated ProtocolExercise       exercises   = 20;
+  l8common.AuditInfo              audit_info  = 30;
 }
 
 message PhysioProtocolList {
@@ -340,6 +352,8 @@ message PhysioProtocolList {
 }
 
 message TreatmentPlan {
+  reserved 10;
+  reserved "therapist_notes";
   string           plan_id          = 1;
   string           client_id        = 2;
   string           user_id          = 3;
@@ -349,10 +363,10 @@ message TreatmentPlan {
   int64            start_date       = 7;
   int64            end_date         = 8;
   string           goals            = 9;
-  string           therapist_notes  = 10;
   string           therapist_id     = 11;
   string           protocol_id      = 12;
   int32            volume           = 13;
+  string           notes            = 14;
   repeated PlanExercise exercises   = 20;
   l8common.AuditInfo    audit_info       = 30;
 }

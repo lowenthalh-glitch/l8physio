@@ -326,6 +326,7 @@ func generateClientExercises() []*physio.PhysioExercise {
 			DefaultSets:      d.sets,
 			DefaultReps:      d.reps,
 			VideoStoragePath: pickVideoURL(i),
+			ImageStoragePath: LookupImagePath(d.name),
 			IsActive:         true,
 			AuditInfo:        lm.CreateAuditInfo(),
 		}

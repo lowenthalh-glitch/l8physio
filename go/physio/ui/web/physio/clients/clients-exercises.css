@@ -170,6 +170,45 @@
     display: flex;
     align-items: center;
     gap: 10px;
+    flex-wrap: wrap;
+}
+
+.physio-plan-protocol-actions {
+    display: inline-flex;
+    gap: 6px;
+    margin-left: auto;
+}
+
+/* Notes block — staff-only, sits under the plan header */
+.physio-plan-notes {
+    background: var(--layer8d-bg-light);
+    border: 1px solid var(--layer8d-border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-bottom: 20px;
+}
+.physio-plan-notes-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+.physio-plan-notes-label {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--layer8d-text-medium);
+}
+.physio-plan-notes-body {
+    font-size: 13px;
+    color: var(--layer8d-text-dark);
+    white-space: pre-wrap;
+    line-height: 1.4;
+}
+.physio-plan-notes-empty {
+    color: var(--layer8d-text-muted);
+    font-style: italic;
 }
 
 .physio-plan-date {

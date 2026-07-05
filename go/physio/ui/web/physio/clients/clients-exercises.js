@@ -136,6 +136,10 @@
         // ── Load active TreatmentPlan for this client ──────────────────────────
         _loadPlan: function(client, container, infoContainer) {
             var self = this;
+            self._reloadPlan = function() {
+                self._originals = null;
+                self._loadPlan(client, container, infoContainer);
+            };
             var query = encodeURIComponent(JSON.stringify({ text: 'select * from TreatmentPlan where clientId=' + client.clientId }));
             _fetch(_apiPrefix() + '/50/PhyPlan?body=' + query)
             .then(function(data) {
@@ -143,18 +147,39 @@
                 var plan  = plans.length > 0 ? plans[0] : null;
 
                 if (!plan) {
+                    var canEditNoPlan = _canEditPlan();
+                    var noPlanImport = canEditNoPlan
+                        ? '<div style="margin-top:12px;"><button class="layer8d-btn layer8d-btn-primary layer8d-btn-small physio-noplan-import-btn">⬇ Create Plan from Template</button></div>'
+                        : '';
                     var noplan = '<div class="physio-no-protocol">No active workout plan assigned to this client yet.'
-                        + (_canEditPlan() ? '<br><span style="font-size:12px;color:var(--layer8d-text-muted)">Use the Workout Builder tab to create and assign a plan.</span>' : '')
+                        + (canEditNoPlan ? '<br><span style="font-size:12px;color:var(--layer8d-text-muted)">Use the Workout Builder tab to create and assign a plan, or import a template below.</span>' : '')
+                        + noPlanImport
                         + '</div>';
                     container.innerHTML = noplan;
-                    if (infoContainer) infoContainer.innerHTML = noplan;
+                    if (infoContainer) infoContainer.innerHTML = '<div class="physio-no-protocol">No active workout plan assigned to this client yet.</div>';
+                    if (canEditNoPlan) {
+                        var btn = container.querySelector('.physio-noplan-import-btn');
+                        if (btn) btn.addEventListener('click', function() { self._showCreateFromTemplateDialog(client); });
+                    }
                     return;
                 }
                 self._currentPlan = plan;
 
                 var exercises = plan.exercises || [];
                 if (exercises.length === 0) {
-                    container.innerHTML = '<div class="physio-no-protocol">Plan <strong>' + Layer8DUtils.escapeHtml(plan.title || '') + '</strong> has no exercises yet.</div>';
+                    var canEdit = _canEditPlan();
+                    var importBtn = canEdit
+                        ? '<button class="layer8d-btn layer8d-btn-primary layer8d-btn-small physio-plan-import-btn" style="margin-top:12px;">⬇ Import from Template</button>'
+                        : '';
+                    container.innerHTML =
+                        '<div class="physio-no-protocol">' +
+                          'Plan <strong>' + Layer8DUtils.escapeHtml(plan.title || '') + '</strong> has no exercises yet.' +
+                          (importBtn ? '<div>' + importBtn + '</div>' : '') +
+                        '</div>';
+                    if (canEdit) {
+                        var btn = container.querySelector('.physio-plan-import-btn');
+                        if (btn) btn.addEventListener('click', function() { self._showImportDialog(plan); });
+                    }
                     return;
                 }
 
@@ -179,6 +204,165 @@
             })
             .catch(function(err) {
                 container.innerHTML = '<div class="physio-no-protocol">Failed to load plan: ' + Layer8DUtils.escapeHtml(err.message) + '</div>';
+            });
+        },
+
+        _showExportDialog: function(plan) {
+            var defaultName = plan.title || '';
+            Layer8DPopup.show({
+                title:          'Save Plan as Protocol Template',
+                content:        '<div class="pe-export-form">' +
+                                  '<label class="pe-export-label" for="pe-export-name">Template Name</label>' +
+                                  '<input type="text" id="pe-export-name" name="pe-export-name" class="pe-export-input"' +
+                                    ' value="' + Layer8DUtils.escapeHtml(defaultName) + '">' +
+                                '</div>',
+                size:           'small',
+                showFooter:     true,
+                saveButtonText: 'Save Template',
+                onShow: function(body) {
+                    var input = body.querySelector('#pe-export-name');
+                    if (input) input.focus();
+                },
+                onSave: async function() {
+                    var body = Layer8DPopup.getBody();
+                    var name = ((body && body.querySelector('#pe-export-name').value) || '').trim();
+                    if (!name) { Layer8DNotification.warning('Template name is required.'); return; }
+                    try {
+                        await PhysioPlanProtocol.exportPlanAsProtocol(plan, name);
+                        Layer8DNotification.success('Saved as protocol template: ' + name);
+                        Layer8DPopup.close();
+                    } catch(e) {
+                        Layer8DNotification.error('Failed to save template: ' + e.message);
+                    }
+                }
+            });
+        },
+
+        _showCreateFromTemplateDialog: async function(client) {
+            var self = this;
+            var protocols;
+            try {
+                protocols = await PhysioPlanProtocol.listActiveProtocols();
+            } catch(e) {
+                Layer8DNotification.error('Failed to load templates: ' + e.message);
+                return;
+            }
+            if (!protocols.length) {
+                Layer8DNotification.warning('No active protocol templates to import.');
+                return;
+            }
+
+            var options = protocols.map(function(p) {
+                return '<option value="' + Layer8DUtils.escapeHtml(p.protocolId) + '">' +
+                       Layer8DUtils.escapeHtml(p.name || p.protocolId) + '</option>';
+            }).join('');
+
+            Layer8DPopup.show({
+                title:          'Create Plan from Template',
+                content:        '<div class="pe-import-form">' +
+                                  '<label class="pe-import-label" for="pe-import-select">Template</label>' +
+                                  '<select id="pe-import-select" name="pe-import-select" class="pe-import-input">' + options + '</select>' +
+                                  '<div class="pe-import-warn">' +
+                                    'A new Active workout plan will be created for this client, seeded from the selected template.' +
+                                  '</div>' +
+                                '</div>',
+                size:           'small',
+                showFooter:     true,
+                saveButtonText: 'Create Plan',
+                onSave: async function() {
+                    var body       = Layer8DPopup.getBody();
+                    var protocolId = (body && body.querySelector('#pe-import-select').value) || '';
+                    if (!protocolId) return;
+                    try {
+                        await PhysioPlanProtocol.createPlanFromProtocol(client.clientId, protocolId);
+                        Layer8DNotification.success('Plan created from template.');
+                        Layer8DPopup.close();
+                        if (self._reloadPlan) self._reloadPlan();
+                    } catch(e) {
+                        Layer8DNotification.error('Failed to create plan: ' + e.message);
+                    }
+                }
+            });
+        },
+
+        _showImportDialog: async function(plan) {
+            var self = this;
+            var protocols;
+            try {
+                protocols = await PhysioPlanProtocol.listActiveProtocols();
+            } catch(e) {
+                Layer8DNotification.error('Failed to load templates: ' + e.message);
+                return;
+            }
+            if (!protocols.length) {
+                Layer8DNotification.warning('No active protocol templates to import.');
+                return;
+            }
+
+            var options = protocols.map(function(p) {
+                return '<option value="' + Layer8DUtils.escapeHtml(p.protocolId) + '">' +
+                       Layer8DUtils.escapeHtml(p.name || p.protocolId) + '</option>';
+            }).join('');
+            var currentCount = (plan.exercises || []).length;
+
+            Layer8DPopup.show({
+                title:          'Import Protocol Template',
+                content:        '<div class="pe-import-form">' +
+                                  '<label class="pe-import-label" for="pe-import-select">Template</label>' +
+                                  '<select id="pe-import-select" name="pe-import-select" class="pe-import-input">' + options + '</select>' +
+                                  '<div class="pe-import-warn">' +
+                                    'This will replace the current ' + currentCount + ' exercises and overwrite Description + Goals.' +
+                                  '</div>' +
+                                '</div>',
+                size:           'small',
+                showFooter:     true,
+                saveButtonText: 'Replace Exercises',
+                onSave: async function() {
+                    var body       = Layer8DPopup.getBody();
+                    var protocolId = (body && body.querySelector('#pe-import-select').value) || '';
+                    if (!protocolId) return;
+                    try {
+                        await PhysioPlanProtocol.importProtocolIntoPlan(plan.planId, protocolId);
+                        Layer8DNotification.success('Plan exercises replaced from template.');
+                        Layer8DPopup.close();
+                        if (self._reloadPlan) self._reloadPlan();
+                    } catch(e) {
+                        Layer8DNotification.error('Failed to import template: ' + e.message);
+                    }
+                }
+            });
+        },
+
+        _showNotesDialog: function(plan) {
+            var self = this;
+            Layer8DPopup.show({
+                title:          'Edit Notes',
+                content:        '<div class="pe-notes-form">' +
+                                  '<label class="pe-notes-label" for="pe-notes-text">Treatment Notes</label>' +
+                                  '<textarea id="pe-notes-text" class="pe-notes-input" rows="8">' +
+                                    Layer8DUtils.escapeHtml(plan.notes || '') +
+                                  '</textarea>' +
+                                  '<div class="pe-notes-hint">Not visible to the client.</div>' +
+                                '</div>',
+                size:           'small',
+                showFooter:     true,
+                saveButtonText: 'Save',
+                onSave: async function() {
+                    var body = Layer8DPopup.getBody();
+                    var text = ((body && body.querySelector('#pe-notes-text').value) || '');
+                    try {
+                        await PhysioPlanProtocol.replaceExercises(plan.planId, function(fullPlan) {
+                            fullPlan.notes = text;
+                            return fullPlan.exercises || [];
+                        });
+                        plan.notes = text;
+                        Layer8DNotification.success('Notes saved.');
+                        Layer8DPopup.close();
+                        if (self._reloadPlan) self._reloadPlan();
+                    } catch(e) {
+                        Layer8DNotification.error('Failed to save notes: ' + e.message);
+                    }
+                }
             });
         },
 
@@ -219,11 +403,50 @@
             var st = plan.status || 0;
             var startStr = plan.startDate ? Layer8DUtils.formatDate(plan.startDate) : '';
 
+            var protoBtns = canEdit
+                ? '<div class="physio-plan-protocol-actions">'
+                    + '<button class="layer8d-btn layer8d-btn-secondary layer8d-btn-small physio-plan-export-btn">⬆ Save as Template</button>'
+                    + '<button class="layer8d-btn layer8d-btn-secondary layer8d-btn-small physio-plan-import-btn">⬇ Import Template</button>'
+                  + '</div>'
+                : '';
+
             var headerHtml = '<div class="physio-plan-header"><div class="physio-plan-title">' + Layer8DUtils.escapeHtml(plan.title || 'Workout Plan') + '</div><div class="physio-plan-meta">'
                 + (st ? '<span class="physio-plan-status ' + (statusCls[st] || '') + '">' + (statusLabels[st] || '') + '</span>' : '')
-                + (startStr ? '<span class="physio-plan-date">Start: ' + startStr + '</span>' : '') + '</div></div>';
+                + (startStr ? '<span class="physio-plan-date">Start: ' + startStr + '</span>' : '')
+                + protoBtns
+                + '</div></div>';
+
+            // Notes block — staff only. canEdit implies PUT permission, which
+            // clients don't have, so this doubles as the client-hide check.
+            if (canEdit) {
+                var notesText = plan.notes || '';
+                headerHtml += '<div class="physio-plan-notes">'
+                    + '<div class="physio-plan-notes-head">'
+                      + '<span class="physio-plan-notes-label">Notes</span>'
+                      + '<button class="layer8d-btn layer8d-btn-secondary layer8d-btn-small physio-plan-notes-btn">' + (notesText ? '✎ Edit' : '+ Add') + '</button>'
+                    + '</div>'
+                    + '<div class="physio-plan-notes-body' + (notesText ? '' : ' physio-plan-notes-empty') + '">'
+                      + (notesText ? Layer8DUtils.escapeHtml(notesText) : 'No notes yet — visible to staff only.')
+                    + '</div>'
+                  + '</div>';
+            }
 
             container.innerHTML = headerHtml;
+
+            if (canEdit) {
+                var exportBtn = container.querySelector('.physio-plan-export-btn');
+                if (exportBtn) {
+                    exportBtn.addEventListener('click', function() { self._showExportDialog(plan); });
+                }
+                var importBtn = container.querySelector('.physio-plan-import-btn');
+                if (importBtn) {
+                    importBtn.addEventListener('click', function() { self._showImportDialog(plan); });
+                }
+                var notesBtn = container.querySelector('.physio-plan-notes-btn');
+                if (notesBtn) {
+                    notesBtn.addEventListener('click', function() { self._showNotesDialog(plan); });
+                }
+            }
 
             // Reset stored tables for this render pass
             self._circuitTables = {};

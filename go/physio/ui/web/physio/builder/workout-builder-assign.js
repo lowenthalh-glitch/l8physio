@@ -1,9 +1,6 @@
 (function() {
     'use strict';
 
-    var POSTURE_CODES = { 1:'KYPH', 2:'LORD', 3:'UFLAT', 4:'LFLAT', 5:'VALG', 6:'PRON', 7:'GEN' };
-    var JOINT_CODES   = { 1:'SHO',  2:'KNE',  3:'ANK',  4:'LBP',  5:'ELB',  6:'GEN', 7:'HIP', 8:'CORE', 9:'SIJ' };
-
     function _authHeaders() {
         var t = sessionStorage.getItem('bearerToken');
         var h = { 'Content-Type': 'application/json' };
@@ -16,8 +13,11 @@
             ? Layer8DConfig.getApiPrefix() : '/physio';
     }
 
-    function _protocolCode(posture, joint) {
-        return (POSTURE_CODES[posture] || '?') + '-' + (JOINT_CODES[joint] || '?');
+    function _classificationLabel(posture, joint) {
+        var enums = (window.PhysioManagement && window.PhysioManagement.enums) || {};
+        var p = (enums.POSTURE && enums.POSTURE[posture]) || '?';
+        var j = (enums.JOINT   && enums.JOINT[joint])     || '?';
+        return p + ' · ' + j;
     }
 
     function _clientOptions() {
@@ -37,9 +37,8 @@
     function _showAssignPopup(ds) {
         var presetClientId = window.PhysioWorkoutBuilder._clientId || '';
         var allProtocols = window.PhysioWorkoutBuilder._lastProtocols || [{ posture: ds.posture, joint: ds.joint }];
-        var protoCodes   = allProtocols.map(function(p) { return _protocolCode(p.posture, p.joint); });
-        var code         = protoCodes.join(' + ');
-        var defaultTitle = code + ' Program';
+        var protoLabels  = allProtocols.map(function(p) { return _classificationLabel(p.posture, p.joint); });
+        var defaultTitle = protoLabels.join(' + ') + ' Program';
 
         // If opened from a client popup, skip client selection
         var clientRow = presetClientId
@@ -61,8 +60,8 @@
                 '<input type="date" id="wb-af-date" class="wb-af-input" value="' + _todayValue() + '">',
               '</div>',
               '<div class="wb-af-row">',
-                '<label class="wb-af-label">Protocol</label>',
-                '<span class="wb-af-static">' + code + '</span>',
+                '<label class="wb-af-label">Notes</label>',
+                '<textarea id="wb-af-notes" class="wb-af-input" rows="3" placeholder="Treatment notes for the therapist (not shown to the client)."></textarea>',
               '</div>',
             '</div>'
         ].join('');
@@ -79,14 +78,16 @@
                 var clientId = presetClientId || (clientEl ? clientEl.value : '');
                 var titleEl  = body ? body.querySelector('#wb-af-title')  : document.getElementById('wb-af-title');
                 var dateEl   = body ? body.querySelector('#wb-af-date')   : document.getElementById('wb-af-date');
+                var notesEl  = body ? body.querySelector('#wb-af-notes')  : document.getElementById('wb-af-notes');
                 var title    = titleEl.value.trim();
                 var dateVal  = dateEl.value;
+                var notes    = notesEl ? notesEl.value : '';
 
                 if (!clientId) { Layer8DNotification.error('Please select a client.'); return; }
                 if (!title)    { Layer8DNotification.error('Please enter a plan title.'); return; }
 
                 var startDate = dateVal ? Math.floor(new Date(dateVal).getTime() / 1000) : 0;
-                _saveAssignment({ clientId: clientId, title: title, startDate: startDate });
+                _saveAssignment({ clientId: clientId, title: title, startDate: startDate, notes: notes });
             }
         });
     }
@@ -149,61 +150,36 @@
             return;
         }
 
-        var prefix = _apiPrefix();
-        var query  = encodeURIComponent(JSON.stringify({ text: 'select * from TreatmentPlan where planId=' + planId + ' limit 1' }));
-
         try {
-            var getResp = await fetch(prefix + '/50/PhyPlan?body=' + query, { headers: _authHeaders() });
-            if (!getResp.ok) throw new Error('Fetch plan HTTP ' + getResp.status);
-            var data     = await getResp.json();
-            var fullPlan = (data.list || [])[0];
-            if (!fullPlan) throw new Error('Plan not found: ' + planId);
-
-            // Build existingIds map (exerciseId -> planExerciseId) to preserve IDs on update
-            var existingIds = {};
-            (fullPlan.exercises || []).forEach(function(pe) {
-                if (pe.exerciseId && pe.planExerciseId) {
-                    existingIds[pe.exerciseId] = pe.planExerciseId;
-                }
-            });
-
-            // Rebuild exercise list from current circuit layout
-            var newExercises = [];
-            var idx = 1;
-            (window.PhysioWorkoutBuilder._lastCircuits || []).forEach(function(circuit) {
-                circuit.slots.forEach(function(slot) {
-                    if (!slot) return;
-                    newExercises.push({
-                        planExerciseId: existingIds[slot.exerciseId] || '',
-                        exerciseId:     slot.exerciseId,
-                        sets:           slot.sets  !== undefined ? slot.sets  : 0,
-                        reps:           slot.reps  !== undefined ? slot.reps  : 0,
-                        holdSeconds:    0,
-                        frequency:      0,
-                        notes:          slot.notes || '',
-                        orderIndex:     idx++,
-                        circuitNumber:  circuit.num,
-                        circuitLabel:   circuit.label || '',
-                        loadType:       slot.loadType || 0,
-                        weightKg:       slot.weightKg || 0
+            await PhysioPlanProtocol.replaceExercises(planId, function(_fullPlan, existingIds) {
+                var newExercises = [];
+                var idx = 1;
+                (window.PhysioWorkoutBuilder._lastCircuits || []).forEach(function(circuit) {
+                    circuit.slots.forEach(function(slot) {
+                        if (!slot) return;
+                        newExercises.push({
+                            planExerciseId: existingIds[slot.exerciseId] || '',
+                            exerciseId:     slot.exerciseId,
+                            sets:           slot.sets  !== undefined ? slot.sets  : 0,
+                            reps:           slot.reps  !== undefined ? slot.reps  : 0,
+                            holdSeconds:    0,
+                            frequency:      0,
+                            notes:          slot.notes || '',
+                            orderIndex:     idx++,
+                            circuitNumber:  circuit.num,
+                            circuitLabel:   circuit.label || '',
+                            loadType:       slot.loadType || 0,
+                            weightKg:       slot.weightKg || 0
+                        });
                     });
                 });
+                return newExercises;
             });
-            fullPlan.exercises = newExercises;
-
-            var putResp = await fetch(prefix + '/50/PhyPlan', {
-                method:  'PUT',
-                headers: _authHeaders(),
-                body:    JSON.stringify(fullPlan)
-            });
-            if (!putResp.ok) throw new Error('Update plan HTTP ' + putResp.status);
 
             Layer8DNotification.success('Treatment plan updated successfully.');
 
             var cb = window.PhysioWorkoutBuilder._onRefresh;
-            if (cb) {
-                cb();
-            }
+            if (cb) cb();
         } catch(e) {
             Layer8DNotification.error('Failed to update plan: ' + e.message);
         }

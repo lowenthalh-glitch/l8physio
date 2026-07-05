@@ -14,7 +14,6 @@ import (
 // client list back from the service and skip themselves if it's empty.
 func RunAllPhases(client *PhysioClient, store *MockDataStore) {
 	runPhysioPhase1(client, store) // Therapists & Exercises (no dependencies)
-	runPhysioPhase5(client, store) // Protocols (needs exercises)
 
 	clientIds := fetchClientIDs(client)
 	if len(clientIds) == 0 {
@@ -113,28 +112,6 @@ func runPhysioPhase4(client *PhysioClient, store *MockDataStore, clientIds []str
 			store.ProgressLogIDs = append(store.ProgressLogIDs, l.LogId)
 		}
 		fmt.Printf("  Created %d ProgressLogs\n", len(logs))
-	}
-}
-
-// runPhysioPhase5 generates protocol templates from client data (requires exercises)
-func runPhysioPhase5(client *PhysioClient, store *MockDataStore) {
-	fmt.Printf("=== Phase 5: Protocol Templates ===\n")
-
-	if len(store.PhysioExerciseIDs) == 0 {
-		fmt.Printf("  SKIPPED: no exercises available\n")
-		return
-	}
-
-	// Protocols from protocols.xlsx — one record per unique protocol name with all exercises embedded
-	protocols := generateClientProtocols()
-	_, err := client.Post("/physio/50/PhyProto", &physio.PhysioProtocolList{List: protocols})
-	if err != nil {
-		fmt.Printf("  ERROR creating PhysioProtocols: %v\n", err)
-	} else {
-		for _, p := range protocols {
-			store.PhysioProtocolIDs = append(store.PhysioProtocolIDs, p.ProtocolId)
-		}
-		fmt.Printf("  Created %d PhysioProtocols\n", len(protocols))
 	}
 }
 

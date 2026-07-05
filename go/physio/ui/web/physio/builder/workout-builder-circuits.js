@@ -1,11 +1,11 @@
 (function() {
     'use strict';
 
-    var POSTURE_CODES = { 1:'KYPH', 2:'LORD', 3:'UFLAT', 4:'LFLAT', 5:'VALG', 6:'PRON', 7:'GEN' };
-    var JOINT_CODES   = { 1:'SHO',  2:'KNE',  3:'ANK',  4:'LBP',  5:'ELB',  6:'GEN', 7:'HIP', 8:'CORE', 9:'SIJ' };
-
-    function _protocolCode(posture, joint) {
-        return (POSTURE_CODES[posture] || '?') + '-' + (JOINT_CODES[joint] || '?');
+    function _classificationLabel(posture, joint) {
+        var enums = (window.PhysioManagement && window.PhysioManagement.enums) || {};
+        var p = (enums.POSTURE && enums.POSTURE[posture]) || '?';
+        var j = (enums.JOINT   && enums.JOINT[joint])     || '?';
+        return p + ' · ' + j;
     }
 
     function _setsRepsDisplay(val, displayVal) {
@@ -69,15 +69,13 @@
                     }
                 }
 
-                var code = _protocolCode(proto.posture, proto.joint);
                 circuits.push({
-                    num:          num,
-                    label:        code + ' — ' + CATEGORY_LABELS[cat],
-                    protocolCode: code,
-                    posture:      proto.posture,
-                    joint:        proto.joint,
-                    category:     cat,
-                    slots:        slots
+                    num:      num,
+                    label:    _classificationLabel(proto.posture, proto.joint) + ' — ' + CATEGORY_LABELS[cat],
+                    posture:  proto.posture,
+                    joint:    proto.joint,
+                    category: cat,
+                    slots:    slots
                 });
             });
         });

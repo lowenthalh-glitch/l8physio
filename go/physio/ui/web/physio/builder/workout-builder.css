@@ -435,6 +435,56 @@
 .pe-actions {
     margin-top: 16px;
     text-align: right;
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.pe-export-form,
+.pe-import-form,
+.pe-notes-form {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 8px 0;
+}
+.pe-export-label,
+.pe-import-label,
+.pe-notes-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--layer8d-text-medium);
+}
+.pe-export-input,
+.pe-import-input,
+.pe-notes-input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--layer8d-border);
+    border-radius: 4px;
+    background: var(--layer8d-bg);
+    color: var(--layer8d-text);
+    font-size: 14px;
+    font-family: inherit;
+}
+.pe-notes-input {
+    resize: vertical;
+    min-height: 140px;
+}
+.pe-notes-hint {
+    font-size: 11px;
+    color: var(--layer8d-text-muted);
+    font-style: italic;
+}
+.pe-import-warn {
+    margin-top: 8px;
+    padding: 8px 10px;
+    background: rgba(255, 165, 0, 0.08);
+    border-left: 3px solid #f59e0b;
+    color: var(--layer8d-text-medium);
+    font-size: 12px;
+    border-radius: 2px;
 }
 
 /* ── Workout Builder toolbar (client popup) ─────────────────── */

@@ -1,9 +1,6 @@
 (function() {
     'use strict';
 
-    var POSTURE_CODES = { 1:'KYPH', 2:'LORD', 3:'UFLAT', 4:'LFLAT', 5:'VALG', 6:'PRON', 7:'GEN' };
-    var JOINT_CODES   = { 1:'SHO',  2:'KNE',  3:'ANK',  4:'LBP',  5:'ELB',  6:'GEN', 7:'HIP', 8:'CORE', 9:'SIJ' };
-
     var CIRCUIT_CATEGORIES = [
         { value: 1, label: 'Mobility'   },
         { value: 2, label: 'Rehab'      },
@@ -24,8 +21,11 @@
             ? Layer8DConfig.getApiPrefix() : '/physio';
     }
 
-    function _protocolCode(posture, joint) {
-        return (POSTURE_CODES[posture] || '?') + '-' + (JOINT_CODES[joint] || '?');
+    function _classificationLabel(posture, joint) {
+        var enums = (window.PhysioManagement && window.PhysioManagement.enums) || {};
+        var p = (enums.POSTURE && enums.POSTURE[posture]) || '?';
+        var j = (enums.JOINT   && enums.JOINT[joint])     || '?';
+        return p + ' · ' + j;
     }
 
     function _enumOptions(map) {
@@ -128,7 +128,7 @@
         var badgeEl   = row.querySelector('.wb-row-badge');
 
         function _sync() {
-            badgeEl.textContent = _protocolCode(postureEl.value, jointEl.value);
+            badgeEl.textContent = _classificationLabel(postureEl.value, jointEl.value);
         }
         postureEl.addEventListener('change', _sync);
         jointEl.addEventListener('change', _sync);
@@ -152,7 +152,7 @@
         window.PhysioWorkoutBuilder._lastCircuits  = null;
         window.PhysioWorkoutBuilder._lastProtocols = null;
 
-        codeEl.textContent = _protocolCode(posture, joint);
+        codeEl.textContent = _classificationLabel(posture, joint);
 
         // Collect primary protocol + any extra rows, each with its own circuit picks
         var protocols = [{
@@ -222,7 +222,7 @@
             window.PhysioWorkoutCircuits._allExercises = exercises;
 
             if (exercises.length === 0) {
-                var protoCodes = protocols.map(function(p) { return _protocolCode(p.posture, p.joint); }).join(', ');
+                var protoCodes = protocols.map(function(p) { return _classificationLabel(p.posture, p.joint); }).join(', ');
                 output.innerHTML = [
                     '<div class="wb-empty-state">',
                       '<div class="wb-empty-icon">&#128203;</div>',
@@ -285,7 +285,7 @@
         var protocolEl = container.querySelector('#wb-protocol');
 
         function _syncCode() {
-            protocolEl.textContent = _protocolCode(postureEl.value, jointEl.value);
+            protocolEl.textContent = _classificationLabel(postureEl.value, jointEl.value);
         }
         postureEl.addEventListener('change', _syncCode);
         jointEl.addEventListener('change',   _syncCode);

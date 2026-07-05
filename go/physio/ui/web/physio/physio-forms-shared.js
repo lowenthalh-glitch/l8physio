@@ -76,7 +76,7 @@
                     f.section('Clinical Details', [
                         ...f.textarea('goals',          'Goals'),
                         ...f.textarea('description',    'Description'),
-                        ...f.textarea('therapistNotes', 'Therapist Notes')
+                        ...f.textarea('notes',          'Notes')
                     ])
                 ]),
 
@@ -111,24 +111,31 @@
 
                 PhysioProtocol: f.form('Protocol Template', [
                     f.section('Protocol Details', [
-                        ...f.text('name',          'Protocol Name',  true),
-                        ...f.text('protocolCode',  'Protocol Code'),
-                        ...f.select('joint',       'Joint',          enums.JOINT),
-                        ...f.select('posture',     'Posture Type',   enums.POSTURE),
+                        ...f.text('name',            'Protocol Name', true),
                         ...f.textarea('description', 'Description'),
-                        ...f.checkbox('isActive',  'Active')
+                        ...f.textarea('goals',       'Goals'),
+                        ...f.checkbox('isActive',    'Active')
+                    ]),
+                    f.section('Classification', [
+                        ...f.multiselect('joints',     'Joints',     enums.JOINT),
+                        ...f.multiselect('categories', 'Categories', enums.EXERCISE_CATEGORY),
+                        ...f.multiselect('postures',   'Posture',    enums.POSTURE)
                     ]),
                     f.section('Exercises', [
                         ...f.inlineTable('exercises', 'Protocol Exercises', [
-                            { key: 'protocolExerciseId', label: 'ID',         hidden: true },
-                            { key: 'orderIndex',         label: '#',           type: 'number' },
-                            { key: 'exerciseId',         label: 'Exercise',    type: 'reference', lookupModel: 'PhysioExercise' },
-                            { key: 'exerciseName',       label: 'Name',        type: 'text' },
-                            { key: 'sets',               label: 'Sets',        type: 'number' },
-                            { key: 'reps',               label: 'Reps',        type: 'text' },
-                            { key: 'loadType',           label: 'Load',        type: 'select', options: enums.LOAD_TYPE },
-                            { key: 'effort',             label: 'Effort',      type: 'text' },
-                            { key: 'loadNotes',          label: 'Load Notes',  type: 'text' }
+                            { key: 'protocolExerciseId', label: 'ID',        hidden: true },
+                            { key: 'orderIndex',         label: '#',          type: 'number' },
+                            { key: 'circuitNumber',      label: 'Circuit',    type: 'number' },
+                            { key: 'circuitLabel',       label: 'Label',      type: 'text' },
+                            { key: 'exerciseId',         label: 'Exercise',   type: 'reference', lookupModel: 'PhysioExercise' },
+                            { key: 'exerciseName',       label: 'Name',       type: 'text' },
+                            { key: 'sets',               label: 'Sets',       type: 'number' },
+                            { key: 'reps',               label: 'Reps',       type: 'number' },
+                            { key: 'holdSeconds',        label: 'Hold (s)',   type: 'number' },
+                            { key: 'loadType',           label: 'Load',       type: 'select', options: enums.LOAD_TYPE },
+                            { key: 'weightKg',           label: 'Weight (kg)', type: 'number' },
+                            { key: 'effort',             label: 'Effort',     type: 'text' },
+                            { key: 'notes',              label: 'Notes',      type: 'text' }
                         ])
                     ])
                 ]),

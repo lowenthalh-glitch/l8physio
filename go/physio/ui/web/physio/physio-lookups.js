@@ -64,7 +64,7 @@
                     if (r.ok) {
                         const data = await r.json();
                         (data.list || []).forEach(function(ex) {
-                            self._exercises[ex.exerciseId] = ex.name || ex.exerciseId;
+                            self._exercises[ex.exerciseId] = ex;
                         });
                         anyOk = true;
                     }
@@ -87,7 +87,12 @@
         },
 
         exerciseName: function(id) {
-            return this._exercises[id] || id || '-';
+            var ex = this._exercises[id];
+            return (ex && ex.name) || id || '-';
+        },
+
+        exercise: function(id) {
+            return this._exercises[id] || null;
         }
     };
 })();

@@ -6,9 +6,6 @@
     function _api() { return Layer8DConfig.getApiPrefix(); }
     function _get(url) { return Layer8MAuth.get(url); }
 
-    var POSTURE_CODES = { 1:'KYPH', 2:'LORD', 3:'UFLAT', 4:'LFLAT', 5:'VALG', 6:'PRON', 7:'GEN' };
-    var JOINT_CODES   = { 1:'SHO',  2:'KNE',  3:'ANK',  4:'LBP',  5:'ELB',  6:'GEN', 7:'HIP', 8:'CORE', 9:'SIJ' };
-
     window.MobilePlanEditor = {
         open: function(item, onRefresh) {
             var planId = item && item.planId;
@@ -31,17 +28,22 @@
         var startDate = plan.startDate ? Layer8DUtils.formatDate(plan.startDate) : '\u2014';
         var endDate = plan.endDate ? Layer8DUtils.formatDate(plan.endDate) : '\u2014';
 
-        // Resolve protocol label
         var protoLabel = plan.protocolId || '\u2014';
-        if (plan.protocolId) {
-            var pc = (POSTURE_CODES[plan.posture] || '') + '-' + (JOINT_CODES[plan.joint] || '');
-            if (pc !== '-') protoLabel = pc;
-        }
+
+        // Notes are staff-only; belt-and-braces on top of the API deny rule.
+        var isStaff = sessionStorage.getItem('userPortal') !== 'client-app.html';
+        var notesHtml = (isStaff && plan.notes)
+            ? '<div style="padding:8px 10px;margin-top:6px;background:var(--layer8d-bg-light);border-left:3px solid var(--layer8d-primary);border-radius:4px;white-space:pre-wrap;font-size:13px;color:var(--layer8d-text-dark);">' +
+                '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--layer8d-text-medium);margin-bottom:4px;">Notes</div>' +
+                Layer8DUtils.escapeHtml(plan.notes) +
+              '</div>'
+            : '';
 
         var headerHtml = '<div style="padding:8px 0;margin-bottom:8px;border-bottom:1px solid var(--layer8d-border);">' +
             _field('Status', statusLabel) +
             _field('Dates', startDate + ' \u2014 ' + endDate) +
             (plan.goals ? _field('Goals', plan.goals) : '') +
+            notesHtml +
             '</div>';
 
         var planContainerId = 'mpe-plan-' + Date.now();

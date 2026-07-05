@@ -6,12 +6,12 @@
 
     PhysioManagement.columns = PhysioManagement.columns || {};
     PhysioManagement.columns.PhysioProtocol = [
-        ...col.id('protocolId',    'Protocol ID'),
-        ...col.col('name',         'Protocol Name'),
-        ...col.col('protocolCode', 'Code'),
-        ...col.enum('joint',       'Joint',   null, render.joint,    enums.JOINT),
-        ...col.enum('posture',     'Posture', null, render.posture,  enums.POSTURE),
-        ...col.col('description',  'Description'),
+        ...col.id('protocolId',   'Protocol ID'),
+        ...col.col('name',        'Protocol Name'),
+        ...col.custom('joints',     'Joints',     (item) => render.joints(item.joints),         { enumValues: enums.JOINT,             filterKey: 'joints' }),
+        ...col.custom('categories', 'Categories', (item) => render.categories(item.categories), { enumValues: enums.EXERCISE_CATEGORY, filterKey: 'categories' }),
+        ...col.custom('postures',   'Posture',    (item) => render.postures(item.postures),     { enumValues: enums.POSTURE,           filterKey: 'postures' }),
+        ...col.col('description', 'Description'),
         ...col.boolean('isActive', 'Active')
     ];
 
