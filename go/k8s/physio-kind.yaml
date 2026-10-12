@@ -107,11 +107,13 @@ spec:
       labels:
         app: physio-web
     spec:
-      hostNetwork: true
       containers:
         - name: physio-web
           image: saichler/physio-web:latest
           imagePullPolicy: Always
+          ports:
+            - containerPort: 30080
+              name: http
           env:
             - name: NODE_IP
               valueFrom:
@@ -129,6 +131,22 @@ spec:
         resources:
           requests:
             storage: 5Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: physio
+  name: physio-web
+  labels:
+    app: physio-web
+spec:
+  type: NodePort
+  selector:
+    app: physio-web
+  ports:
+    - port: 80
+      targetPort: 30080
+      nodePort: 30080
 ---
 apiVersion: apps/v1
 kind: StatefulSet

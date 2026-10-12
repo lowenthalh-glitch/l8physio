@@ -9,9 +9,20 @@ e2e/
 ├── tests/
 │   ├── auth/          # Authentication tests
 │   │   └── login.spec.ts
-│   ├── desktop/       # Desktop UI tests
-│   │   ├── therapist.spec.ts
-│   │   └── client.spec.ts
+│   ├── ui/            # All UI feature tests
+│   │   ├── dashboard.spec.ts
+│   │   ├── therapists.spec.ts
+│   │   ├── clients.spec.ts
+│   │   ├── exercises.spec.ts
+│   │   ├── protocols.spec.ts
+│   │   ├── plans.spec.ts
+│   │   ├── appointments.spec.ts
+│   │   ├── progress.spec.ts
+│   │   ├── reports.spec.ts
+│   │   ├── feedback.spec.ts
+│   │   ├── boostapp.spec.ts
+│   │   ├── workout-builder.spec.ts
+│   │   └── all-ui.spec.ts
 │   ├── api/           # API endpoint tests
 │   │   └── rest.spec.ts
 │   └── kind/          # KIND cluster deployment tests
@@ -86,14 +97,19 @@ cp .env.example .env
 - Successful login redirect
 - Session persistence
 
-### Desktop UI
-- Therapist table display
-- Therapist filtering
-- Therapist sorting
-- Therapist CRUD operations
-- Client table display
-- Client CRUD operations
-- Client assignment
+### All UI Features (12 sections)
+- **Dashboard (htdash)** - Display and load
+- **Therapists** - Table display, filtering, sorting, CRUD
+- **Clients** - Table display, filtering, assignment
+- **Exercises** - Table display, category/equipment filters
+- **Protocol Templates** - Table display, CRUD
+- **Treatment Plans** - Table display, circuit display, exercise management
+- **Appointments** - Table display, date range filter
+- **Progress Logs** - Table display, date range filter
+- **Session Reports** - Table display, statistics
+- **Home Feedback** - Table display
+- **Boostapp Calendar** - Calendar display, schedule
+- **Workout Builder** - Interface display, circuit creation
 
 ### API
 - Health endpoint
@@ -106,21 +122,3 @@ cp .env.example .env
 - Service deployment
 - Pod readiness
 - UI accessibility
-
-## Troubleshooting
-
-### Tests fail with connection error
-
-Ensure the l8physio server is running:
-```bash
-cd ../go
-./run-local.sh
-```
-
-### KIND tests fail
-
-Verify Docker and kind are installed:
-```bash
-docker --version
-kind version
-```

@@ -26,16 +26,18 @@ test:ui:
 
 kind:
 	@echo "Starting KIND cluster..."
-	kind create cluster --name l8physio-e2e || exit 1
+	kind create cluster --name l8physio-e2e --config ../kind-config.yaml || exit 1
 	@echo "Deploying services..."
-	kubectl apply -f go/k8s/physio-kind.yaml
-	kubectl apply -f go/physio/log-vnet/
-	kubectl apply -f go/physio/log-agent/
-	kubectl apply -f go/physio/boostapp/main/
+	kubectl apply -f ../go/k8s/physio-kind.yaml
 	@echo "Waiting for pods..."
-	kubectl wait --for=condition=Ready pod -l app=vnet --timeout=120s || exit 1
+	kubectl wait --for=condition=Ready pod -l app=physio-vnet --timeout=120s -n physio || exit 1
+	kubectl wait --for=condition=Ready pod -l app=physio --timeout=120s -n physio || exit 1
+	kubectl wait --for=condition=Ready pod -l app=physio-web --timeout=120s -n physio || exit 1
+	kubectl wait --for=condition=Ready pod -l app=physio-log-vnet --timeout=120s -n physio || exit 1
+	kubectl wait --for=condition=Ready pod -l app=physio-log-agent --timeout=120s -n physio || exit 1
+	kubectl wait --for=condition=Ready pod -l app=physio-boostapp --timeout=120s -n physio || exit 1
 	@echo "Running tests against KIND cluster..."
-	npx playwright test --base-url=http://localhost:$(kubectl get service physio-ui -o jsonpath='{.spec.ports[0].nodePort}')
+	npx playwright test --base-url=http://localhost:8080
 	@echo "Cleaning up..."
 	kind delete cluster --name l8physio-e2e
 
