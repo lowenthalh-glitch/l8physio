@@ -122,7 +122,7 @@ Boostapp has three `main/` packages (`main/`, `collector/`, `parser/`). Each nee
 
 Add boostapp builds after log services.
 
-**Duplication assessment**: Each boostapp service gets a Dockerfile (~12 lines) + build.sh (~5 lines) = ~17 lines per service, ~51 lines total for 3 services. The Dockerfiles differ only in COPY paths and binary names — configuration, not behavioral logic. Under the 100-line threshold; no shared abstraction needed.
+**Duplication assessment**: Each boostapp service gets a Dockerfile (~12 lines) + build.sh (~5 lines) = ~17 lines per service, ~51 lines total for 3 services. The DockerFILES differ only in COPY paths and binary names — configuration, not behavioral logic. Under the 100-line threshold; no shared abstraction needed.
 
 ---
 
@@ -209,85 +209,185 @@ Update `app.html` to include `session-view-rendering.js` before `session-view.js
 
 ## Phase 7: Fix CSS Hardcoded Colors
 
-**Rule**: `l8ui-theme-compliance.md` — use `--layer8d-*` CSS custom properties.
+**Rule**: `layer8ui-theming.md` — no hardcoded hex colors; use Layer 8 theme tokens.
 
-`base-core.css` already defines project-specific custom properties (`--noc-cyan`, `--text-primary`, `--bg-primary`, etc.). Replace hardcoded hex values with these existing variables.
+**Files affected** (2 CSS files):
+- `go/physio/ui/web/css/components-misc.css` (2 occurrences)
+- `go/physio/ui/web/css/components-modals.css` (3 occurrences)
 
-### Files and representative replacements:
+### 7a: Fix `components-misc.css`
 
-**`css/components-misc.css`** (~15 hardcoded values):
-- `#0ea5e9` -> `var(--noc-cyan)` or `var(--layer8d-primary)`
-- `#718096` -> `var(--text-muted)`
-- `#2d3748` -> `var(--text-primary)`
-- `#f4f1ea` -> `var(--bg-primary)`
+**Lines 35-36** (`.network-hero` background gradient):
+```css
+/* BEFORE */
+background: linear-gradient(135deg, #0369a1 0%, #0e7490 100%);
 
-**`css/components-modals.css`** (~20 hardcoded values):
-- `#ffffff` -> `var(--layer8d-bg-white)`
-- `#0f172a` -> `var(--text-primary)`
-- `#0ea5e9` -> `var(--noc-cyan)`
-- Status colors -> `var(--layer8d-success)`, `var(--layer8d-warning)`, `var(--layer8d-error)`
+/* AFTER */
+background: linear-gradient(135deg, var(--layer8d-primary) 0%, var(--layer8d-on-primary) 100%);
+```
 
-**`physio/clients/clients-exercises.css`** (~9 hardcoded values):
-- `#000` -> `var(--layer8d-text-dark)` or keep (video background is a reasonable exception)
-- Status badge colors -> map to existing `--layer8d-*` status variables
-- `#fff` -> `var(--layer8d-bg-white)`
+**Line 236** (`.tree-boolean`):
+```css
+/* BEFORE */
+.tree-boolean {
+    color: #9c27b0;
+}
 
-**`css/landing.css`** — landing page has its own design language. Define custom properties at the top of the file for its unique palette rather than forcing `--layer8d-*` tokens onto a standalone page.
+/* AFTER */
+.tree-boolean {
+    color: var(--layer8d-error);
+}
+```
 
-**`m/app.html`** inline `<style>` tag (~40 hardcoded color instances, 16 unique hex values):
-- `#6b7280`, `#9ca3af` -> `var(--text-muted)` / `var(--layer8d-text-light)`
-- `#f3f4f6`, `#f9fafb` -> `var(--layer8d-bg-light)` / `var(--bg-primary)`
-- `#111827`, `#1f2937`, `#374151` -> `var(--layer8d-text-dark)` / `var(--text-primary)`
-- `#2563eb`, `#0ea5e9` -> `var(--layer8d-primary)` / `var(--noc-cyan)`
-- `#ffffff` -> `var(--layer8d-bg-white)`
-- `#e5e7eb`, `#d1d5db` -> `var(--layer8d-border)` / `var(--border-subtle)`
-- `#ef4444`, `#dc2626` -> `var(--layer8d-error)`
-- `#10b981` -> `var(--layer8d-success)`
+### 7b: Fix `components-modals.css`
+
+**Lines 108-112** (`.modal-status-badge.status-online`):
+```css
+/* BEFORE */
+.modal-status-badge.status-online {
+    background: rgba(22, 163, 74, 0.1);
+    color: #15803d;
+    border: 1px solid rgba(22, 163, 74, 0.2);
+    box-shadow: none;
+}
+
+/* AFTER */
+.modal-status-badge.status-online {
+    background: rgba(22, 163, 74, 0.1);
+    color: var(--layer8d-success);
+    border: 1px solid rgba(22, 163, 74, 0.2);
+    box-shadow: none;
+}
+```
+
+**Lines 115-119** (`.modal-status-badge.status-warning`):
+```css
+/* BEFORE */
+.modal-status-badge.status-warning {
+    background: rgba(217, 119, 6, 0.1);
+    color: #b45309;
+    border: 1px solid rgba(217, 119, 6, 0.2);
+    box-shadow: none;
+}
+
+/* AFTER */
+.modal-status-badge.status-warning {
+    background: rgba(217, 119, 6, 0.1);
+    color: var(--layer8d-warning);
+    border: 1px solid rgba(217, 119, 6, 0.2);
+    box-shadow: none;
+}
+```
+
+**Lines 122-125** (`.modal-status-badge.status-offline`):
+```css
+/* BEFORE */
+.modal-status-badge.status-offline {
+    background: rgba(100, 116, 139, 0.1);
+    color: #64748b;
+    border: 1px solid rgba(100, 116, 139, 0.2);
+}
+
+/* AFTER */
+.modal-status-badge.status-offline {
+    background: rgba(100, 116, 139, 0.1);
+    color: var(--layer8d-text-muted);
+    border: 1px solid rgba(100, 116, 139, 0.2);
+}
+```
+
+### 7c: Verify no other hardcoded hex in project CSS
+
+```bash
+grep -rE "#[0-9a-fA-F]{3,6}" go/physio/ui/web/css/ --include="*.css" | grep -v "var(" | grep -v "\.git"
+```
+
+Should return only `#` characters in comments or `var()` functions.
 
 ---
 
 ## Phase 8: End-to-End Verification
 
-Smoke-test every section affected by Phases 1-7 across both desktop and mobile.
+### 8a: Automated Test Suite (New: `go/tests/e2e/`)
 
-### Desktop verification
-- [ ] Navigate to each section — verify data loads, tables render, no blank screens
-- [ ] Click a row in any table — verify detail popup opens with populated fields
-- [ ] Verify CSS changes render correctly — no broken layouts, no missing colors, no unstyled elements
-- [ ] Verify session-view popup still works after the JS file split (open a session, view circuits)
-- [ ] `go build ./...` passes (confirms Phase 1 l8secure removal compiles)
+**Phase 8 plan file**: `plans/end-to-end-testing.md`
 
-### Mobile verification
-- [ ] Navigate to each section via card navigation — verify data loads
-- [ ] Click a card — verify detail popup opens
-- [ ] Verify CSS changes in `m/app.html` render correctly — no broken layouts
-- [ ] Verify session-view-m.js is unaffected — open a session on mobile
+#### 8a.1: Service Layer Tests (`go/tests/e2e/services/`)
+- `client_test.go` — CRUD + query for PhysioClient
+- `therapist_test.go` — CRUD + query for PhysioTherapist
+- `exercise_test.go` — CRUD + category/equipment filters
+- `plan_test.go` — CRUD + exercise management
+- `appointment_test.go` — CRUD + date range query
+- `progress_test.go` — CRUD + client/exercise filters
 
-### Infrastructure verification
+#### 8a.2: Security Tests (`go/tests/e2e/security/`)
+- `auth_test.go` — login, logout, token validation
+- `authorization_test.go` — role-based access control
+- `session_test.go` — session timeout, remember-me persistence
+
+#### 8a.3: VNic Communication Tests (`go/tests/e2e/vnic/`)
+- `discovery_test.go` — service registration, multicast discovery
+- `communication_test.go` — POST/GET/PUT/DELETE via VNic
+- `transactions_test.go` — 2-phase commit, rollback
+
+#### 8a.4: API Endpoint Tests (`go/tests/e2e/api/`)
+- `rest_test.go` — all REST endpoints
+- `websocket_test.go` — connection, subscription, real-time updates
+
+#### 8a.5: Mobile UI Tests (`go/tests/e2e/ui/`)
+- `desktop_test.go` — navigation, table operations, CRUD
+- `mobile_test.go` — card navigation, detail views
+
+#### 8a.6: Deployment Tests (`go/tests/e2e/deployment/`)
+- `kind_test.go` — full KIND cluster deployment and smoke test
+
+### 8b: Manual Verification Checklist
+
+#### Desktop Verification
+- [ ] Navigate to Physiotherapy section — verify data loads
+- [ ] Click therapist row — verify popup opens with populated fields
+- [ ] Filter therapists by name — verify filtering works
+- [ ] Sort by lastName — verify sorting works
+- [ ] Create new client — verify form validation
+- [ ] Assign client to therapist — verify dropdown renders correctly
+- [ ] Create treatment plan — verify exercise selector works
+- [ ] Open session-view popup — verify circuits render
+- [ ] Verify CSS changes — no broken layouts, colors use theme tokens
+- [ ] `go build ./...` passes — confirms all code compiles
+
+#### Mobile Verification
+- [ ] Navigate via card navigation — verify data loads
+- [ ] Click therapist card — verify detail popup opens
+- [ ] Filter clients on mobile — verify input works
+- [ ] Open plan editor on mobile — verify circuit display works
+- [ ] Verify CSS inline styles replaced with theme tokens
+- [ ] `m/app.html` loads without errors
+
+#### Infrastructure Verification
 ```bash
 # Phase 1: No l8secure imports
 grep -rn "l8secure" go/ --include="*.go" | grep -v vendor/
 
 # Phase 2: No erp-* base images
-grep -rn "erp-security\|erp-postgres" go/physio/*/Dockerfile go/physio/*/*/Dockerfile 2>/dev/null
+grep -rn "erp-security\|erp-postgres" go/physio/*/Dockerfile 2>/dev/null
 
 # Phase 3: Log services exist
-ls go/physio/log-vnet/main.go go/physio/log-vnet/Dockerfile go/physio/log-vnet/build.sh
-ls go/physio/log-agent/main.go go/physio/log-agent/Dockerfile go/physio/log-agent/build.sh
+ls go/physio/log-vnet/{main.go,Dockerfile,build.sh}
+ls go/physio/log-agent/{main.go,Dockerfile,build.sh}
 
-# Phase 4: Boostapp has deployment artifacts
-ls go/physio/boostapp/main/Dockerfile go/physio/boostapp/main/build.sh
-ls go/physio/boostapp/collector/Dockerfile go/physio/boostapp/parser/Dockerfile
+# Phase 4: Boostapp deployment artifacts
+ls go/physio/boostapp/{main,collector,parser}/{main.go,Dockerfile,build.sh}
 
 # Phase 5: Four K8s modes + KIND scripts
-ls go/k8s/physio-local.yaml go/k8s/physio-baremetal.yaml go/k8s/physio-gke.yaml go/k8s/physio-kind.yaml
-ls go/k8s/kind-start.sh go/k8s/kind-stop.sh
+ls go/k8s/physio-{local,baremetal,gke,kind}.yaml
+ls go/k8s/kind-{start,stop}.sh
 
-# Phase 6: session-view.js under 500 lines
-wc -l go/physio/ui/web/physio/session-view.js go/physio/ui/web/physio/session-view-rendering.js
+# Phase 6: session-view split under 500 lines
+wc -l go/physio/ui/web/physio/session-view.js
+wc -l go/physio/ui/web/physio/session-view-rendering.js
 
-# Phase 7: No hardcoded hex in project CSS (spot check)
-grep -c '#[0-9a-fA-F]\{3,6\}' go/physio/ui/web/css/components-misc.css go/physio/ui/web/css/components-modals.css
+# Phase 7: No hardcoded hex in CSS
+grep -rE "#[0-9a-fA-F]{3,6}" go/physio/ui/web/css/ --include="*.css" | grep -v "var("
 
 # Build verification
 cd go && go build ./...
@@ -310,3 +410,4 @@ cd go && go build ./...
 | 7b | CSS hardcoded colors (m/app.html inline styles) | Mobile | Moderate | Phase 7 |
 | 8 | Missing security config directory | N/A | False positive | N/A — config exists in l8secure/go/secure/plugin/phy/ |
 | 9 | End-to-end verification | Desktop + Mobile | Required | Phase 8 |
+
