@@ -104,22 +104,22 @@ limitations under the License.
 }
 
 .modal-status-badge.status-online {
-    background: rgba(22, 163, 74, 0.1);
-    color: #15803d;
+    background: var(--layer8d-success-bg);
+    color: var(--layer8d-success);
     border: 1px solid rgba(22, 163, 74, 0.2);
     box-shadow: none;
 }
 
 .modal-status-badge.status-warning {
-    background: rgba(217, 119, 6, 0.1);
-    color: #b45309;
+    background: var(--layer8d-warning-bg);
+    color: var(--layer8d-warning);
     border: 1px solid rgba(217, 119, 6, 0.2);
     box-shadow: none;
 }
 
 .modal-status-badge.status-offline {
     background: rgba(100, 116, 139, 0.1);
-    color: #64748b;
+    color: var(--layer8d-text-muted);
     border: 1px solid rgba(100, 116, 139, 0.2);
 }
 
@@ -228,7 +228,7 @@ limitations under the License.
 
 .detail-table tbody tr {
     border-bottom: 1px solid var(--border-subtle);
-    transition: background-color 0.2s;
+    transition: background-color 0.2;
 }
 
 .detail-table tbody tr:hover {

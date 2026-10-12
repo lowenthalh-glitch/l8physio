@@ -32,7 +32,7 @@ limitations under the License.
     height: 150px;
     overflow: hidden;
     margin: 0 0 30px 0;
-    background: linear-gradient(135deg, #0369a1 0%, #0e7490 100%);
+    background: linear-gradient(135deg, var(--layer8d-primary) 0%, var(--layer8d-primary-dark) 100%);
     border-radius: 16px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
@@ -233,7 +233,7 @@ limitations under the License.
 }
 
 .tree-boolean {
-    color: #9c27b0;
+    color: var(--layer8d-primary);
 }
 
 .tree-null,
