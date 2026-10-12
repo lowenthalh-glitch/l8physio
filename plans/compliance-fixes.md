@@ -21,7 +21,7 @@ This is a prerequisite for Phases 2-4. The user handles this step.
 
 ---
 
-## Phase 1: Remove l8secure Import from Boostapp
+## Phase 1: Remove l8secure Import from Boostapp - **COMPLETE**
 
 **Rule**: `never-import-l8secure.md` — no project may import any package from l8secure.
 
@@ -56,7 +56,7 @@ cd go && rm -rf go.sum go.mod vendor && go mod init && GOPROXY=direct GOPRIVATE=
 
 ---
 
-## Phase 2: Fix Base Images in Existing Dockerfiles
+## Phase 2: Fix Base Images in Existing Dockerfiles - **COMPLETE**
 
 **Rule**: `deployment-artifacts.md` — never use another project's base images.
 
@@ -69,7 +69,7 @@ Each is a single-line change in the `FROM ... AS final` stage.
 
 ---
 
-## Phase 3: Add Log Services
+## Phase 3: Add Log Services - **COMPLETE**
 
 **Rule**: `log-services-required.md` — every project MUST include log-vnet and log-agent.
 
@@ -97,7 +97,7 @@ Add log-vnet and log-agent builds before other services (log-vnet first, then lo
 
 ---
 
-## Phase 4: Add Boostapp Deployment Artifacts
+## Phase 4: Add Boostapp Deployment Artifacts - **COMPLETE**
 
 **Rule**: `deployment-artifacts.md` — every deployable binary needs build.sh and Dockerfile.
 
@@ -306,7 +306,7 @@ Should return only `#` characters in comments or `var()` functions.
 
 ---
 
-## Phase 8: End-to-End Verification
+## Phase 8: End-to-End Verification - **COMPLETE**
 
 ### 8a: Automated Test Suite (New: `go/tests/e2e/`)
 
