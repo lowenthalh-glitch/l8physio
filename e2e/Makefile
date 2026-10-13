@@ -7,8 +7,8 @@ help:
 	@echo "=================="
 	@echo "make install      - Install Playwright and dependencies"
 	@echo "make test         - Run all E2E tests"
-	@echo "make test:headed  - Run tests in headed mode"
-	@echo "make test:ui      - Run tests with UI"
+	@echo "make test-headed  - Run tests in headed mode"
+	@echo "make test-ui      - Run tests with UI"
 	@echo "make kind         - Deploy to KIND and run tests"
 	@echo "make clean        - Cleanup"
 
@@ -18,10 +18,10 @@ install:
 test:
 	npx playwright test
 
-test:headed:
+test-headed:
 	npx playwright test --headed
 
-test:ui:
+test-ui:
 	npx playwright test --ui
 
 kind:
