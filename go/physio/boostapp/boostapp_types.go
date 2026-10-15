@@ -5,6 +5,14 @@ type BoostappCalendarResponse struct {
 	Classes    []BoostappEvent    `json:"Classes"`
 	Status     string             `json:"Status"`
 	Statistics BoostappStatistics `json:"Statistics"`
+	Branches   []BoostappBranch   `json:"branches"`
+}
+
+// BoostappBranch is one entry in the top-level `branches` list — the only
+// place in the response where the branch's human name appears.
+type BoostappBranch struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }
 
 // BoostappEvent represents a single event in the Boostapp calendar.

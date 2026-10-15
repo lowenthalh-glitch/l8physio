@@ -6,10 +6,10 @@ import (
 )
 
 // Cadence plans for Boostapp polling
-var EVERY_15_MINUTES = &l8tpollaris.L8PCadencePlan{Cadences: []int64{900}, Enabled: true}
+var EVERY_24_HOURS = &l8tpollaris.L8PCadencePlan{Cadences: []int64{86400}, Enabled: true}
 
 // CreateBoostappBootPolls creates the Pollaris configuration for Boostapp calendar collection.
-// The collector will poll the Boostapp calendar API every 15 minutes.
+// The collector will poll the Boostapp calendar API every 24 hours.
 func CreateBoostappBootPolls(branchID string) *l8tpollaris.L8Pollaris {
 	p := &l8tpollaris.L8Pollaris{}
 	p.Name = "boostapp"
@@ -35,7 +35,7 @@ func createCalendarPoll(p *l8tpollaris.L8Pollaris, branchID string) {
 		"showAllLocations=1&blockEvents=1&ScreenWidth=1657&zoomValue=2" +
 		"::application/x-www-form-urlencoded; charset=UTF-8"
 	poll.Protocol = l8tpollaris.L8PProtocol_L8PRESTAPI
-	poll.Cadence = EVERY_15_MINUTES
+	poll.Cadence = EVERY_24_HOURS
 	poll.Timeout = 60
 	poll.Operation = l8tpollaris.L8C_Operation_L8C_Get
 	poll.Attributes = make([]*l8tpollaris.L8PAttribute, 0)

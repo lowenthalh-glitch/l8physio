@@ -96,7 +96,7 @@ func syncInterval() time.Duration {
 			return time.Duration(m) * time.Minute
 		}
 	}
-	return 15 * time.Minute
+	return 24 * time.Hour
 }
 
 func runSyncLoop(client *boostapp.Client, nic ifs.IVNic, res ifs.IResources, interval time.Duration) {

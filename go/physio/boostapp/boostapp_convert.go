@@ -8,7 +8,9 @@ import (
 )
 
 // ConvertEvent transforms a raw Boostapp event into a protobuf BoostappCalendarEvent.
-func ConvertEvent(e BoostappEvent) *physio.BoostappCalendarEvent {
+// branchNames resolves branch id → name (from the top-level `branches` list);
+// pass nil if no mapping is available.
+func ConvertEvent(e BoostappEvent, branchNames map[string]string) *physio.BoostappCalendarEvent {
 	members, _ := strconv.Atoi(e.Members)
 	maxMembers, _ := strconv.Atoi(e.MaxMembers)
 
@@ -28,6 +30,7 @@ func ConvertEvent(e BoostappEvent) *physio.BoostappCalendarEvent {
 		IsCancelled:     e.IsCancelled,
 		BackgroundColor: e.BackgroundColor,
 		BranchId:        e.Branch,
+		BranchName:      branchNames[e.Branch],
 	}
 
 	if e.Customer != nil {
@@ -41,9 +44,15 @@ func ConvertEvent(e BoostappEvent) *physio.BoostappCalendarEvent {
 
 // ConvertAll transforms a full Boostapp response into a slice of protobuf events.
 func ConvertAll(resp *BoostappCalendarResponse) []*physio.BoostappCalendarEvent {
+	branchNames := make(map[string]string, len(resp.Branches))
+	for _, b := range resp.Branches {
+		if b.ID != "" {
+			branchNames[b.ID] = b.Name
+		}
+	}
 	result := make([]*physio.BoostappCalendarEvent, 0, len(resp.Classes))
 	for _, e := range resp.Classes {
-		result = append(result, ConvertEvent(e))
+		result = append(result, ConvertEvent(e, branchNames))
 	}
 	return result
 }

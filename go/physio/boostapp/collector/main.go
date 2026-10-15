@@ -35,7 +35,7 @@ func main() {
 	// Activate pollaris, targets service, and collector
 	pollaris.Activate(nic)
 	pollaris.Pollaris(nic.Resources()).Post(bootPolls, true)
-	res.Logger().Info("Registered Boostapp poll config (15-minute cadence, branchId=", branchID, ")")
+	res.Logger().Info("Registered Boostapp poll config (24-hour cadence, branchId=", branchID, ")")
 
 	targets.Activate(common.DB_CREDS, common.DB_NAME, nic)
 	service.Activate(common.Boostapp_Links_ID, nic)

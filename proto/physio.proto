@@ -570,6 +570,7 @@ message BoostappCalendarEvent {
   string                       branch_id          = 18;
   string                       physio_client_id   = 19;
   repeated BoostappParticipant participants       = 20;
+  string                       branch_name        = 21;
   l8common.AuditInfo           audit_info         = 30;
 }
 

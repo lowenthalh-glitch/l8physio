@@ -108,8 +108,9 @@ func (c *Client) EnsureSession() error {
 	defer resp.Body.Close()
 	io.ReadAll(resp.Body)
 
-	// A redirect away from /office/ means the session expired
-	if !strings.HasPrefix(resp.Request.URL.Path, "/office") {
+	// A logged-in user may land on /office/ or /dashboard/; anything else means the session expired.
+	p := resp.Request.URL.Path
+	if !strings.HasPrefix(p, "/office") && !strings.HasPrefix(p, "/dashboard") {
 		return c.Login()
 	}
 	return nil
