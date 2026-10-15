@@ -14,10 +14,10 @@ const (
 )
 
 func Activate(creds, dbname string, vnic ifs.IVNic) {
-	l8c.ActivateService(l8c.ServiceConfig{
-		ServiceName: ServiceName, ServiceArea: ServiceArea,
-		PrimaryKey: "PlanId", Callback: newPhyPlanServiceCallback(),
-	}, &physio.TreatmentPlan{}, &physio.TreatmentPlanList{}, creds, dbname, vnic)
+	l8c.ActivateService(
+		l8c.NewOrmSLA(ServiceName, ServiceArea, "PlanId", newPhyPlanServiceCallback(),
+			&physio.TreatmentPlan{}, &physio.TreatmentPlanList{}),
+		creds, dbname, vnic)
 
 	go CleanupDuplicateActivePlans(vnic)
 }

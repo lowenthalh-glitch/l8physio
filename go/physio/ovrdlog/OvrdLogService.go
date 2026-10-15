@@ -12,8 +12,8 @@ const (
 )
 
 func Activate(creds, dbname string, vnic ifs.IVNic) {
-	l8c.ActivateService(l8c.ServiceConfig{
-		ServiceName: ServiceName, ServiceArea: ServiceArea,
-		PrimaryKey: "OverrideId", Callback: newOvrdLogServiceCallback(),
-	}, &physio.StatusOverrideLog{}, &physio.StatusOverrideLogList{}, creds, dbname, vnic)
+	l8c.ActivateService(
+		l8c.NewOrmSLA(ServiceName, ServiceArea, "OverrideId", newOvrdLogServiceCallback(),
+			&physio.StatusOverrideLog{}, &physio.StatusOverrideLogList{}),
+		creds, dbname, vnic)
 }

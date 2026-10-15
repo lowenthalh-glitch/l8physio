@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/saichler/l8core/go/l8c"
-	ifs "github.com/saichler/l8core/go/types/ifs"
-	"github.com/saichler/l8physio/go/types/physio"
+	"github.com/saichler/l8common/go/common"
+	ifs "github.com/saichler/l8types/go/ifs"
+	"github.com/lowenthalh-glitch/l8physio/go/types/physio"
 )
 
 // CreateTestClient creates a test client entity

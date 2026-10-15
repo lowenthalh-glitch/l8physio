@@ -12,10 +12,10 @@ const (
 )
 
 func Activate(creds, dbname string, vnic ifs.IVNic) {
-	l8c.ActivateService(l8c.ServiceConfig{
-		ServiceName: ServiceName, ServiceArea: ServiceArea,
-		PrimaryKey: "ApptId", Callback: newPhyApptServiceCallback(),
-	}, &physio.Appointment{}, &physio.AppointmentList{}, creds, dbname, vnic)
+	l8c.ActivateService(
+		l8c.NewOrmSLA(ServiceName, ServiceArea, "ApptId", newPhyApptServiceCallback(),
+			&physio.Appointment{}, &physio.AppointmentList{}),
+		creds, dbname, vnic)
 }
 
 func Appointments(vnic ifs.IVNic) (ifs.IServiceHandler, bool) {

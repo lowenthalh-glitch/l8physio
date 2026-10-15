@@ -12,10 +12,10 @@ const (
 )
 
 func Activate(creds, dbname string, vnic ifs.IVNic) {
-	l8c.ActivateService(l8c.ServiceConfig{
-		ServiceName: ServiceName, ServiceArea: ServiceArea,
-		PrimaryKey: "LogId", Callback: newPhyLogServiceCallback(),
-	}, &physio.ProgressLog{}, &physio.ProgressLogList{}, creds, dbname, vnic)
+	l8c.ActivateService(
+		l8c.NewOrmSLA(ServiceName, ServiceArea, "LogId", newPhyLogServiceCallback(),
+			&physio.ProgressLog{}, &physio.ProgressLogList{}),
+		creds, dbname, vnic)
 }
 
 func Logs(vnic ifs.IVNic) (ifs.IServiceHandler, bool) {

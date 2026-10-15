@@ -12,8 +12,8 @@ const (
 )
 
 func Activate(creds, dbname string, vnic ifs.IVNic) {
-	l8c.ActivateService(l8c.ServiceConfig{
-		ServiceName: ServiceName, ServiceArea: ServiceArea,
-		PrimaryKey: "TherapistId", Callback: newPhyTherapistServiceCallback(),
-	}, &physio.PhysioTherapist{}, &physio.PhysioTherapistList{}, creds, dbname, vnic)
+	l8c.ActivateService(
+		l8c.NewOrmSLA(ServiceName, ServiceArea, "TherapistId", newPhyTherapistServiceCallback(),
+			&physio.PhysioTherapist{}, &physio.PhysioTherapistList{}),
+		creds, dbname, vnic)
 }

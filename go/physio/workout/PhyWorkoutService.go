@@ -12,10 +12,10 @@ const (
 )
 
 func Activate(creds, dbname string, vnic ifs.IVNic) {
-	l8c.ActivateService(l8c.ServiceConfig{
-		ServiceName: ServiceName, ServiceArea: ServiceArea,
-		PrimaryKey: "WorkoutId", Callback: newPhyWorkoutServiceCallback(),
-	}, &physio.GeneratedWorkout{}, &physio.GeneratedWorkoutList{}, creds, dbname, vnic)
+	l8c.ActivateService(
+		l8c.NewOrmSLA(ServiceName, ServiceArea, "WorkoutId", newPhyWorkoutServiceCallback(),
+			&physio.GeneratedWorkout{}, &physio.GeneratedWorkoutList{}),
+		creds, dbname, vnic)
 }
 
 func Workouts(vnic ifs.IVNic) (ifs.IServiceHandler, bool) {

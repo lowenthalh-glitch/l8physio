@@ -3,9 +3,9 @@ package services
 import (
 	"testing"
 
-	"github.com/saichler/l8core/go/l8c"
-	ifs "github.com/saichler/l8core/go/types/ifs"
-	"github.com/saichler/l8physio/go/tests/fixtures"
+	"github.com/saichler/l8common/go/common"
+	ifs "github.com/saichler/l8types/go/ifs"
+	"github.com/lowenthalh-glitch/l8physio/go/tests/fixtures"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

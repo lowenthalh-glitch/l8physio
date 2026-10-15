@@ -12,8 +12,8 @@ const (
 )
 
 func Activate(creds, dbname string, vnic ifs.IVNic) {
-	l8c.ActivateService(l8c.ServiceConfig{
-		ServiceName: ServiceName, ServiceArea: ServiceArea,
-		PrimaryKey: "EventId", Callback: newBstpCalServiceCallback(),
-	}, &physio.BoostappCalendarEvent{}, &physio.BoostappCalendarEventList{}, creds, dbname, vnic)
+	l8c.ActivateService(
+		l8c.NewOrmSLA(ServiceName, ServiceArea, "EventId", newBstpCalServiceCallback(),
+			&physio.BoostappCalendarEvent{}, &physio.BoostappCalendarEventList{}),
+		creds, dbname, vnic)
 }

@@ -12,10 +12,10 @@ const (
 )
 
 func Activate(creds, dbname string, vnic ifs.IVNic) {
-	l8c.ActivateService(l8c.ServiceConfig{
-		ServiceName: ServiceName, ServiceArea: ServiceArea,
-		PrimaryKey: "FeedbackId", Callback: newHomeFdbkServiceCallback(),
-	}, &physio.HomeFeedback{}, &physio.HomeFeedbackList{}, creds, dbname, vnic)
+	l8c.ActivateService(
+		l8c.NewOrmSLA(ServiceName, ServiceArea, "FeedbackId", newHomeFdbkServiceCallback(),
+			&physio.HomeFeedback{}, &physio.HomeFeedbackList{}),
+		creds, dbname, vnic)
 }
 
 func Feedbacks(vnic ifs.IVNic) (ifs.IServiceHandler, bool) {
