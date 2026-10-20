@@ -3,7 +3,7 @@
 
     var ROLES_ENDPOINT = '/74/roles';
     var USERS_ENDPOINT = '/73/users';
-    var DEFAULT_PASSWORD = '12345678';
+    var DEFAULT_PASSWORD = 'Physio#Pt7x2Q';
 
     async function postRole(role) {
         try {

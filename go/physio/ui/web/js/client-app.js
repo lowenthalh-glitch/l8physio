@@ -87,9 +87,7 @@ function showErrorAndLogout(message, detail) {
 }
 
 document.addEventListener('DOMContentLoaded', async function() {
-    if (typeof Layer8DConfig !== 'undefined') {
-        await Layer8DConfig.load();
-    }
+    await Layer8DConfig.load();
 
     const bearerToken = sessionStorage.getItem('bearerToken');
     if (!bearerToken) {
@@ -104,14 +102,14 @@ document.addEventListener('DOMContentLoaded', async function() {
     document.querySelector('.username').textContent = username;
 
     // Load per-type action permissions for the current user
-    try {
-        const permResp = await fetch('/permissions', {
-            headers: { 'Authorization': `Bearer ${bearerToken}`, 'Content-Type': 'application/json' }
-        });
-        if (permResp.ok) {
-            window.Layer8DPermissions = await permResp.json();
-        }
-    } catch (e) { console.warn('Failed to load permissions:', e); }
+    // Required fetch: unset Layer8DPermissions is read by l8ui as PERMISSIVE, so fail loudly.
+    const permResp = await fetch('/permissions', {
+        headers: { 'Authorization': `Bearer ${bearerToken}`, 'Content-Type': 'application/json' }
+    });
+    if (!permResp.ok) throw new Error('/permissions returned HTTP ' + permResp.status);
+    const perms = await permResp.json();
+    if (perms === null || typeof perms !== 'object') throw new Error('/permissions: expected an object');
+    window.Layer8DPermissions = perms;
 
     const hashParts = typeof getHashParts === 'function' ? getHashParts() : { section: '', service: '' };
     const initSection = hashParts.section && sections[hashParts.section] ? hashParts.section : 'physio';

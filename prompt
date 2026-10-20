@@ -1,0 +1,15 @@
+## References
+in ../../saichler/l8book/ai/layer-8-guide-lines.md there are the layer 8 guide lines.
+in ../../saichler/l8book/ai/layer-8-arch.md there are the layer 8 high level architecture.
+in ../../saichler/l8secure there is the layer 8 security provider project.
+in ../../saichler/probler is the canonical project for observation projects.
+in ../../saichler/l8erp is the canonical project for ERP & Data systems.
+
+## The Ask
+Please follow the guide lines and make sure this project comply with the layer 8 guide lines.
+Please cover all the gaps you find, specially for end 2 end testing using Playwright vs a kind cluster.
+Make sure you have full end 2 end tests for all this project functionality, do not omite anything! 
+Once you have a full suite of end 2 end tests, please execute them in the following loop:
+Run all tests -> RCA Failures -> Fix the failures -> Patch the kind cluster -> re-run the tests.
+The exit criteria is a clean run of all the end 2 end tests.
+Please continue all the way to the end, do not stop unless you hit a blocker.

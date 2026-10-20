@@ -1,46 +1,42 @@
-# l8physio E2E Test Makefile
-
-.PHONY: help install test run kind
+# l8physio E2E (Playwright vs KIND)
+.PHONY: help install up test test-api test-desktop test-mobile test-kind patch down clean zzz-check
 
 help:
-	@echo "l8physio E2E Tests"
-	@echo "=================="
-	@echo "make install      - Install Playwright and dependencies"
-	@echo "make test         - Run all E2E tests"
-	@echo "make test-headed  - Run tests in headed mode"
-	@echo "make test-ui      - Run tests with UI"
-	@echo "make kind         - Deploy to KIND and run tests"
-	@echo "make clean        - Cleanup"
+	@echo "make install        - npm install + chromium"
+	@echo "make up             - create KIND cluster, load images, deploy"
+	@echo "make test           - run the whole suite (api, desktop, mobile, kind)"
+	@echo "make test-api|test-desktop|test-mobile|test-kind"
+	@echo "make patch APPS='physio-web physio' - reload rebuilt images + restart pods"
+	@echo "make down           - delete the cluster"
 
 install:
 	npm install
+	npx playwright install chromium
+
+up:
+	./scripts/kind-e2e.sh up
 
 test:
-	npx playwright test
+	./scripts/kind-e2e.sh test
 
-test-headed:
-	npx playwright test --headed
+test-api:
+	npx playwright test --project=api
+test-desktop:
+	npx playwright test --project=desktop
+test-mobile:
+	npx playwright test --project=mobile
+test-kind:
+	npx playwright test --project=kind
 
-test-ui:
-	npx playwright test --ui
+patch:
+	./scripts/kind-e2e.sh patch $(APPS)
 
-kind:
-	@echo "Starting KIND cluster..."
-	kind create cluster --name l8physio-e2e --config ../kind-config.yaml || exit 1
-	@echo "Deploying services..."
-	kubectl apply -f ../go/k8s/physio-kind.yaml
-	@echo "Waiting for pods..."
-	kubectl wait --for=condition=Ready pod -l app=physio-vnet --timeout=120s -n physio || exit 1
-	kubectl wait --for=condition=Ready pod -l app=physio --timeout=120s -n physio || exit 1
-	kubectl wait --for=condition=Ready pod -l app=physio-web --timeout=120s -n physio || exit 1
-	kubectl wait --for=condition=Ready pod -l app=physio-log-vnet --timeout=120s -n physio || exit 1
-	kubectl wait --for=condition=Ready pod -l app=physio-log-agent --timeout=120s -n physio || exit 1
-	kubectl wait --for=condition=Ready pod -l app=physio-boostapp --timeout=120s -n physio || exit 1
-	@echo "Running tests against KIND cluster..."
-	npx playwright test --base-url=http://localhost:8080
-	@echo "Cleaning up..."
-	kind delete cluster --name l8physio-e2e
+down:
+	./scripts/kind-e2e.sh down
+
+# PostImplementationE2ETesting: debug specs (zzz-*) must never be committed
+zzz-check:
+	@test -z "$$(find tests -name 'zzz-*')" || (echo "remove zzz-* specs"; exit 1)
 
 clean:
-	rm -rf node_modules
-	rm -f playwright-report.html
+	rm -rf node_modules playwright-report test-results

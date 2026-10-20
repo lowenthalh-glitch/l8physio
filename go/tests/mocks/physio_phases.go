@@ -274,7 +274,7 @@ func runPhysioPhase6(client *PhysioClient, store *MockDataStore) {
 			"fullName":      fullName,
 			"email":         email,
 			"portal":        "therapist-app.html",
-			"password":      map[string]string{"hash": "12345678"},
+			"password":      map[string]string{"hash": "Physio#Pt7x2Q"},
 			"accountStatus": "ACCOUNT_STATUS_ACTIVE",
 			"roles":         map[string]bool{"therapist": true},
 		}

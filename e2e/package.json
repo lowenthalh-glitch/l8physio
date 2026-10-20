@@ -1,19 +1,21 @@
 {
   "name": "l8physio-e2e",
-  "version": "1.0.0",
-  "description": "End-to-end tests for l8physio using Playwright",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Playwright end-to-end tests for l8physio against a KIND cluster",
   "type": "module",
   "scripts": {
     "test": "playwright test",
-    "test:headed": "playwright test --headed",
-    "test:ui": "playwright test --ui",
+    "test:desktop": "playwright test --project=desktop",
+    "test:mobile": "playwright test --project=mobile",
+    "test:api": "playwright test --project=api",
+    "test:kind": "playwright test --project=kind",
+    "typecheck": "tsc --noEmit",
     "report": "playwright show-report"
   },
   "devDependencies": {
-    "@playwright/test": "^1.40.0",
-    "@types/node": "^20.10.0"
-  },
-  "dependencies": {
-    "dotenv": "^16.3.1"
+    "@playwright/test": "^1.50.0",
+    "@types/node": "^20.10.0",
+    "typescript": "^5.4.0"
   }
 }

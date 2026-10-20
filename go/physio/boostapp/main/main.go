@@ -344,7 +344,7 @@ func provisionClientUser(nic ifs.IVNic, c *physio.PhysioClient) error {
 	return err
 }
 
-const defaultClientPassword = "12345678"
+const defaultClientPassword = "Physio#Pt7x2Q"
 
 // ensureUsersForClients provisions a system user (area 73) for every PhysioClient
 // that has an email. Attempts POST for each; duplicates are silently ignored.

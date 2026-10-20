@@ -55,17 +55,15 @@
             this.updateUserInfo();
 
             // Load per-type action permissions
-            try {
-                const perms = await Layer8MAuth.get('/permissions');
-                if (perms) window.Layer8DPermissions = perms;
-            } catch (e) { console.warn('Failed to load permissions:', e); }
+            // Required fetch: unset Layer8DPermissions is read by l8ui as PERMISSIVE, so fail loudly.
+            const perms = await Layer8MAuth.get('/permissions');
+            if (perms === null || typeof perms !== 'object') throw new Error('/permissions: expected an object');
+            window.Layer8DPermissions = perms;
 
             // Physio does not use ModConfig — skip Layer8DModuleFilter to avoid logout on 404
 
             // Apply permission-based sidebar filtering
-            if (typeof Layer8DPermissionFilter !== 'undefined' && window.Layer8DPermissions) {
-                this.applyPermissionFilter();
-            }
+            this.applyPermissionFilter();
 
             // Apply portal-based service filtering (mirrors desktop portal HTML files)
             this.applyPortalFilter();
