@@ -45,9 +45,10 @@ test.describe('System section', () => {
     await tab(authedPage, 'security').click();
     await authedPage.locator('.l8-subnav-item[data-service="roles"]').click();
     const roles = authedPage.locator('#security-roles-table-container');
-    await expect(roles.locator('tbody tr').first()).toBeVisible({ timeout: 30_000 });
-    const text = (await roles.locator('tbody').innerText()).toLowerCase();
-    for (const r of ['admin', 'client', 'therapist']) expect(text).toContain(r);
+    // an empty "no data found" row renders before the fetch completes, so poll for the content
+    for (const r of ['admin', 'client', 'therapist']) {
+      await expect.poll(async () => (await roles.locator('tbody').innerText()).toLowerCase(), { timeout: 30_000 }).toContain(r);
+    }
   });
 
   test('Security > Users: add and delete a user through the UI', async ({ authedPage, api }) => {
@@ -61,6 +62,8 @@ test.describe('System section', () => {
     await popup.body().locator('#l8sys-user-id').fill(id);
     await popup.body().locator('#l8sys-user-fullname').fill('E2E UI User');
     await popup.body().locator('#l8sys-user-password').fill('Passw0rd!x');
+    // the server rejects users without a role
+    await popup.body().locator('input[name="role-client"]').check();
     await popup.save().click();
     try {
       await expect.poll(async () => (await api.query(USERS as any, `userId=${id}`)).length, { timeout: 20_000 }).toBe(1);

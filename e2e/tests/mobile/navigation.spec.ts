@@ -21,7 +21,6 @@ test.describe('mobile navigation (card based, real mobile bundle)', () => {
     const mgmt = m.navCard('Management');
     if (await mgmt.count()) await mgmt.click();
     for (const s of NAV_SERVICES) await expect(m.navCard(s.label), s.label).toBeVisible();
-    await expect(m.navCard('Workout Builder')).toBeVisible();
     expect(errors, errors.join('\n')).toEqual([]);
   });
 

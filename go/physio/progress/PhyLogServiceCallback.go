@@ -31,6 +31,14 @@ func validatePhyLog(e interface{}, vnic ifs.IVNic) error {
 	if err := l8c.ValidateRequired(entity.ClientId, "ClientId"); err != nil {
 		return err
 	}
+	// The generic edit form does not carry userId; a PUT keeps the stored one.
+	if entity.UserId == "" && entity.LogId != "" {
+		if found, err := l8c.GetEntity(ServiceName, ServiceArea, &physio.ProgressLog{LogId: entity.LogId}, vnic); err == nil {
+			if stored, ok := found.(*physio.ProgressLog); ok && stored != nil {
+				entity.UserId = stored.UserId
+			}
+		}
+	}
 	if err := l8c.ValidateRequired(entity.UserId, "UserId"); err != nil {
 		return err
 	}

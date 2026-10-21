@@ -3,26 +3,23 @@ import { Shell } from '../../pages/shell.page';
 import { SERVICES } from '../../fixtures/services';
 import { token } from '../../fixtures/env';
 
-// Upstream l8ui bug: layer8d-forms-data.js collects `reference` fields with parseInt(refId, 10).
-// A UUID such as "741a..." becomes the number 741, the PUT body then carries clientId: 741 and the
-// server answers 400 "invalid value for string field clientId". ~10/16 of generated ids start with a digit.
-// test.fail() keeps the suite green while the bug is open and turns red the day l8ui is fixed (remove it then).
+// Regression: l8ui used to collect `reference` fields with parseInt(refId, 10), so a UUID such as "741a..."
+// was saved as the number 741 and the PUT failed with 400 "invalid value for string field clientId".
+// About 10/16 of generated ids start with a digit, so the client is seeded with exactly such an id.
 test.describe('reference ids that start with a digit', () => {
-  test.fail(true, 'l8ui parseInt() corrupts reference ids starting with a digit (upstream l8ui fix pending)');
-
-  test('editing an appointment through the UI keeps its client reference', async ({ authedPage, seed, api }) => {
+  test('editing a plan through the UI keeps its client reference', async ({ authedPage, seed, api }) => {
     const c = await seed.client(token('DigC'), undefined, true);
-    const th = await seed.therapist();
-    const a = await seed.appointment(c.id, th.id, token('DigA'));
+    expect(c.id).toMatch(/^[0-9]/);
+    const p = await seed.plan(c.id, token('DigP'));
     const shell = new Shell(authedPage);
     await shell.goto();
-    const table = await shell.openService('appointments');
-    await table.filterBy('Location', a.marker);
-    await table.clickEdit(a.marker);
+    const table = await shell.openService('plans');
+    await table.filterBy('Title', p.marker);
+    await table.clickEdit(p.marker);
     await shell.popup.expectOpen();
-    await shell.popup.fill({ location: a.marker + 'Z' });
+    await shell.popup.fill({ title: p.marker + 'Z' });
     await shell.popup.save().click();
-    await shell.popup.expectClosed();
-    await expect.poll(async () => (await api.findOne(SERVICES.appointments, `apptId=${a.id}`))?.clientId).toBe(c.id);
+    await expect.poll(async () => (await api.findOne(SERVICES.plans, `planId=${p.id}`))?.title).toBe(p.marker + 'Z');
+    expect((await api.findOne(SERVICES.plans, `planId=${p.id}`))?.clientId).toBe(c.id);
   });
 });

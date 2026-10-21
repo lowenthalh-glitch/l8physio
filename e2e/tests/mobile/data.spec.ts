@@ -9,7 +9,7 @@ test.describe('mobile lists show live data', () => {
     const m = new MobileShell(authedPage);
     await m.goto();
     await m.openService('Therapists');
-    await expect(await m.card(th.marker)).toBeVisible({ timeout: 30_000 });
+    await expect(await m.card(th.marker, 'lastName')).toBeVisible({ timeout: 30_000 });
   });
 
   test('client appears and opens its detail view', async ({ authedPage, seed }) => {
@@ -17,7 +17,7 @@ test.describe('mobile lists show live data', () => {
     const m = new MobileShell(authedPage);
     await m.goto();
     await m.openService('Clients');
-    const card = await m.card(c.marker);
+    const card = await m.card(c.marker, 'lastName');
     await expect(card).toBeVisible({ timeout: 30_000 });
     await card.click();
     await expect(authedPage.locator('[class*="popup"]').first()).toBeVisible();
@@ -28,7 +28,7 @@ test.describe('mobile lists show live data', () => {
     const m = new MobileShell(authedPage);
     await m.goto();
     await m.openService('Exercises');
-    const card = await m.card(e.marker);
+    const card = await m.card(e.marker, 'name');
     await expect(card).toBeVisible({ timeout: 30_000 });
     await card.click();
     await expect(authedPage.locator('[class*="popup"]').first()).toBeVisible();

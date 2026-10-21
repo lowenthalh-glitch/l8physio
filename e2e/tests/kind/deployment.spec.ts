@@ -1,3 +1,4 @@
+import { Api } from '../../fixtures/api';
 import { test, expect } from '../../fixtures/auth';
 import { APPS, kubectl, kubectlJson, podsFor, isReady } from '../../fixtures/kube';
 import { NAMESPACE, token } from '../../fixtures/env';
@@ -76,14 +77,15 @@ test.describe('KIND cluster deployment', () => {
 });
 
 test.describe('resilience & persistence', () => {
-  test('data survives a restart of the physio service pod', async ({ api, seed }) => {
+  test('data survives a restart of the physio service pod', async ({ seed, baseURL }) => {
     test.setTimeout(240_000);
     const t = token('Persist');
     await seed.therapist(t);
     kubectl('-n', NAMESPACE, 'delete', 'pod', 'physio-0');
     kubectl('-n', NAMESPACE, 'wait', '--for=condition=Ready', 'pod/physio-0', '--timeout=180s');
+    // Sessions live in the restarted pod, so the old bearer token is gone: log in again, as a user would.
     await expect.poll(async () => {
-      try { return (await api.query(SERVICES.therapists, `lastName=${t}`)).length; } catch { return -1; }
+      try { return (await (await Api.as(baseURL!)).query(SERVICES.therapists, `lastName=${t}`)).length; } catch { return -1; }
     }, { timeout: 120_000, intervals: [2000] }).toBe(1);
   });
 

@@ -28,8 +28,19 @@ export class Seeder {
     return seed;
   }
 
+  /** Retries `make` (with a distinct marker per attempt) until the generated id starts with a letter, see client(). */
+  private async letterId(svc: PhysioService, t: string, make: (marker: string) => Promise<Seed>): Promise<Seed> {
+    for (let attempt = 0; attempt < 40; attempt++) {
+      const seed = await make(attempt === 0 ? t : `${t}x${attempt}`);
+      if (!/^[0-9]/.test(seed.id)) return seed;
+      await this.api.tryDelete(svc, seed.id);
+      this.created = this.created.filter(x => x !== seed);
+    }
+    throw new Error(`could not obtain a ${svc.name} id starting with a letter`);
+  }
+
   async therapist(t = token('Ther')) {
-    return this.create(SERVICES.therapists, { firstName: 'E2E', lastName: t, email: `${t}@example.com`, phone: '5551230000', specialization: 'Sports', isActive: true });
+    return this.letterId(SERVICES.therapists, t, m => this.create(SERVICES.therapists, { firstName: 'E2E', lastName: m, email: `${m.toLowerCase()}@example.com`, phone: '5551230000', specialization: 'Sports', isActive: true }));
   }
   /**
    * Creates a client. Ids are generated UUIDs. l8ui's form collector does parseInt() on reference ids, which
@@ -54,7 +65,7 @@ export class Seeder {
     return this.create(SERVICES.protocols, { name: t, description: 'e2e protocol', isActive: true });
   }
   async plan(clientId: string, t = token('Plan'), therapistId?: string) {
-    return this.create(SERVICES.plans, { title: t, clientId, status: 1, userId: ACTING_USER, startDate: now(), endDate: now() + 30 * 24 * HOUR, ...(therapistId ? { therapistId } : {}) });
+    return this.letterId(SERVICES.plans, t, m => this.create(SERVICES.plans, { title: m, clientId, status: 1, userId: ACTING_USER, startDate: now(), endDate: now() + 30 * 24 * HOUR, ...(therapistId ? { therapistId } : {}) }));
   }
   async appointment(clientId: string, therapistId: string, t = token('Loc')) {
     return this.create(SERVICES.appointments, { clientId, therapistId, userId: ACTING_USER, startTime: now() + HOUR, endTime: now() + 2 * HOUR, status: 1, location: t });

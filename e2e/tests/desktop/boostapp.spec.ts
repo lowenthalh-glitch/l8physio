@@ -22,8 +22,8 @@ test.describe('Boostapp Calendar', () => {
     const table = await shell.openService('boostapp');
     await table.filterBy('Title', e.marker);
     await table.openRow(e.marker);
-    // session-view.js: a popup with one tab per linked client, else a warning notification
-    await expect(authedPage.locator('.probler-popup-container, .layer8d-notification-warning').first()).toBeVisible();
+    // session-view.js: a popup with one tab per linked client, an info toast when no participants, a warning when none is linked
+    await expect(authedPage.locator('.probler-popup-container, .layer8d-notification-info, .layer8d-notification-warning').first()).toBeVisible();
     expect(errors, errors.join('\n')).toEqual([]);
   });
 
