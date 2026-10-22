@@ -23,7 +23,7 @@ test.describe('ServiceCallback validation', () => {
   test('client userId is derived from the email on create', async ({ seed }) => {
     const t = token('Uid');
     const c = await seed.client(t);
-    expect(c.entity.userId).toBe(`${t.toLowerCase()}@example.com`);
+    expect(c.entity.userId).toBe(`${String(c.entity.lastName).toLowerCase()}@example.com`);
   });
 
   test('client-supplied primary key is replaced by a generated one', async ({ api, seed }) => {

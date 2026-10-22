@@ -33,8 +33,10 @@ func validatePhyAppt(e interface{}, vnic ifs.IVNic) error {
 				if entity.UserId == "" {
 					entity.UserId = stored.UserId
 				}
-				entity.StartTime = keepTimeOfDay(entity.StartTime, stored.StartTime)
-				entity.EndTime = keepTimeOfDay(entity.EndTime, stored.EndTime)
+				if entity.StartTime >= entity.EndTime {
+					entity.StartTime = keepTimeOfDay(entity.StartTime, stored.StartTime)
+					entity.EndTime = keepTimeOfDay(entity.EndTime, stored.EndTime)
+				}
 			}
 		}
 	}
@@ -55,10 +57,13 @@ func validatePhyAppt(e interface{}, vnic ifs.IVNic) error {
 
 const secondsPerDay = 86400
 
-// keepTimeOfDay re-applies the stored time of day to a submitted value that is a bare date (midnight).
+// keepTimeOfDay keeps the stored time of day for a value submitted as a bare date (local midnight, so its
+// time zone is unknown): the stored value moved by the whole number of days the date changed.
 func keepTimeOfDay(submitted, stored int64) int64 {
-	if submitted > 0 && submitted%secondsPerDay == 0 {
-		return submitted + stored%secondsPerDay
+	diff := submitted - stored
+	days := (diff + secondsPerDay/2) / secondsPerDay
+	if diff < 0 {
+		days = (diff - secondsPerDay/2) / secondsPerDay
 	}
-	return submitted
+	return stored + days*secondsPerDay
 }
