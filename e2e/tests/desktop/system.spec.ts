@@ -33,6 +33,8 @@ test.describe('System section', () => {
     await openSystem(authedPage);
     await tab(authedPage, 'security').click();
     const users = authedPage.locator('#security-users-table-container');
+    // earlier tests leave users behind, so admin is not necessarily on page 1: filter by User ID
+    await users.locator('input[placeholder="Filter..."]').first().fill('admin');
     await expect(users.locator('tbody tr', { hasText: 'admin' }).first()).toBeVisible({ timeout: 30_000 });
     for (const [svc, container] of [['roles', 'security-roles-table-container'], ['credentials', 'security-credentials-table-container'], ['events', 'security-events-table-container']]) {
       await authedPage.locator(`.l8-subnav-item[data-service="${svc}"]`).click();

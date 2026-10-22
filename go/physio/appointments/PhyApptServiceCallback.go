@@ -25,11 +25,16 @@ func validatePhyAppt(e interface{}, vnic ifs.IVNic) error {
 	if err := l8c.ValidateRequired(entity.ClientId, "ClientId"); err != nil {
 		return err
 	}
-	// The generic edit form does not carry userId; a PUT keeps the stored one.
-	if entity.UserId == "" && entity.ApptId != "" {
+	// The generic edit form does not carry userId and posts date-only start/end;
+	// a PUT keeps the stored userId and the stored time of day.
+	if entity.ApptId != "" {
 		if found, err := l8c.GetEntity(ServiceName, ServiceArea, &physio.Appointment{ApptId: entity.ApptId}, vnic); err == nil {
 			if stored, ok := found.(*physio.Appointment); ok && stored != nil {
-				entity.UserId = stored.UserId
+				if entity.UserId == "" {
+					entity.UserId = stored.UserId
+				}
+				entity.StartTime = keepTimeOfDay(entity.StartTime, stored.StartTime)
+				entity.EndTime = keepTimeOfDay(entity.EndTime, stored.EndTime)
 			}
 		}
 	}
@@ -46,4 +51,14 @@ func validatePhyAppt(e interface{}, vnic ifs.IVNic) error {
 		return l8c.ValidateDateAfter(entity.EndTime, entity.StartTime, "EndTime", "StartTime")
 	}
 	return nil
+}
+
+const secondsPerDay = 86400
+
+// keepTimeOfDay re-applies the stored time of day to a submitted value that is a bare date (midnight).
+func keepTimeOfDay(submitted, stored int64) int64 {
+	if submitted > 0 && submitted%secondsPerDay == 0 {
+		return submitted + stored%secondsPerDay
+	}
+	return submitted
 }
