@@ -21,7 +21,7 @@ Specs run serially on one worker because they share a live database.
 
 ```
 make install     # npm install + chromium
-make up          # create the KIND cluster, load local images, deploy (k8s/kind-start.sh)
+make up          # create the KIND cluster, load local images, deploy, set up the agent LLM (make llm)
 ```
 
 The web server is reachable at `https://localhost:8088` (self-signed TLS, NodePort 30080 mapped to the host).

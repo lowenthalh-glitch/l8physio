@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Build -> (re)create KIND -> load images -> deploy -> run Playwright.
-#   ./scripts/kind-e2e.sh up      create cluster, load locally-built images, deploy
+#   ./scripts/kind-e2e.sh up      create cluster, load locally-built images, deploy, point the agent at the LLM
 #   ./scripts/kind-e2e.sh test    run the full Playwright suite
 #   ./scripts/kind-e2e.sh patch <app>...   reload a rebuilt image and restart its pod (fix loop)
 #   ./scripts/kind-e2e.sh llm     point the agent at the test LLM (public or LAN address)
@@ -26,6 +26,8 @@ declare -A IMAGE=(
 case "${1:-}" in
   up)
     "$ROOT/k8s/kind-start.sh"
+    # the agent's LLM host needs the TestLLM credential and, on the LAN, a hostAlias
+    "$E2E_DIR/scripts/llm-setup.sh"
     ;;
   patch)
     shift

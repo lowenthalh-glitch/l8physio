@@ -33,6 +33,15 @@ if [ "$mode" = auto ]; then
   else echo "LLM host unreachable on public DNS and on $LLM_LAN_IP" >&2; exit 1; fi
 fi
 
+# 0. the web server answers once the cluster is fully up (fresh clusters take a while)
+for i in $(seq 1 60); do
+  code="$(curl -sk -m 5 -o /dev/null -w '%{http_code}' -X POST -H 'Content-Type: application/json' \
+    -d '{"user":"admin","pass":"admin"}' "$BASE_URL/physio-auth" || true)"
+  [ "$code" = 200 ] && break
+  [ "$i" = 60 ] && { echo "web server at $BASE_URL not ready (last status $code)" >&2; exit 1; }
+  sleep 5
+done
+
 # 1. credential (idempotent: only posted when missing)
 BASE_URL="$BASE_URL" PHY_JSON="$PHY_JSON" python3 - <<'PY'
 import json, os, ssl, urllib.parse, urllib.request
