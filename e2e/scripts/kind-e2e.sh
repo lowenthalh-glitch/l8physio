@@ -3,6 +3,7 @@
 #   ./scripts/kind-e2e.sh up      create cluster, load locally-built images, deploy
 #   ./scripts/kind-e2e.sh test    run the full Playwright suite
 #   ./scripts/kind-e2e.sh patch <app>...   reload a rebuilt image and restart its pod (fix loop)
+#   ./scripts/kind-e2e.sh llm     point the agent at the test LLM (public or LAN address)
 #   ./scripts/kind-e2e.sh down    delete cluster
 set -euo pipefail
 
@@ -41,9 +42,12 @@ case "${1:-}" in
     [ -d node_modules ] || npm install
     npx playwright test "$@"
     ;;
+  llm)
+    "$E2E_DIR/scripts/llm-setup.sh"
+    ;;
   down)
     "$ROOT/k8s/kind-stop.sh"
     ;;
   *)
-    sed -n '2,7p' "$0"; exit 1 ;;
+    sed -n '2,8p' "$0"; exit 1 ;;
 esac

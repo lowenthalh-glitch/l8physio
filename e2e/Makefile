@@ -1,5 +1,5 @@
 # l8physio E2E (Playwright vs KIND)
-.PHONY: help install up test test-api test-desktop test-mobile test-kind patch down clean zzz-check
+.PHONY: llm help install up test test-api test-desktop test-mobile test-kind patch down clean zzz-check
 
 help:
 	@echo "make install        - npm install + chromium"
@@ -7,6 +7,7 @@ help:
 	@echo "make test           - run the whole suite (api, desktop, mobile, kind)"
 	@echo "make test-api|test-desktop|test-mobile|test-kind"
 	@echo "make patch APPS='physio-web physio' - reload rebuilt images + restart pods"
+	@echo "make llm            - point the agent at the test LLM (public IP or LLM_LAN_IP)"
 	@echo "make down           - delete the cluster"
 
 install:
@@ -30,6 +31,9 @@ test-kind:
 
 patch:
 	./scripts/kind-e2e.sh patch $(APPS)
+
+llm:
+	./scripts/llm-setup.sh
 
 down:
 	./scripts/kind-e2e.sh down

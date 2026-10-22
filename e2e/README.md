@@ -63,6 +63,13 @@ After patching vnet or physio, restart in the order vnet, physio and boostapp, t
 answers 404 or "Cannot find active handler", it was restarted too early. Recreate with
 `k8s/kind-stop.sh && k8s/kind-start.sh` as a last resort.
 
+## AI agent LLM
+
+`tests/api/agent.spec.ts` needs a reachable LLM. `make llm` (`scripts/llm-setup.sh`) adds the `TestLLM` credential to the
+cluster if missing (read from the l8secure phy plugin, `PHY_JSON`) and picks the address for `llm.test-llm.dev`:
+public DNS when it answers, otherwise the LAN address `LLM_LAN_IP` (default `192.168.1.121`) as a hostAlias on `physio-0`.
+Force a choice with `LLM_MODE=public|lan`.
+
 ## Writing tests
 
 - Create data through `seed` (`fixtures/data.ts`) and use `token()` for unique, punctuation-free values
