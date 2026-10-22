@@ -1,12 +1,12 @@
 module github.com/lowenthalh-glitch/l8physio/go
 
-go 1.26.1
+go 1.27.3
 
 require (
 	github.com/lib/pq v1.12.3
-	github.com/saichler/l8agent v0.0.0-20260404041519-33c923998e3c
+	github.com/saichler/l8agent v0.0.0-20261022014146-24d2479d7379
 	github.com/saichler/l8bus v0.0.0-20260920024857-555f4a280346
-	github.com/saichler/l8collector/go v0.0.0-20260926124044-4004a7591b3c
+	github.com/saichler/l8collector/go v0.0.0-20261022005351-c8fc0a4871aa
 	github.com/saichler/l8common v0.0.0-20260921210725-849f2865aa8f
 	github.com/saichler/l8events v0.0.0-20260920032941-9a68815e426a
 	github.com/saichler/l8logfusion v0.0.0-20260320120056-3a3617eed28f
@@ -50,19 +50,19 @@ require (
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/saichler/l8orm v0.0.0-20260916142109-e7f0284c95ee // indirect
 	github.com/saichler/l8ql v0.0.0-20260921131529-5b079580f08c // indirect
-	github.com/saichler/l8reflect v0.0.0-20260926044042-445d18326790 // indirect
+	github.com/saichler/l8reflect v0.0.0-20260926132352-647e2d1c16a7 // indirect
 	github.com/saichler/l8services v0.0.0-20260920123629-ec54a5cef7e1 // indirect
 	github.com/saichler/probler v0.0.0-20260921143133-14eada7b7c40 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	go.yaml.in/yaml/v2 v2.4.4 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
-	golang.org/x/crypto v0.57.0 // indirect
-	golang.org/x/net v0.58.0 // indirect
+	golang.org/x/crypto v0.58.0 // indirect
+	golang.org/x/net v0.60.0 // indirect
 	golang.org/x/oauth2 v0.36.0 // indirect
-	golang.org/x/sys v0.48.0 // indirect
-	golang.org/x/term v0.46.0 // indirect
-	golang.org/x/text v0.42.0 // indirect
+	golang.org/x/sys v0.49.0 // indirect
+	golang.org/x/term v0.47.0 // indirect
+	golang.org/x/text v0.43.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.13.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
