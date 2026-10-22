@@ -7,5 +7,4 @@ if ! command -v kind &>/dev/null || ! kind get clusters 2>/dev/null | grep -q "^
   exit 0
 fi
 kind delete cluster --name "${CLUSTER_NAME}"
-rm -f "${SCRIPT_DIR}/kind-cluster.yaml"
 echo "KIND cluster '${CLUSTER_NAME}' deleted."
