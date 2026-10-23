@@ -4,7 +4,7 @@ go 1.27.3
 
 require (
 	github.com/lib/pq v1.12.3
-	github.com/saichler/l8agent v0.0.0-20261022014146-24d2479d7379
+	github.com/saichler/l8agent v0.0.0-20261023005916-8ab4662cc184
 	github.com/saichler/l8bus v0.0.0-20260920024857-555f4a280346
 	github.com/saichler/l8collector/go v0.0.0-20261022005351-c8fc0a4871aa
 	github.com/saichler/l8common v0.0.0-20260921210725-849f2865aa8f
@@ -49,7 +49,7 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/saichler/l8orm v0.0.0-20260916142109-e7f0284c95ee // indirect
-	github.com/saichler/l8ql v0.0.0-20260921131529-5b079580f08c // indirect
+	github.com/saichler/l8ql v0.0.0-20261023005914-64c249a65008 // indirect
 	github.com/saichler/l8reflect v0.0.0-20260926132352-647e2d1c16a7 // indirect
 	github.com/saichler/l8services v0.0.0-20260920123629-ec54a5cef7e1 // indirect
 	github.com/saichler/probler v0.0.0-20260921143133-14eada7b7c40 // indirect

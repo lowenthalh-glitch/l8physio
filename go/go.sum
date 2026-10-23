@@ -70,6 +70,8 @@ github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 h1:Jamvg5psRI
 github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/saichler/l8agent v0.0.0-20261022014146-24d2479d7379 h1:2CV6L9hzF8PBVJkze7E7F9O+ae3jXaSJ0xvXsOsmCJA=
 github.com/saichler/l8agent v0.0.0-20261022014146-24d2479d7379/go.mod h1:isTUof0SPHq4RdRY6EyIKTMnWS0OjivDbDJGQPDStCg=
+github.com/saichler/l8agent v0.0.0-20261023005916-8ab4662cc184 h1:A1zXKGUuKOlydwkkRnWs4ofw62ipLWVb3ziRziQSeeU=
+github.com/saichler/l8agent v0.0.0-20261023005916-8ab4662cc184/go.mod h1:isTUof0SPHq4RdRY6EyIKTMnWS0OjivDbDJGQPDStCg=
 github.com/saichler/l8bus v0.0.0-20260920024857-555f4a280346 h1:TpSMv+wiguo1m0Q87VNeFwoZbj8uPlqv2RH1dIP6Mjo=
 github.com/saichler/l8bus v0.0.0-20260920024857-555f4a280346/go.mod h1:ZK1m4Zqy9WhGVZXl5znHTr7+/r19rOytqwBqhH02Ui8=
 github.com/saichler/l8collector/go v0.0.0-20261022005351-c8fc0a4871aa h1:TTRrO0FAmftp2d+HseEH+HBpMsntDZ2PXLGQLERZOAE=
@@ -88,6 +90,8 @@ github.com/saichler/l8pollaris v0.0.0-20260418233826-378ba5e9453a h1:kRhMgzkwvc+
 github.com/saichler/l8pollaris v0.0.0-20260418233826-378ba5e9453a/go.mod h1:rKrN5hhpgU8hjfPZ6R8/iYN7UWhTZ4t168jcwa9HVMQ=
 github.com/saichler/l8ql v0.0.0-20260921131529-5b079580f08c h1:GXlB6QeMgHVOg2XU6XRmwCgDdwTZK+ml8gAgw1HjrhY=
 github.com/saichler/l8ql v0.0.0-20260921131529-5b079580f08c/go.mod h1:boBPUwEYgpyyTcZcqqjDDYgqkjemEO7iR8kdOwkS1S0=
+github.com/saichler/l8ql v0.0.0-20261023005914-64c249a65008 h1:3EpIn3UyLsIng3//2wg6wpMZRmD4jkbjl9t0TK/3CeU=
+github.com/saichler/l8ql v0.0.0-20261023005914-64c249a65008/go.mod h1:boBPUwEYgpyyTcZcqqjDDYgqkjemEO7iR8kdOwkS1S0=
 github.com/saichler/l8reflect v0.0.0-20260926132352-647e2d1c16a7 h1:OINO1/t9oKbG+4abPkrXjVQm/f0EbsgiZidnQ7M4Mhs=
 github.com/saichler/l8reflect v0.0.0-20260926132352-647e2d1c16a7/go.mod h1:yCkCd5JQKqKG+dr6h0HYDiLvNAB8uLUUOdWApnWUw24=
 github.com/saichler/l8services v0.0.0-20260920123629-ec54a5cef7e1 h1:u4DZK8a3EeCzdqW1hbeXtPIf4zLjEXd68cmoeu0+w8A=
