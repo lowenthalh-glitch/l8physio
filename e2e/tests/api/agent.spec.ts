@@ -69,4 +69,12 @@ test.describe('AI agent', () => {
     expect(reply).not.toMatch(TOOL_LIMIT_REPLY);
     expect(reply).toMatch(/\+?\d{6,}/);
   });
+
+  test('agent sorts by a nested field (AuditInfo.CreatedAt)', async ({ api }) => {
+    const { resp, text } = await chat(api, 'Which clients joined most recently? Show 3.');
+    expect(resp.ok(), text).toBeTruthy();
+    const reply = JSON.parse(text).list[0].message;
+    expect(reply).not.toMatch(TOOL_LIMIT_REPLY);
+    expect(reply).not.toMatch(/timed out/i);
+  });
 });
