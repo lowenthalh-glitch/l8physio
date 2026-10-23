@@ -4,7 +4,7 @@ go 1.27.3
 
 require (
 	github.com/lib/pq v1.12.3
-	github.com/saichler/l8agent v0.0.0-20261023005916-8ab4662cc184
+	github.com/saichler/l8agent v0.0.0-20261023012207-967e551f0559
 	github.com/saichler/l8bus v0.0.0-20260920024857-555f4a280346
 	github.com/saichler/l8collector/go v0.0.0-20261022005351-c8fc0a4871aa
 	github.com/saichler/l8common v0.0.0-20260921210725-849f2865aa8f

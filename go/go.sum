@@ -72,6 +72,8 @@ github.com/saichler/l8agent v0.0.0-20261022014146-24d2479d7379 h1:2CV6L9hzF8PBVJ
 github.com/saichler/l8agent v0.0.0-20261022014146-24d2479d7379/go.mod h1:isTUof0SPHq4RdRY6EyIKTMnWS0OjivDbDJGQPDStCg=
 github.com/saichler/l8agent v0.0.0-20261023005916-8ab4662cc184 h1:A1zXKGUuKOlydwkkRnWs4ofw62ipLWVb3ziRziQSeeU=
 github.com/saichler/l8agent v0.0.0-20261023005916-8ab4662cc184/go.mod h1:isTUof0SPHq4RdRY6EyIKTMnWS0OjivDbDJGQPDStCg=
+github.com/saichler/l8agent v0.0.0-20261023012207-967e551f0559 h1:8TaYKECZ4jf+0r6eFe2U52ggO2u08BdQybjQbbfV7aI=
+github.com/saichler/l8agent v0.0.0-20261023012207-967e551f0559/go.mod h1:isTUof0SPHq4RdRY6EyIKTMnWS0OjivDbDJGQPDStCg=
 github.com/saichler/l8bus v0.0.0-20260920024857-555f4a280346 h1:TpSMv+wiguo1m0Q87VNeFwoZbj8uPlqv2RH1dIP6Mjo=
 github.com/saichler/l8bus v0.0.0-20260920024857-555f4a280346/go.mod h1:ZK1m4Zqy9WhGVZXl5znHTr7+/r19rOytqwBqhH02Ui8=
 github.com/saichler/l8collector/go v0.0.0-20261022005351-c8fc0a4871aa h1:TTRrO0FAmftp2d+HseEH+HBpMsntDZ2PXLGQLERZOAE=
