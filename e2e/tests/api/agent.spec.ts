@@ -3,6 +3,7 @@ import { PREFIX } from '../../fixtures/env';
 
 const AGENT_AREA = 55;
 const CHAT = { name: 'AgntChat', area: AGENT_AREA };
+const TOOL_LIMIT_REPLY = /maximum number of tool calls/i;
 
 async function chat(api: any, message: string, conversationId?: string) {
   const facade: any = { messages: [{ message, isLlm: false }] };
@@ -59,5 +60,13 @@ test.describe('AI agent', () => {
     const { resp, text } = await chat(api, 'How many clients are in the system? Use your tools and answer with the number.');
     expect(resp.ok(), text).toBeTruthy();
     expect(JSON.parse(text).list[0].message).toMatch(/\d/);
+  });
+
+  test('agent lists records without running out of tool calls', async ({ api }) => {
+    const { resp, text } = await chat(api, 'List 3 clients with their first name, last name and phone number.');
+    expect(resp.ok(), text).toBeTruthy();
+    const reply = JSON.parse(text).list[0].message;
+    expect(reply).not.toMatch(TOOL_LIMIT_REPLY);
+    expect(reply).toMatch(/\+?\d{6,}/);
   });
 });
