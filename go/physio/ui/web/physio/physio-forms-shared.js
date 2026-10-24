@@ -136,7 +136,7 @@
                             { key: 'weightKg',           label: 'Weight (kg)', type: 'number' },
                             { key: 'effort',             label: 'Effort',     type: 'text' },
                             { key: 'notes',              label: 'Notes',      type: 'text' }
-                        ])
+                        ], { reorderable: true })
                     ])
                 ]),
 
