@@ -4,18 +4,18 @@ go 1.27.3
 
 require (
 	github.com/lib/pq v1.12.3
-	github.com/saichler/l8agent v0.0.0-20261108030330-94af458be48f
+	github.com/saichler/l8agent v0.0.0-20261108143739-8532d4d6e1aa
 	github.com/saichler/l8bus v0.0.0-20260920024857-555f4a280346
-	github.com/saichler/l8collector/go v0.0.0-20261022005351-c8fc0a4871aa
+	github.com/saichler/l8collector/go v0.0.0-20261108144541-bd4dc3cd4415
 	github.com/saichler/l8common v0.0.0-20260921210725-849f2865aa8f
 	github.com/saichler/l8events v0.0.0-20260920032941-9a68815e426a
 	github.com/saichler/l8logfusion v0.0.0-20260320120056-3a3617eed28f
 	github.com/saichler/l8parser v0.0.0-20260504014757-63e78ee52fb3
 	github.com/saichler/l8pollaris v0.0.0-20260418233826-378ba5e9453a
-	github.com/saichler/l8srlz v0.0.0-20260920123539-54414e15e38b
+	github.com/saichler/l8srlz v0.0.0-20261107231636-a9b4921c0ee0
 	github.com/saichler/l8types v0.0.0-20261107231618-28d4716170d0
 	github.com/saichler/l8utils v0.0.0-20261107231638-3e5a83f61e0d
-	github.com/saichler/l8web v0.0.0-20260920002634-0e48182bb933
+	github.com/saichler/l8web v0.0.0-20261107231640-842566c04cb9
 	github.com/stretchr/testify v1.12.1
 	google.golang.org/protobuf v1.36.12
 )
@@ -66,9 +66,9 @@ require (
 	golang.org/x/time v0.15.0 // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.13.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
-	k8s.io/api v0.37.1 // indirect
-	k8s.io/apimachinery v0.37.1 // indirect
-	k8s.io/client-go v0.37.1 // indirect
+	k8s.io/api v0.37.2 // indirect
+	k8s.io/apimachinery v0.37.2 // indirect
+	k8s.io/client-go v0.37.2 // indirect
 	k8s.io/klog/v2 v2.140.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20260721132016-d427ff9ee9ad // indirect
 	k8s.io/utils v0.0.0-20260626114624-be93311217bd // indirect
