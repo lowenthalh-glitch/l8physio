@@ -2,6 +2,7 @@ package aia
 
 import (
 	"embed"
+	"os"
 	"sort"
 	"strings"
 )
@@ -33,4 +34,16 @@ func HelpDocs() string {
 		b.WriteString("\n\n")
 	}
 	return b.String()
+}
+
+// WebToolsURL is the web tools service (search + fetch) that gives '@web' prompts live web access. The
+// PHYSIO_WEB_TOOLS_URL environment variable overrides it; set it to "none" to turn live web access off.
+func WebToolsURL() string {
+	if v := os.Getenv("PHYSIO_WEB_TOOLS_URL"); v != "" {
+		if v == "none" {
+			return ""
+		}
+		return v
+	}
+	return "https://tools.test-llm.dev"
 }

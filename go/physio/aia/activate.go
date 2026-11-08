@@ -20,6 +20,7 @@ func agentConfig(creds, dbname string, vnic ifs.IVNic) agent.AgentConfig {
 		LLMProvider: "openai",
 		LLMCredKey:  "chat",
 		HelpDocs:    HelpDocs(),
+		WebToolsURL: WebToolsURL(),
 		DefaultPrompts: []*l8agent.L8AgentPrompt{
 			{
 				Name:        "Physiotherapist Assistant",
