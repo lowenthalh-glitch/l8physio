@@ -19,6 +19,18 @@ if [ "$MODE" = "kind" ]; then
   KUBECTL=(kubectl --context "kind-l8physio-e2e")
 fi
 
+# Real clusters pull from the private Harbor project: make sure the pull secret exists.
+if [ "$MODE" = "baremetal" ] || [ "$MODE" = "gke" ]; then
+  HARBOR_CREDS="${HARBOR_CREDS:-${SCRIPT_DIR}/../../../saichler/l8secure/harbor/harbor.yaml.b64}"
+  "${KUBECTL[@]}" create namespace physio --dry-run=client -o yaml | "${KUBECTL[@]}" apply -f -
+  if ! "${KUBECTL[@]}" -n physio get secret harbor-pull &>/dev/null; then
+    YAML="$(base64 -d "$HARBOR_CREDS")"
+    get() { printf '%s\n' "$YAML" | sed -n "s/^$1:[[:space:]]*//p" | head -n1; }
+    "${KUBECTL[@]}" -n physio create secret docker-registry harbor-pull \
+      --docker-server="$(get registry)" --docker-username="$(get username)" --docker-password="$(get password)"
+  fi
+fi
+
 echo "Applying physio (${MODE})..."
 "${KUBECTL[@]}" apply -f "$FILE"
 

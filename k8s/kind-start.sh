@@ -23,12 +23,12 @@ kubectl --context "kind-${CLUSTER_NAME}" wait --for=condition=Ready nodes --all 
 
 echo "Loading images into KIND..."
 IMAGES=(
-  saichler/physio-vnet:latest
-  saichler/physio:latest
-  saichler/physio-web:latest
-  saichler/physio-log-vnet:latest
-  saichler/physio-log-agent:latest
-  saichler/physio-boostapp:latest
+  registry.layer-8.dev:44443/phy/physio-vnet:latest
+  registry.layer-8.dev:44443/phy/physio:latest
+  registry.layer-8.dev:44443/phy/physio-web:latest
+  registry.layer-8.dev:44443/phy/physio-log-vnet:latest
+  registry.layer-8.dev:44443/phy/physio-log-agent:latest
+  registry.layer-8.dev:44443/phy/physio-boostapp:latest
 )
 for img in "${IMAGES[@]}"; do
   if docker image inspect "$img" &>/dev/null; then

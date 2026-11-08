@@ -29,7 +29,7 @@ spec:
       hostNetwork: true
       containers:
         - name: physio-vnet
-          image: saichler/physio-vnet:latest
+          image: registry.layer-8.dev:44443/phy/physio-vnet:latest
           imagePullPolicy: IfNotPresent
           env:
             - name: NODE_IP
@@ -69,7 +69,7 @@ spec:
     spec:
       containers:
         - name: physio
-          image: saichler/physio:latest
+          image: registry.layer-8.dev:44443/phy/physio:latest
           imagePullPolicy: IfNotPresent
           env:
             - name: NODE_IP
@@ -110,7 +110,7 @@ spec:
       hostNetwork: true
       containers:
         - name: physio-web
-          image: saichler/physio-web:latest
+          image: registry.layer-8.dev:44443/phy/physio-web:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 2774
@@ -170,7 +170,7 @@ spec:
       hostNetwork: true
       containers:
         - name: physio-log-vnet
-          image: saichler/physio-log-vnet:latest
+          image: registry.layer-8.dev:44443/phy/physio-log-vnet:latest
           imagePullPolicy: IfNotPresent
           env:
             - name: NODE_IP
@@ -210,7 +210,7 @@ spec:
     spec:
       containers:
         - name: physio-log-agent
-          image: saichler/physio-log-agent:latest
+          image: registry.layer-8.dev:44443/phy/physio-log-agent:latest
           imagePullPolicy: IfNotPresent
           env:
             - name: NODE_IP
@@ -250,7 +250,7 @@ spec:
     spec:
       containers:
         - name: physio-boostapp
-          image: saichler/physio-boostapp:latest
+          image: registry.layer-8.dev:44443/phy/physio-boostapp:latest
           imagePullPolicy: IfNotPresent
           env:
             - name: NODE_IP

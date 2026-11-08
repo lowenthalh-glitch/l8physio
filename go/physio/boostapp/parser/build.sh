@@ -1,4 +1,3 @@
 #!/usr/bin/env bash
 set -e
-docker build --no-cache --platform=linux/amd64 -t saichler/physio-boostapp-parser:latest .
-docker push saichler/physio-boostapp-parser:latest
+docker buildx build --no-cache --platform=linux/amd64 -t registry.layer-8.dev:44443/phy/physio-boostapp-parser:latest . --push
