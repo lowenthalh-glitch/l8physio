@@ -68,8 +68,8 @@ github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822/go.mod h1:+n7T8m
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 h1:Jamvg5psRIccs7FGNTlIRMkT8wgtp5eCXdBlqhYGL6U=
 github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
-github.com/saichler/l8agent v0.0.0-20261108030010-9213a338cf7c h1:NiriyVn58Vn9N2Z562+RdRViOQxs7Y2yaureoMUj+EA=
-github.com/saichler/l8agent v0.0.0-20261108030010-9213a338cf7c/go.mod h1:isTUof0SPHq4RdRY6EyIKTMnWS0OjivDbDJGQPDStCg=
+github.com/saichler/l8agent v0.0.0-20261108030330-94af458be48f h1:GCnZJrXNFwEeJQhpohjcNsATt9ZfXXky0Ud8tURvn6I=
+github.com/saichler/l8agent v0.0.0-20261108030330-94af458be48f/go.mod h1:isTUof0SPHq4RdRY6EyIKTMnWS0OjivDbDJGQPDStCg=
 github.com/saichler/l8bus v0.0.0-20260920024857-555f4a280346 h1:TpSMv+wiguo1m0Q87VNeFwoZbj8uPlqv2RH1dIP6Mjo=
 github.com/saichler/l8bus v0.0.0-20260920024857-555f4a280346/go.mod h1:ZK1m4Zqy9WhGVZXl5znHTr7+/r19rOytqwBqhH02Ui8=
 github.com/saichler/l8collector/go v0.0.0-20261022005351-c8fc0a4871aa h1:TTRrO0FAmftp2d+HseEH+HBpMsntDZ2PXLGQLERZOAE=
