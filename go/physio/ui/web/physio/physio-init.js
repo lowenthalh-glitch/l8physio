@@ -19,7 +19,8 @@
         // name) re-render with the resolved values instead of showing the
         // raw ID when the table races the fetch.
         if (PhysioManagement.lookups && PhysioManagement.lookups.load) {
-            PhysioManagement.lookups.load().then(function() {
+            // Refresh on every section init: the section is re-initialised on each switch from System.
+            (PhysioManagement.lookups.refresh ? PhysioManagement.lookups.refresh() : PhysioManagement.lookups.load()).then(function() {
                 if (window.Physio && window.Physio.refreshCurrentTable) {
                     window.Physio.refreshCurrentTable();
                 }

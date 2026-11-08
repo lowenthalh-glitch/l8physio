@@ -155,6 +155,11 @@ document.addEventListener('DOMContentLoaded', async function() {
     });
     Layer8DPermissionFilter.applyToSidebar(sidebarModels);
 
+    // Initialize floating AI chat bubble
+    if (typeof L8AgentBubble !== 'undefined') {
+        L8AgentBubble.init({ chatEndpoint: '/55/AgntChat' });
+    }
+
     const hashParts = typeof getHashParts === 'function' ? getHashParts() : { section: '', service: '' };
     const initSection = hashParts.section && sections[hashParts.section] ? hashParts.section : 'physio';
     loadSection(initSection);
@@ -165,18 +170,54 @@ document.addEventListener('DOMContentLoaded', async function() {
         }, 500);
     }
 
+    // Sidebar: one entry per Physio management service, plus System.
     const navLinks = document.querySelectorAll('.nav-link');
+    // Hide service entries the user cannot GET (the in-page sub-nav is hidden, so applyToSection no longer covers them).
     navLinks.forEach(link => {
-        const section = link.getAttribute('data-section');
-        if (section === initSection) {
-            navLinks.forEach(l => l.classList.remove('active'));
-            link.classList.add('active');
-        }
+        const svc = link.getAttribute('data-service');
+        if (!svc) return;
+        const model = Layer8DPermissionFilter._resolve('physio', 'management', svc);
+        if (model && !Layer8DPermissionFilter.canView(model)) link.closest('li').style.display = 'none';
+    });
+
+    const setActive = function(link) {
+        navLinks.forEach(l => l.classList.remove('active'));
+        if (link) link.classList.add('active');
+    };
+    const activeLinkFor = function(section, service) {
+        if (section === 'physio') return document.querySelector('.nav-link[data-service="' + (service || 'therapists') + '"]');
+        return document.querySelector('.nav-link[data-section="' + section + '"]:not([data-service])');
+    };
+    setActive(activeLinkFor(initSection, hashParts.service));
+
+    // Run cb once the physio section is rendered and initialised (sub-nav handlers are bound by its initializer).
+    const whenPhysioReady = function(service, cb) {
+        const ready = function() {
+            return document.querySelector('.l8-subnav-item[data-service="' + service + '"]') &&
+                window.Physio && window.Physio._state && window.Physio._state.sectionEl;
+        };
+        if (ready()) { cb(); return; }
+        const area = document.getElementById('content-area');
+        const obs = new MutationObserver(function() { if (ready()) { obs.disconnect(); clearTimeout(timer); cb(); } });
+        const timer = setTimeout(function() { obs.disconnect(); }, 10000);
+        obs.observe(area, { childList: true, subtree: true, attributes: true });
+    };
+    const physioLoaded = function() {
+        return !!document.querySelector('.physio-section') && !!(window.Physio && window.Physio._state && window.Physio._state.sectionEl);
+    };
+
+    navLinks.forEach(link => {
         link.addEventListener('click', function(e) {
             e.preventDefault();
-            navLinks.forEach(l => l.classList.remove('active'));
-            this.classList.add('active');
-            loadSection(this.getAttribute('data-section'));
+            setActive(this);
+            const section = this.getAttribute('data-section');
+            const service = this.getAttribute('data-service');
+            if (section !== 'physio') { loadSection(section); return; }
+            if (!physioLoaded()) loadSection('physio');
+            whenPhysioReady(service, function() {
+                const item = document.querySelector('.l8-subnav-item[data-service="' + service + '"]');
+                if (item) item.click();
+            });
         });
     });
 

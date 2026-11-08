@@ -70,6 +70,11 @@
 
             this.initSidebar();
 
+            // Initialize mobile AI chat bubble
+            if (typeof L8AgentBubbleMobile !== 'undefined') {
+                L8AgentBubbleMobile.init({ chatEndpoint: '/55/AgntChat' });
+            }
+
             var refreshBtn = document.getElementById('refresh-btn');
             if (refreshBtn) refreshBtn.addEventListener('click', () => {
                 // If the user is inside a data list, refresh just the list.

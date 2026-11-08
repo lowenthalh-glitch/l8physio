@@ -314,3 +314,10 @@ body {
     flex-direction: column;
     overflow: hidden;
 }
+
+/* In app.html the physio services are navigated from the sidebar (the portals keep their in-page sub-nav); the in-page module tab and sub-nav stay in the DOM for the
+   l8ui section machinery but are not shown. */
+.sidebar-services .physio-section > .l8-module-tabs,
+.sidebar-services .physio-section .l8-subnav {
+    display: none;
+}

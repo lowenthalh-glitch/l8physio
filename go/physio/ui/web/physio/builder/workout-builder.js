@@ -335,7 +335,8 @@
 
         init: function(containerId) {
             var container = document.getElementById(containerId);
-            if (!container || this._initialized) return;
+            // The section HTML is replaced on every section switch: initialise again whenever this container is empty.
+            if (!container || (this._initialized && container.childElementCount > 0)) return;
             this._initialized = true;
             _setupBuilder(container, {});
         },

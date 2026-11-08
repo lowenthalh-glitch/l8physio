@@ -8,6 +8,14 @@
         _loaded:     false,
         _loading:    null,
 
+        // Drop the cache and load again: records created since the page booted (by other users or other
+        // sessions) would otherwise show as raw ids until a full page reload.
+        refresh: function() {
+            this._loaded = false;
+            this._loading = null;
+            return this.load();
+        },
+
         load: function() {
             if (this._loaded) return Promise.resolve();
             if (this._loading) return this._loading;
