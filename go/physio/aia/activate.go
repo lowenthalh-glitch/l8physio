@@ -21,6 +21,8 @@ func agentConfig(creds, dbname string, vnic ifs.IVNic) agent.AgentConfig {
 		LLMCredKey:  "chat",
 		HelpDocs:    HelpDocs(),
 		WebToolsURL: WebToolsURL(),
+		LANRoutes:   LANRoutes(),
+		LANCA:       LANCA(),
 		DefaultPrompts: []*l8agent.L8AgentPrompt{
 			{
 				Name:        "Physiotherapist Assistant",
