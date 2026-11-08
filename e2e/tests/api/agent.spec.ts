@@ -95,7 +95,7 @@ test.describe('AI agent', () => {
 
     test('says so when the help documentation does not cover the question', async ({ api }) => {
       const msg = await reply(api, '@help how do I fly to the moon');
-      expect(msg).toMatch(/not cover|does not|no (help|documentation)|don't|cannot|can't/i);
+      expect(msg).toMatch(/not cover|does not|doesn.t|no (help|documentation)|don.t|cannot|can.t/i);
     });
 
     test('is case-insensitive and does not query data', async ({ api }) => {

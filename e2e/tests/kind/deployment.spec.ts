@@ -26,7 +26,7 @@ test.describe('KIND cluster deployment', () => {
   test('every pod uses the project-owned physio images (no erp-* base leak)', async () => {
     const pods = kubectlJson('-n', NAMESPACE, 'get', 'pods').items;
     for (const p of pods) for (const c of p.spec.containers) {
-      expect(c.image, p.metadata.name).toMatch(/^saichler\/physio[-a-z]*:latest$/);
+      expect(c.image, p.metadata.name).toMatch(/^registry\.layer-8\.dev:44443\/phy\/physio[-a-z]*:latest$/);
     }
   });
 
