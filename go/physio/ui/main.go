@@ -11,6 +11,7 @@ import (
 
 	"github.com/saichler/l8agent/go/types/l8agent"
 	"github.com/saichler/l8common/go/common"
+	l8server "github.com/saichler/l8web/go/web/server"
 	l8c "github.com/saichler/l8common/go/common"
 	"github.com/lowenthalh-glitch/l8physio/go/types/physio"
 	"github.com/saichler/l8types/go/ifs"
@@ -18,6 +19,9 @@ import (
 )
 
 func main() {
+	// The AI agent answers in several LLM / web-tool steps (an '@web' search can take a minute), longer than
+	// the 30s default request timeout.
+	l8server.Timeout = 180
 	svr := common.CreateWebServer("web", registerPhysioTypes)
 	http.HandleFunc("/index.html", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusMovedPermanently)
