@@ -4,7 +4,10 @@ import { Locator, Page, expect } from '@playwright/test';
 export class MobileShell {
   constructor(readonly page: Page) {}
 
+  /** Boot once per page; on an already booted shared page the fixture reset has returned to the home screen. */
   async goto(path = '/m/app.html') {
+    const header = this.page.locator('.mobile-header');
+    if (new URL(this.page.url(), 'http://x').pathname === path && await header.isVisible()) return;
     await this.page.goto(path);
     await expect(this.page.locator('.mobile-header')).toBeVisible();
   }

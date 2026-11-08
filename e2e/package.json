@@ -11,7 +11,8 @@
     "test:api": "playwright test --project=api",
     "test:kind": "playwright test --project=kind",
     "typecheck": "tsc --noEmit",
-    "report": "playwright show-report"
+    "report": "playwright show-report",
+    "lint": "./scripts/lint.sh && tsc --noEmit"
   },
   "devDependencies": {
     "@playwright/test": "^1.50.0",

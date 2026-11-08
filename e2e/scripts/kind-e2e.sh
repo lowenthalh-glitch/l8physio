@@ -3,7 +3,7 @@
 #   ./scripts/kind-e2e.sh up      create cluster, load locally-built images, deploy, point the agent at the LLM
 #   ./scripts/kind-e2e.sh test    run the full Playwright suite
 #   ./scripts/kind-e2e.sh patch <app>...   reload a rebuilt image and restart its pod (fix loop)
-#   ./scripts/kind-e2e.sh llm     point the agent at the test LLM (public or LAN address)
+#   ./scripts/kind-e2e.sh llm     ensure the TestLLM credential exists (Halo LLM)
 #   ./scripts/kind-e2e.sh down    delete cluster
 set -euo pipefail
 
@@ -15,12 +15,12 @@ CTX="kind-${CLUSTER}"
 
 # app label -> image
 declare -A IMAGE=(
-  [physio-vnet]=saichler/physio-vnet:latest
-  [physio]=saichler/physio:latest
-  [physio-web]=saichler/physio-web:latest
-  [physio-log-vnet]=saichler/physio-log-vnet:latest
-  [physio-log-agent]=saichler/physio-log-agent:latest
-  [physio-boostapp]=saichler/physio-boostapp:latest
+  [physio-vnet]=registry.layer-8.dev:44443/phy/physio-vnet:latest
+  [physio]=registry.layer-8.dev:44443/phy/physio:latest
+  [physio-web]=registry.layer-8.dev:44443/phy/physio-web:latest
+  [physio-log-vnet]=registry.layer-8.dev:44443/phy/physio-log-vnet:latest
+  [physio-log-agent]=registry.layer-8.dev:44443/phy/physio-log-agent:latest
+  [physio-boostapp]=registry.layer-8.dev:44443/phy/physio-boostapp:latest
 )
 
 case "${1:-}" in

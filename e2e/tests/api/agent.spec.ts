@@ -77,4 +77,54 @@ test.describe('AI agent', () => {
     expect(reply).not.toMatch(TOOL_LIMIT_REPLY);
     expect(reply).not.toMatch(/timed out/i);
   });
+
+  async function reply(api: any, message: string): Promise<string> {
+    const { resp, text } = await chat(api, message);
+    expect(resp.ok(), text).toBeTruthy();
+    return JSON.parse(text).list[0].message as string;
+  }
+
+  test.describe('@help prefix', () => {
+    test('guides the user through the menus to create a client', async ({ api }) => {
+      const msg = await reply(api, '@help how do i create a client');
+      expect(msg).toMatch(/Clients/);
+      expect(msg).toMatch(/Add/);
+      expect(msg).toMatch(/First Name/);
+      expect(msg).toMatch(/Save/);
+    });
+
+    test('says so when the help documentation does not cover the question', async ({ api }) => {
+      const msg = await reply(api, '@help how do I fly to the moon');
+      expect(msg).toMatch(/not cover|does not|no (help|documentation)|don't|cannot|can't/i);
+    });
+
+    test('is case-insensitive and does not query data', async ({ api }) => {
+      const msg = await reply(api, '@HELP where do I find the therapists');
+      expect(msg).toMatch(/Therapists/);
+    });
+  });
+
+  test.describe('@web prefix', () => {
+    test('answers a general question', async ({ api }) => {
+      expect(await reply(api, '@web what is the capital of France')).toMatch(/Paris/);
+    });
+
+    for (const q of ['how many sales orders do i have', 'how many clients do i have', 'list my appointments for next week']) {
+      test(`rejects a question about system data: "${q}"`, async ({ api }) => {
+        const msg = await reply(api, `@web ${q}`);
+        expect(msg).toMatch(/cannot be asked with @web/);
+        expect(msg).not.toMatch(/\d{2,}/);
+      });
+    }
+
+    test('asks for a question when the prefix is alone', async ({ api }) => {
+      expect(await reply(api, '@web')).toMatch(/add your question/i);
+    });
+  });
+
+  test('a word that merely starts like a prefix is an ordinary prompt', async ({ api }) => {
+    const msg = await reply(api, '@helper reply with the single word PONG');
+    expect(msg.length).toBeGreaterThan(0);
+    expect(msg).not.toMatch(/cannot be asked with @web/);
+  });
 });

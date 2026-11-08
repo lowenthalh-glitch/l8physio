@@ -7,7 +7,7 @@ help:
 	@echo "make test           - run the whole suite (api, desktop, mobile, kind)"
 	@echo "make test-api|test-desktop|test-mobile|test-kind"
 	@echo "make patch APPS='physio-web physio' - reload rebuilt images + restart pods"
-	@echo "make llm            - point the agent at the test LLM (public IP or LLM_LAN_IP)"
+	@echo "make llm            - ensure the TestLLM credential exists (Halo LLM)"
 	@echo "make down           - delete the cluster"
 
 install:

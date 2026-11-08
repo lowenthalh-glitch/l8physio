@@ -4,18 +4,21 @@ import { NAV_SERVICES } from '../../fixtures/services';
 import { trackPageErrors } from '../../fixtures/errors';
 
 test.describe('desktop shell & navigation', () => {
-  test('sidebar exposes Physiotherapy, AI Agent and System', async ({ authedPage }) => {
+  test('sidebar exposes the management services and System, and no AI Agent entry', async ({ authedPage }) => {
     const shell = new Shell(authedPage);
     await shell.goto();
-    for (const s of ['physio', 'aia', 'system']) await expect(shell.section(s)).toBeVisible();
+    for (const s of NAV_SERVICES) await expect(shell.subnav(s.key)).toBeVisible();
+    await expect(shell.section('system')).toBeVisible();
+    await expect(authedPage.locator('.nav-link[data-section="aia"]')).toHaveCount(0);
+    await expect(authedPage.locator('.l8-subnav')).toBeHidden();
     await expect(shell.username()).toBeVisible();
   });
 
-  test('app loads with no uncaught script errors (all l8ui scripts present)', async ({ authedPage }) => {
-    const errors = trackPageErrors(authedPage);
-    const shell = new Shell(authedPage);
+  // boot errors only happen on a boot: needs its own context
+  test('app loads with no uncaught script errors (all l8ui scripts present)', async ({ freshPage }) => {
+    const errors = trackPageErrors(freshPage);
+    const shell = new Shell(freshPage);
     await shell.goto();
-    await shell.openSection('aia');
     await shell.openSection('system');
     await shell.openSection('physio');
     expect(errors, errors.join('\n')).toEqual([]);
@@ -24,7 +27,7 @@ test.describe('desktop shell & navigation', () => {
   test('all sub-nav entries are present in order', async ({ authedPage }) => {
     const shell = new Shell(authedPage);
     await shell.goto();
-    const labels = await authedPage.locator('.l8-subnav-item').allTextContents();
+    const labels = await authedPage.locator('.nav-link[data-service]').allTextContents();
     for (const s of NAV_SERVICES) expect(labels.join('|')).toContain(s.label);
     expect(labels.join('|')).toContain('Workout Builder');
   });

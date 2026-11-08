@@ -17,7 +17,7 @@ test.describe('role portals (same web server, sub-pages)', () => {
       await page.waitForURL('**/client-app.html');
       const shell = new Shell(page);
       await expect(page.locator('.header-subtitle')).toHaveText('Client Portal');
-      await expect(shell.section('physio')).toBeVisible();
+      await expect(page.locator('.nav-link[data-section="physio"]')).toBeVisible();
       await expect(page.locator('.l8-subnav-item[data-service="clients"]')).toBeVisible();
       for (const hidden of ['therapists', 'exercises', 'protocols', 'plans', 'appointments', 'progress', 'reports', 'feedback', 'htdash']) {
         await expect(page.locator(`.l8-subnav-item[data-service="${hidden}"]`)).toBeHidden();
@@ -54,7 +54,7 @@ test.describe('role portals (same web server, sub-pages)', () => {
       await login.goto();
       await login.login(th.entity.email, DEFAULT_PASSWORD);
       await page.waitForURL('**/therapist-app.html');
-      await page.waitForTimeout(500);
+      await page.waitForLoadState('networkidle');
       for (const shown of ['therapists', 'clients', 'boostapp']) {
         await expect(page.locator(`.l8-subnav-item[data-service="${shown}"]`)).toBeVisible();
       }

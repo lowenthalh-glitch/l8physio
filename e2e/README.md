@@ -17,7 +17,7 @@ Specs run serially on one worker because they share a live database.
 
 ## Prerequisites
 
-`docker`, `kind`, `kubectl`, Node 20+. Images `saichler/physio*:latest` must exist locally (see below).
+`docker`, `kind`, `kubectl`, Node 20+. Images `registry.layer-8.dev:44443/phy/physio*:latest` must exist locally (see below).
 
 ```
 make install     # npm install + chromium
@@ -50,10 +50,10 @@ trace in `test-results/`; `npm run report` opens the HTML report.
 ## Fix loop: rebuild and patch
 
 The project Dockerfiles fetch Go source from GitHub (`GOPROXY=direct`), so push before building. Web assets
-come from the working tree. Build locally with `docker build` (the `build.sh` scripts push to Docker Hub):
+come from the working tree. Build locally with `docker build` (the `build.sh` scripts push to the Harbor registry):
 
 ```
-cd go/physio/main && docker build --no-cache -t saichler/physio:latest .
+cd go/physio/main && docker build --no-cache -t registry.layer-8.dev:44443/phy/physio:latest .
 cd e2e && make patch APPS='physio'            # kind load + restart the pod
 kubectl -n physio delete pod physio-web-0     # always restart web last, then wait ~30s
 ```
@@ -65,10 +65,11 @@ answers 404 or "Cannot find active handler", it was restarted too early. Recreat
 
 ## AI agent LLM
 
-`tests/api/agent.spec.ts` needs a reachable LLM. `make llm` (`scripts/llm-setup.sh`) adds the `TestLLM` credential to the
-cluster if missing (read from the l8secure phy plugin, `PHY_JSON`) and picks the address for `llm.test-llm.dev`:
-public DNS when it answers, otherwise the LAN address `LLM_LAN_IP` (default `192.168.1.121`) as a hostAlias on `physio-0`.
-Force a choice with `LLM_MODE=public|lan`.
+`tests/api/agent.spec.ts` needs the test LLM (`gpt-oss-120b` at `https://llm.test-llm.dev/v1`, public Let's Encrypt
+certificate, so no custom CA). `make llm` (`scripts/llm-setup.sh`) adds the `TestLLM` credential to the cluster, or
+updates it when it differs from the l8secure phy plugin (`PHY_JSON`).
+Do not point the agent at the LAN address `192.168.1.124`: the LLM runs on the KIND host, whose firewall only
+accepts those ports from the LAN, not from the pods.
 
 ## Writing tests
 

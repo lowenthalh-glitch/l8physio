@@ -33,10 +33,11 @@ test.describe('Therapists', () => {
     }
   });
 
-  test('detail popup lists the therapist\'s clients', async ({ authedPage, seed }) => {
+  // fresh context: l8ui's generated child list can serve a cached clients query on a page that already showed clients
+  test('detail popup lists the therapist\'s clients', async ({ freshPage, seed }) => {
     const th = await seed.therapist(token('Cl'));
     const cl = await seed.client(token('Mine'), th.id);
-    const shell = new Shell(authedPage);
+    const shell = new Shell(freshPage);
     await shell.goto();
     const table = await shell.openService('therapists');
     await table.filterBy('Last', th.marker);
