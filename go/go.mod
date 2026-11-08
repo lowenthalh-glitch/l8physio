@@ -13,8 +13,8 @@ require (
 	github.com/saichler/l8parser v0.0.0-20260504014757-63e78ee52fb3
 	github.com/saichler/l8pollaris v0.0.0-20260418233826-378ba5e9453a
 	github.com/saichler/l8srlz v0.0.0-20260920123539-54414e15e38b
-	github.com/saichler/l8types v0.0.0-20260913222005-0b4a31604ebc
-	github.com/saichler/l8utils v0.0.0-20260920140320-672b09d6da31
+	github.com/saichler/l8types v0.0.0-20261107231618-28d4716170d0
+	github.com/saichler/l8utils v0.0.0-20261107231638-3e5a83f61e0d
 	github.com/saichler/l8web v0.0.0-20260920002634-0e48182bb933
 	github.com/stretchr/testify v1.12.1
 	google.golang.org/protobuf v1.36.12
@@ -49,7 +49,7 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/saichler/l8orm v0.0.0-20260916142109-e7f0284c95ee // indirect
-	github.com/saichler/l8ql v0.0.0-20261023005914-64c249a65008 // indirect
+	github.com/saichler/l8ql v0.0.0-20261107231634-fb9ba4743fd2 // indirect
 	github.com/saichler/l8reflect v0.0.0-20260926132352-647e2d1c16a7 // indirect
 	github.com/saichler/l8services v0.0.0-20260920123629-ec54a5cef7e1 // indirect
 	github.com/saichler/probler v0.0.0-20260921143133-14eada7b7c40 // indirect
