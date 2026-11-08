@@ -15,6 +15,7 @@ import (
 	l8c "github.com/saichler/l8common/go/common"
 	"github.com/lowenthalh-glitch/l8physio/go/types/physio"
 	"github.com/saichler/l8types/go/ifs"
+	"github.com/saichler/l8types/go/types/l8notify"
 	"github.com/saichler/l8types/go/types/l8events"
 )
 
@@ -22,6 +23,9 @@ func main() {
 	// The AI agent answers in several LLM / web-tool steps (an '@web' search can take a minute), longer than
 	// the 30s default request timeout.
 	l8server.Timeout = 180
+	// AgntChat waits on the LLM: the first message of a conversation is ~14.5k prompt tokens and tool rounds add
+	// more, so the 30s default returned empty responses.
+	l8server.SetServiceTimeout("AgntChat", 55, 300)
 	svr := common.CreateWebServer("web", registerPhysioTypes)
 	http.HandleFunc("/index.html", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusMovedPermanently)
@@ -161,4 +165,8 @@ func registerPhysioTypes(resources ifs.IResources) {
 
 	// Event types
 	l8c.RegisterType(resources, &l8events.EventRecord{}, &l8events.EventRecordList{}, "EventId")
+
+	// l8notify types (required by the realtime / notification services)
+	l8c.RegisterType(resources, &l8notify.NotifyRecord{}, &l8notify.NotifyRecordList{}, "NotifyId")
+	l8c.RegisterType(resources, &l8notify.IntegrationConfig{}, &l8notify.IntegrationConfigList{}, "IntegrationId")
 }

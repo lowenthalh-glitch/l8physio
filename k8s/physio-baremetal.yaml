@@ -85,6 +85,11 @@ spec:
     spec:
       imagePullSecrets:
         - name: harbor-pull
+      # The agent calls the LLM and web tools at their public names (*.test-llm.dev). Inside the LAN the public
+      # IP does not loop back, so the names resolve to the LAN load balancer that serves them.
+      hostAliases:
+        - ip: "192.168.1.121"
+          hostnames: ["llm.test-llm.dev", "embed.test-llm.dev", "muse.test-llm.dev", "tools.test-llm.dev"]
       containers:
         - name: physio
           image: registry.layer-8.dev:44443/phy/physio:latest

@@ -6,7 +6,7 @@ import (
 	"github.com/lowenthalh-glitch/l8physio/go/physio/aia"
 	"github.com/lowenthalh-glitch/l8physio/go/physio/common"
 	"github.com/lowenthalh-glitch/l8physio/go/physio/services"
-	evtservices "github.com/saichler/l8events/go/services"
+	"github.com/saichler/l8common/go/system"
 	"github.com/saichler/l8types/go/ifs"
 	"os"
 	"os/exec"
@@ -28,7 +28,9 @@ func main() {
 	services.ActivateAllServices(common.DB_CREDS, common.DB_NAME, nic)
 	aia.Activate(common.DB_CREDS, common.DB_NAME, nic)
 	aia.ActivateChat(common.DB_CREDS, common.DB_NAME, nic)
-	evtservices.ActivateEvents(common.DB_CREDS, common.DB_NAME, nic)
+	// Required system services (l8events, l8notify) -- always through l8common's system.Activate,
+	// never the individual Activate* functions.
+	system.Activate(common.DB_CREDS, common.DB_NAME, nic)
 
 	common.WaitForSignal(res)
 }

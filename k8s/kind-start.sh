@@ -41,6 +41,9 @@ done
 
 "${SCRIPT_DIR}/deploy.sh" kind
 
+# Mock data (clients, plans, exercises...) so the e2e specs and the agent have rows to work on.
+"${SCRIPT_DIR}/seed-mocks.sh"
+
 echo ""
-echo "l8physio is up in KIND: http://localhost:8088"
+echo "l8physio is up in KIND: https://localhost:8088"
 echo "Run ./kind-stop.sh to tear it down."
