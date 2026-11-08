@@ -1,6 +1,7 @@
 package appointments
 
 import (
+	"errors"
 	l8c "github.com/saichler/l8common/go/common"
 	"github.com/lowenthalh-glitch/l8physio/go/types/physio"
 	"github.com/saichler/l8types/go/ifs"
@@ -27,5 +28,10 @@ func Appointment(apptId string, vnic ifs.IVNic) (*physio.Appointment, error) {
 	if err != nil {
 		return nil, err
 	}
-	return result.(*physio.Appointment), nil
+	// GetEntity answers nil for an unknown id: a bare type assertion would panic the whole service
+	entity, ok := result.(*physio.Appointment)
+	if !ok || entity == nil {
+		return nil, errors.New("Appointment not found")
+	}
+	return entity, nil
 }

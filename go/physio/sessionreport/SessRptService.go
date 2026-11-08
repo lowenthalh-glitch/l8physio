@@ -1,6 +1,7 @@
 package sessionreport
 
 import (
+	"errors"
 	l8c "github.com/saichler/l8common/go/common"
 	"github.com/lowenthalh-glitch/l8physio/go/types/physio"
 	"github.com/saichler/l8types/go/ifs"
@@ -27,5 +28,10 @@ func Report(reportId string, vnic ifs.IVNic) (*physio.SessionReport, error) {
 	if err != nil {
 		return nil, err
 	}
-	return result.(*physio.SessionReport), nil
+	// GetEntity answers nil for an unknown id: a bare type assertion would panic the whole service
+	entity, ok := result.(*physio.SessionReport)
+	if !ok || entity == nil {
+		return nil, errors.New("SessionReport not found")
+	}
+	return entity, nil
 }

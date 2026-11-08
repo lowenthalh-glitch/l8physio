@@ -1,6 +1,7 @@
 package clients
 
 import (
+	"errors"
 	l8c "github.com/saichler/l8common/go/common"
 	"github.com/lowenthalh-glitch/l8physio/go/types/physio"
 	"github.com/saichler/l8types/go/ifs"
@@ -27,5 +28,10 @@ func Client(clientId string, vnic ifs.IVNic) (*physio.PhysioClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	return result.(*physio.PhysioClient), nil
+	// GetEntity answers nil for an unknown id: a bare type assertion would panic the whole service
+	entity, ok := result.(*physio.PhysioClient)
+	if !ok || entity == nil {
+		return nil, errors.New("PhysioClient not found")
+	}
+	return entity, nil
 }
